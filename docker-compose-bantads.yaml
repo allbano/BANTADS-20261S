@@ -1,0 +1,32 @@
+service:
+  BANTADS-20261S:
+    image: postgres:18.1-alpine3.23
+    container_name: BANTADS-20261S-pg18-backend
+    shm_size: 256mb
+    restart: no
+    environment:
+      PGPORT: 5400
+      POSTGRES_USER: bantads
+      POSTGRES_PASSWORD: "bantads2026"
+      POSTGRES_DB: bantads
+      POSTGRES_INITDB_ARGS: "--locale=pt_BR.UTF-8 --encoding=UTF8"
+      LANG: pt_BR.utf8
+    command: ["postgres", "-p", "5400"]
+    ports:
+      # Como padrão de segurança
+      # não se usa porta padrão do postgres (5432)
+      - "55000:5400"
+    volumes:
+      - BANTADS-20261S:/var/lib/postgresql
+    #      - ./database/scripts-backend:/docker-entrypoint-initdb.d
+    networks:
+      - BANTADS-20261S-network
+
+volumes:
+  BANTADS-20261S:
+    name: BANTADS-20261S
+
+networks:
+  BANTADS-20261S-network:
+    name: BANTADS-20261S-network
+    external: false
