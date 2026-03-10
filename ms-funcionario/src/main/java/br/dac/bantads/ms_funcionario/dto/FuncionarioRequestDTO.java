@@ -1,0 +1,23 @@
+
+package br.dac.bantads.ms_funcionario.dto;
+
+import br.dac.bantads.ms_funcionario.dto.enums.TipoFuncionario;
+
+public class FuncionarioRequestDTO {
+    private String cpf;
+    private String nome;
+    private String email;
+    private TipoFuncionario tipo;
+
+    public String getCpf() { return cpf; }
+    public void setCpf(String cpf) { this.cpf = cpf; }
+
+    public String getNome() { return nome; }
+    public void setNome(String nome) { this.nome = nome; }
+
+    public String getEmail() { return email; }
+    public void setEmail(String email) { this.email = email; }
+
+    public TipoFuncionario getTipo() { return tipo; }
+    public void setTipo(TipoFuncionario tipo) { this.tipo = tipo; }
+}
