@@ -1,32 +1,201 @@
+# CONFIGURAÇÕES GERAIS - COMPOSIÇÃO DOCKER
+# Portas utilizadas em sequência no bantads:
+# Da 40000 em diante:
+# 40000 - Postgre de conta
+# 40001 - Postgre de funcionário 
+# 40002 - Postgre de cliente 
+# 40003 - MongoDB 
+# 40004 - API Gateway 
+# 40005 - RabbitMQ 
+# 40006 - ms-account 
+# 40007 - ms-customer 
+# 40008 - ms-employee 
+
+# Bloco de configuração comum para todos os Postgres
+# Isso evita repetição de código (DRY)
+x-postgres-common: &postgres-common
+  image: postgres:18.3-alpine3.23
+  shm_size: 256mb
+  #restart: unless-stopped
+
+  # NÃO ESQUECER DE CONFIGURAR O ARQUIVO .ENV
+  # NÃO VAI ESTAR NO GITHUB
+  env_file:
+    - .env
+  # Usuário 'postgres' padrão na imagem Alpine
+  user: "70:70" 
+  read_only: true
+  tmpfs:
+    - /var/run/postgresql
+    - /tmp
+  security_opt:
+    - no-new-privileges:true
+  deploy:
+    resources:
+      limits:
+        cpus: '1.0'
+        memory: 512M
+      reservations:
+        cpus: '0.25'
+        memory: 128M
+  logging:
+    driver: "json-file"
+    options:
+      max-size: "10m"
+      max-file: "3"
+  networks:
+    - bantads-network
+
+
 service:
-  BANTADS-20261S:
-    image: postgres:18.1-alpine3.23
-    container_name: BANTADS-20261S-pg18-backend
-    shm_size: 256mb
-    restart: no
+  # 40000 - Postgre de conta
+  bantads-pg18-account:
+    <<: *postgres-common
+    container_name: bantads-pg18-account
     environment:
-      PGPORT: 5400
-      POSTGRES_USER: bantads
-      POSTGRES_PASSWORD: "bantads2026"
+      PGPORT: 40000
+      # As senhas não estão expostas, mas agora estão claramente documentadas
+      # O Docker vai puxar os valores reais do arquivo .env
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_INITDB_ARGS: "--locale=pt_BR.UTF-8 --encoding=UTF8"
+      LANG: pt_BR.utf8
+    # Descomente o bloco 'ports' APENAS se precisar conectar do seu host local 
+    # (ex: para debugar via MongoDB Compass). 
+    # PRODUÇÃO = COMENTADO.
+    ports:
+      - "55000:40000"
+    volumes:
+      - bantads-pg18-account:/var/lib/postgresql
+    #      - ./database/scripts-backend:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # 40001 - Postgre de funcionário 
+  bantads-pg18-custumer:
+    <<: *postgres-common
+    container_name: bantads-pg18-custumer
+    environment:
+      PGPORT: 40001
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: bantads
       POSTGRES_INITDB_ARGS: "--locale=pt_BR.UTF-8 --encoding=UTF8"
       LANG: pt_BR.utf8
-    command: ["postgres", "-p", "5400"]
+    # Descomente o bloco 'ports' APENAS se precisar conectar do seu host local 
+    # (ex: para debugar via MongoDB Compass). 
+    # PRODUÇÃO = COMENTADO.
     ports:
-      # Como padrão de segurança
-      # não se usa porta padrão do postgres (5432)
-      - "55000:5400"
+      - "55001:40001"
     volumes:
-      - BANTADS-20261S:/var/lib/postgresql
+      - bantads-pg18-custumer:/var/lib/postgresql
     #      - ./database/scripts-backend:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # 40002 - Postgre de cliente 
+  bantads-pg18-employee:
+    <<: *postgres-common
+    container_name: bantads-pg18-employee
+    environment:
+      PGPORT: 40002
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: bantads
+      POSTGRES_INITDB_ARGS: "--locale=pt_BR.UTF-8 --encoding=UTF8"
+      LANG: pt_BR.utf8
+    # Descomente o bloco 'ports' APENAS se precisar conectar do seu host local 
+    # (ex: para debugar via MongoDB Compass). 
+    # PRODUÇÃO = COMENTADO.
+    ports:
+      - "55002:40002"
+    volumes:
+      - bantads-pg18-employee:/var/lib/postgresql
+    #      - ./database/scripts-backend:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # MONGO DB
+  bantads-mongodb:
+    image: mongo:8.0-jammy
+    container_name: bantads-mongodb
+    command: >
+      mongod
+      --port 40003
+      --auth
+      --bind_ip_all
+    # Descomente o bloco 'ports' APENAS se precisar conectar do seu host local 
+    # (ex: para debugar via MongoDB Compass). 
+    # PRODUÇÃO = COMENTADO.
+    ports:
+      - "55003:40003"
+    # Usuário padrão para boas práticas
+    user: "999:999"
+    read_only: true
+    tmpfs:
+      - /tmp
+      - /data/configdb # Necessário caso o Mongo precise escrever dados de configuração em tempo de execução
+    security_opt:
+      - no-new-privileges:true
+    #restart: unless-stopped
+    # Garante que o banco está vivo e pronto para conexões
+    healthcheck:
+      test: >
+        mongosh --port 40003 --quiet
+        --username $${MONGO_INITDB_ROOT_USERNAME}
+        --password $${MONGO_INITDB_ROOT_PASSWORD}
+        --authenticationDatabase admin
+        --eval "db.adminCommand('ping')"
+      interval: 15s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+    # Evita que o banco consuma todos os recursos do servidor host
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 1G
+        reservations:
+          cpus: '0.25'
+          memory: 256M
+    # Previne que o disco lote com logs do contêiner
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    # volume do banco de dados
+    volumes:
+      - bantads-mongodb:/data/db
     networks:
-      - BANTADS-20261S-network
+      - bantads-network
+    # Lê as credenciais do arquivo .env de forma segura
+    env_file:
+      - .env
+    
 
 volumes:
-  BANTADS-20261S:
-    name: BANTADS-20261S
+  bantads-pg18-account:
+    name: bantads-pg18-account
+  bantads-pg18-custumer:
+    name: bantads-pg18-custumer
+  bantads-pg18-employee:
+    name: bantads-pg18-employee
+  bantads-mongodb:
+    name: bantads-mongodb-data
 
 networks:
-  BANTADS-20261S-network:
-    name: BANTADS-20261S-network
+  bantads-network:
+    name: bantads-network
+    driver: bridge
     external: false
