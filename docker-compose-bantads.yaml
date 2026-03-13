@@ -47,7 +47,7 @@ x-postgres-common: &postgres-common
     - bantads-network
 
 
-service:
+services:
   # 40000 - Postgre de conta
   bantads-pg18-account:
     <<: *postgres-common
