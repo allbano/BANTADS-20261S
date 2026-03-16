@@ -1,0 +1,100 @@
+.card {
+  height: 250px;
+  border-radius: 30px;
+  box-shadow: 15px 15px 30px #aaa6a6,
+    -15px -15px 30px #ffffff;
+  display: flex;
+}
+.content{
+  background-image: url('../../../../assets/gradienteazul.jpg');
+  background-size: cover;
+}
+
+/*------ eye ------*/
+.container {
+  --color: #ffffff;
+  --size: 30px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  cursor: pointer;
+  font-size: var(--size);
+  user-select: none;
+  fill: var(--color);
+}
+
+.container .eye {
+  position: absolute;
+  animation: keyframes-fill .5s;
+}
+
+.container .eye-slash {
+  position: absolute;
+  animation: keyframes-fill .5s;
+  display: none;
+}
+
+/* ------ On check event ------ */
+.container input:checked ~ .eye {
+  display: none;
+}
+
+.container input:checked ~ .eye-slash {
+  display: block;
+}
+
+/* ------ Hide the default checkbox ------ */
+.container input {
+  position: absolute;
+  opacity: 0;
+  cursor: pointer;
+  height: 0;
+  width: 0;
+}
+
+/* ------ Animation ------ */
+@keyframes keyframes-fill {
+  0% {
+    transform: scale(0);
+    opacity: 0;
+  }
+
+  50% {
+    transform: scale(1.2);
+  }
+}
+button {
+  padding: 10px 16px;
+  font-weight: 500;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+/* 1 - Depositar */
+button:nth-child(1):hover {
+  background-color: #28a745; /* verde */
+  font-weight: 600;
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+
+/* 2 - Saque */
+button:nth-child(2):hover {
+  background-color: #dc3545; /* vermelho */
+  font-weight: 600;
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+
+/* 3 - Transferir */
+button:nth-child(3):hover {
+  font-weight: 600;
+  background-color: #007bff; /* azul */
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
