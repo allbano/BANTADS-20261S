@@ -10,6 +10,7 @@
 # 40006 - ms-account 
 # 40007 - ms-customer 
 # 40008 - ms-employee 
+# 40009 - ms-auth
 
 # Bloco de configuração comum para todos os Postgres
 # Isso evita repetição de código (DRY)
@@ -183,6 +184,35 @@ services:
     env_file:
       - .env
     
+
+  # ms-auth
+  bantads-ms-auth:
+    build:
+      context: ./ms-auth
+      dockerfile: Dockerfile
+    container_name: bantads-ms-auth
+    ports:
+      - "8085:8085"
+    environment:
+      SPRING_DATA_MONGODB_URI: mongodb://${MONGO_INITDB_ROOT_USERNAME}:${MONGO_INITDB_ROOT_PASSWORD}@bantads-mongodb:40003/db_auth?authSource=admin
+    depends_on:
+      bantads-mongodb:
+        condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 512M
+        reservations:
+          cpus: '0.25'
+          memory: 256M
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    networks:
+      - bantads-network
 
 volumes:
   bantads-pg18-account:
