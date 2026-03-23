@@ -1,0 +1,30 @@
+<div class="table-responsive px-3">
+  <table class="table table-fixed">
+    <thead>
+      <tr>
+        @for (coluna of colunas; track coluna.id) {
+          <th [ngClass]="coluna.headerStyle" scope="col"> {{ coluna.header }} </th>
+        }
+      </tr>
+    </thead>
+
+    <tbody>
+      @for (row of linhas; track row.id) {
+        <tr>
+          @for (coluna of colunas; track coluna.id) {
+            <td>
+              @if (coluna.render) {
+                <ng-container
+                  [ngTemplateOutlet]="coluna.render"
+                  [ngTemplateOutletContext]="{ $implicit: row, emitter: action }">
+                </ng-container>
+              } @else {
+                {{ row[coluna.id] }}
+              }
+            </td>
+          }
+        </tr>
+      }
+    </tbody>
+  </table>
+</div>
