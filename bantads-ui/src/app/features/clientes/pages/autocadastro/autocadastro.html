@@ -1,0 +1,52 @@
+<div class="min-h-screen bg-[#18181A] text-white font-sans flex flex-col">
+  <!-- Header -->
+  <header class="w-full flex items-center justify-between px-10 py-5 border-b border-[#2A2A2A]">
+    <div class="text-2xl font-semibold tracking-wider" style="font-family: 'Comic Sans MS', cursive, sans-serif;">
+      BANTADS
+    </div>
+    
+    <div>
+      <button class="px-6 py-2 border border-[#444] rounded-md text-sm hover:bg-[#2A2A2A] transition-colors">
+        Entrar
+      </button>
+    </div>
+  </header>
+
+  <!-- Main Content Layout -->
+  <main class="flex-1 w-full flex items-center justify-center p-8 lg:p-16">
+      
+      <div class="w-full max-w-lg bg-[#18181A] border border-[#333] rounded-[2rem] p-8 lg:p-12 shadow-2xl relative">
+        
+        <!-- Wizard Stepper (2 Steps) -->
+        @if (passoAtual() < 3) {
+          <div class="flex items-center justify-center gap-4 mb-10 pb-4">
+            <div [class]="{'bg-[#6dbf73] text-black': passoAtual() >= 1, 'bg-[#333] text-[#888]': passoAtual() < 1}" class="w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm transition-colors">1</div>
+            <div [class]="{'bg-[#6dbf73]': passoAtual() > 1, 'bg-[#333]': passoAtual() <= 1}" class="w-16 h-[2px] transition-colors"></div>
+            <div [class]="{'bg-[#6dbf73] text-black': passoAtual() >= 2, 'bg-[#333] text-[#888]': passoAtual() < 2}" class="w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm transition-colors">2</div>
+          </div>
+        }
+
+        <!-- Conditional form steps -->
+        @if (isFinalizando()) {
+          <div class="text-center py-12 flex flex-col justify-center items-center">
+            <div class="inline-block animate-spin w-12 h-12 border-4 border-[#6dbf73] border-t-transparent rounded-full mb-6 relative"></div>
+            <h3 class="text-xl font-medium text-[#ccc] mb-2 font-[Comic Sans MS, cursive, sans-serif]">Estamos processando sua solicitação...</h3>
+            <p class="text-[#666] text-sm">Por favor, não feche esta página.</p>
+          </div>
+        } @else if (passoAtual() === 1) {
+          <app-form-dados-pessoais (proximo)="avancarPasso($event)"></app-form-dados-pessoais>
+        } @else if (passoAtual() === 2) {
+          <app-form-endereco (proximo)="finalizarCadastro($event)"></app-form-endereco>
+        } @else if (passoAtual() === 3) {
+          <!-- Success Message Screen -->
+          <div class="text-center">
+            <h2 class="text-3xl font-light mb-4 font-[Comic Sans MS, cursive, sans-serif] text-[#6dbf73]">Sucesso!</h2>
+            <div class="bg-[#112a14] border border-[#2d6635] text-[#8ffb99] p-6 rounded-xl text-md leading-relaxed">
+              Sua solicitação foi enviada para análise e em breve você receberá um e-mail com os próximos passos.
+            </div>
+          </div>
+        }
+
+      </div>
+  </main>
+</div>

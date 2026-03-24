@@ -1,22 +1,16 @@
 import { Routes } from '@angular/router';
 
-//Publicas
-
-//Clientes
-import { Dashboard } from './features/clientes/pages/dashboard/dashboard';
-
-//Gerentes
-import { DashboardGerente } from './features/gerente/pages/dashboard-gerente/dashboard-gerente'
-
-//Admins
-
 export const routes: Routes = [
     {
         path: '',
-        component: Dashboard
+        loadComponent: () => import('./features/clientes/pages/dashboard/dashboard').then(m => m.Dashboard)
     },
     {
         path: 'dashboard-gerente',
-        component: DashboardGerente
+        loadComponent: () => import('./features/gerente/pages/dashboard-gerente/dashboard-gerente').then(m => m.DashboardGerente)
     },
+    {
+        path: 'clientes/autocadastro',
+        loadComponent: () => import('./features/clientes/pages/autocadastro/autocadastro').then(m => m.AutocadastroComponent)
+    }
 ];
