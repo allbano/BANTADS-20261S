@@ -1,1 +1,61 @@
-<p>dashbord-admin works!</p>
+<div class="min-h-screen bg-[#18181A] text-white font-sans flex flex-col">
+  <header class="w-full flex items-center justify-between px-10 py-5 border-b border-[#2A2A2A]">
+    <div class="flex items-center gap-10">
+      <div class="text-2xl font-semibold tracking-wider text-[#6dbf73]" style="font-family: 'Comic Sans MS', cursive, sans-serif;">
+        BANTADS
+      </div>
+      <nav class="hidden md:flex gap-6 text-[#ccc] text-sm">
+        <a routerLink="/admin/dashboard" class="text-white font-medium border-b-2 border-[#6dbf73] pb-1">Dashboard</a>
+        <a routerLink="/admin/gerentes" class="hover:text-white transition-colors pb-1">Gerentes</a>
+        <a routerLink="/admin/relatorios" class="hover:text-white transition-colors pb-1">Relatórios</a>
+      </nav>
+    </div>
+    
+    <div>
+      <button (click)="sair()" class="px-6 py-2 border border-[#444] rounded-md text-sm hover:bg-[#2A2A2A] transition-colors">Sair</button>
+    </div>
+  </header>
+
+  <main class="flex-1 w-full p-8 lg:p-12">
+      <div class="w-full max-w-6xl mx-auto bg-[#18181A] border border-[#333] rounded-[2rem] p-8 lg:p-12 shadow-2xl relative">
+        
+        <div class="mb-10">
+          <h2 class="text-3xl font-light mb-2 font-[Comic Sans MS, cursive, sans-serif] text-white">Resumo do Sistema</h2>
+          <p class="text-[#888] text-sm">Visão geral das estatísticas do banco BANTADS.</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div class="bg-[#222] border border-[#333] p-6 rounded-2xl flex items-center gap-6">
+            <div class="w-14 h-14 rounded-full bg-[#112a14] border border-[#2d6635] text-[#6dbf73] flex items-center justify-center text-2xl">
+              👥
+            </div>
+            <div>
+              <p class="text-[#888] text-sm mb-1 uppercase tracking-wider">Total de Clientes</p>
+              <p class="text-3xl font-bold text-white">{{ estatisticas.totalClientes }}</p>
+            </div>
+          </div>
+
+          <div class="bg-[#222] border border-[#333] p-6 rounded-2xl flex items-center gap-6">
+            <div class="w-14 h-14 rounded-full bg-[#112a14] border border-[#2d6635] text-[#6dbf73] flex items-center justify-center text-2xl">
+              💼
+            </div>
+            <div>
+              <p class="text-[#888] text-sm mb-1 uppercase tracking-wider">Gerentes Ativos</p>
+              <p class="text-3xl font-bold text-white">{{ estatisticas.totalGerentes }}</p>
+            </div>
+          </div>
+
+          <div class="bg-[#222] border border-[#333] p-6 rounded-2xl flex items-center gap-6">
+            <div class="w-14 h-14 rounded-full bg-[#112a14] border border-[#2d6635] text-[#6dbf73] flex items-center justify-center text-2xl">
+              📊
+            </div>
+            <div>
+              <p class="text-[#888] text-sm mb-1 uppercase tracking-wider">Movimentações</p>
+              <p class="text-3xl font-bold text-white">{{ estatisticas.totalMovimentacoes }}</p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+  </main>
+</div>
