@@ -1,35 +1,39 @@
-import { AfterViewInit, Component, TemplateRef, ViewChild } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { Table } from "../../../../shared/components/table/table";
+import { ClienteService } from '../../../../services/cliente.service';
+import { Cliente } from '../../../../shared/models/cliente.model';
+import { CommonModule } from '@angular/common';
+//import { ModalCliente } from '../modal-cliente/modal-cliente';
+//import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 
 
 @Component({
   selector: 'app-dashboard-gerente',
-  imports: [Table],
+  imports: [Table, CommonModule],
+  standalone: true,
   templateUrl: './dashboard-gerente.html',
   styleUrl: './dashboard-gerente.css',
 })
-export class DashboardGerente implements AfterViewInit{
+export class DashboardGerente implements OnInit {
 
-  @ViewChild('acoes', { static: true }) acoesTemplate!: TemplateRef<any>;
+  private clienteService = inject(ClienteService);
+  //private modalService = inject(NgbModal);
+  clientes: Cliente[] = [];
 
-  usuarios = [
-    { id: 1, nome: 'Matheus', idade: 20 },
-    { id: 2, nome: 'Ana', idade: 25 },
-  ];
+  ngOnInit() : void {
+    // this.clientes = this.clienteService.listarTodos();
+    this.clientes = [
+      new Cliente (1, "Catharyna", 12912861012, "cli1@bantads.com.br", "tads", 10000 ),
+      new Cliente (2, "Cleuddônio", 19506382000, "cli2@bantads.com.br", "tads", 20000 ),
+      new Cliente (3, "Catianna", 85733854057, "cli3@bantads.com.br", "tads", 3000 ),
+      new Cliente (4, "Catianna", 58872160006, "cli4@bantads.com.br", "tads", 500 ),
+      new Cliente (5, "Coândrya", 76179646090, "cli5@bantads.com.br", "tads", 1500 )
+    ]
+  } 
 
-  colunas: any[] = [];
-
-  ngAfterViewInit(): void {
-  setTimeout(() => {
-    this.colunas = [
-      { id: 'nome', header: 'Nome' },
-      { id: 'idade', header: 'Idade' },
-      { id: 'acoes', header: 'Ações', render: this.acoesTemplate }
-    ];
-  });
-  }
-
-  onAction(event: any) {
-    console.log('Evento da tabela:', event);
-  }
+  //abrirModalPessoa(cliente: Cliente) {
+  //  const modalRef = this.modalService.open(ModalCliente);
+  //  modalRef.componentInstance.cliente = cliente;
+  //}
+  
 }
