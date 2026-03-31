@@ -1,31 +1,27 @@
 <section>
     <main>
-        <div class="flex items-center">
-    
-            <div class="flex flex-col">
-                <h1 class="text-[40px] font-[200]">Dashboard</h1>
-                <p>Olá Matheus, bem vindo de volta!</p>
-            </div>
-
-            <div class="flex gap-[1rem]">
-                <p>teste </p>
-            </div>
-        </div>
-
-        <div class="flex">
-            <app-table
-                [colunas]="colunas"
-                [linhas]="usuarios"
-                (action)="onAction($event)">
-
-                <ng-template #acoes let-user let-emitter="emitter">
-                    <button (click)="emitter.emit({ tipo: 'edit', user })">
-                    Editar
-                    </button>
-                </ng-template>
-
-             </app-table>
-        </div>
+        <table class="table">
+          <tbody>
+            @for (cliente of clientes; track cliente.id) {
+            <tr>
+                <td>{{cliente.nome}}</td>
+                <td>{{cliente.cpf}}</td>
+                <td>{{cliente.salario}}</td>
+                <td>
+                    <div class="flex">
+                       <!-- <button type="button" class="btn btn-success"  (click)="abrirModalPessoa(cliente)">Aprovar</button>
+                        
+                        <button type="button" class="btn btn-danger" (click)="abrirModalPessoa(cliente)">Recusar</button>-->
+                    </div>
+                </td>
+            </tr>}
+            @empty {
+                <tr>
+                    <td colspan="5">NENHUMA PESSOA CADASTRADA.</td>
+                </tr>
+            }
+            </tbody>
+        </table>
     
     </main>
 </section>
