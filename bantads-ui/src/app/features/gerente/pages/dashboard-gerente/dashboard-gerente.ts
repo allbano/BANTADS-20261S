@@ -1,23 +1,27 @@
 import { Component, inject, OnInit } from '@angular/core';
-import { Table } from "../../../../shared/components/table/table";
 import { ClienteService } from '../../../../services/cliente.service';
 import { Cliente } from '../../../../shared/models/cliente.model';
 import { CommonModule } from '@angular/common';
-//import { ModalCliente } from '../modal-cliente/modal-cliente';
-//import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { BsModalRef, BsModalService } from 'ngx-bootstrap/modal';
+import { ModalCliente } from '../modal-cliente/modal-cliente';
 
 
 @Component({
   selector: 'app-dashboard-gerente',
-  imports: [Table, CommonModule],
+  imports: [ CommonModule],
   standalone: true,
   templateUrl: './dashboard-gerente.html',
   styleUrl: './dashboard-gerente.css',
 })
 export class DashboardGerente implements OnInit {
 
+  BsModalRef?: BsModalRef;
+
+  constructor(private modalService : BsModalService){
+
+  }
+
   private clienteService = inject(ClienteService);
-  //private modalService = inject(NgbModal);
   clientes: Cliente[] = [];
 
   ngOnInit() : void {
@@ -30,6 +34,13 @@ export class DashboardGerente implements OnInit {
       new Cliente (5, "Coândrya", 76179646090, "cli5@bantads.com.br", "tads", 1500 )
     ]
   } 
+
+  openModal(cliente: Cliente) {
+    const initialState = {
+      cliente: cliente
+    };
+    this.modalService.show(ModalCliente, { initialState });
+  }
 
   //abrirModalPessoa(cliente: Cliente) {
   //  const modalRef = this.modalService.open(ModalCliente);
