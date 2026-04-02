@@ -1,0 +1,111 @@
+    <form
+      [formGroup]="form"
+      (ngSubmit)="onSubmit()"
+      class="flex flex-col gap-5 text-[#ccc] font-sans"
+    >
+      <div class="text-center mb-6">
+        <h2
+          class="text-2xl font-medium text-white mb-2"
+          style="font-family: 'Comic Sans MS', cursive, sans-serif;"
+        >
+          Abra sua conta
+        </h2>
+        <p class="text-sm text-[#888]">Preencha seus dados pessoais</p>
+      </div>
+
+      <!-- Nome Completo -->
+      <div class="flex flex-col gap-1">
+        <label class="text-xs text-[#888] ml-1">Nome completo</label>
+        <input
+          type="text"
+          formControlName="nome"
+          class="w-full bg-[#18181A] border border-[#333] rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#6dbf73] transition-colors"
+        />
+        @if (form.get('nome')?.touched && form.get('nome')?.invalid) {
+          <span class="text-xs text-red-500 ml-1">Nome inválido</span>
+        }
+      </div>
+
+      <!-- CPF e Telefone -->
+      <div class="flex flex-col md:flex-row gap-4">
+        <div class="flex-1 flex flex-col gap-1">
+          <label class="text-xs text-[#888] ml-1">CPF</label>
+          <input
+            type="text"
+            formControlName="cpf"
+            placeholder="000.000.000-00"
+            class="w-full bg-[#18181A] border border-[#333] rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#6dbf73] transition-colors"
+          />
+        </div>
+
+        <div class="flex-1 flex flex-col gap-1">
+          <label class="text-xs text-[#888] ml-1">Telefone</label>
+          <input
+            type="text"
+            formControlName="telefone"
+            placeholder="(00) 0 0000-0000"
+            class="w-full bg-[#18181A] border border-[#333] rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#6dbf73] transition-colors"
+          />
+        </div>
+      </div>
+
+      <!-- Erro de CPF -->
+      @if (form.get('cpf')?.hasError('cpfDuplicado')) {
+        <div
+          class="bg-[#2A1818] border border-[#522929] text-[#e57373] text-sm px-4 py-3 rounded-xl mt-[-10px]"
+        >
+          CPF já cadastrado ou aguardando aprovação.
+        </div>
+      }
+      @if (
+        form.get('cpf')?.hasError('cpfInvalido') ||
+        (form.get('cpf')?.touched && form.get('cpf')?.hasError('pattern'))
+      ) {
+        <div class="text-xs text-red-500 ml-1 mt-[-10px]">CPF inválido na Receita Federal.</div>
+      }
+
+      <!-- Email -->
+      <div class="flex flex-col gap-1">
+        <label class="text-xs text-[#888] ml-1">Email</label>
+        <input
+          type="email"
+          formControlName="email"
+          placeholder="seu@email.com"
+          class="w-full bg-[#18181A] border border-[#333] rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#6dbf73] transition-colors"
+        />
+        @if (form.get('email')?.touched && form.get('email')?.invalid) {
+          <span class="text-xs text-red-500 ml-1">Email inválido</span>
+        }
+      </div>
+
+      <!-- Salário -->
+      <div class="flex items-end gap-4 mt-2">
+        <div class="flex-1 flex flex-col gap-1">
+          <label class="text-xs text-[#888] ml-1">Salário mensal (R$)</label>
+          <input
+            type="number"
+            formControlName="salario"
+            placeholder="0,00"
+            class="w-full bg-[#18181A] border border-[#333] rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#6dbf73] transition-colors"
+          />
+        </div>
+        <div
+          class="flex-1 bg-[#1A261C] border border-[#233525] rounded-xl px-4 py-3 text-xs text-[#6dbf73] flex items-center h-[46px]"
+        >
+          Seu salário define seu limite de conta.
+        </div>
+      </div>
+
+      <!-- Botão Continuar -->
+      <button
+        type="submit"
+        [disabled]="form.invalid || form.pending"
+        class="w-full bg-[#6dbf73] hover:bg-[#5da262] text-black font-medium py-3 rounded-xl mt-6 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+      >
+        Continuar
+      </button>
+
+      <div class="text-center mt-4">
+        <a href="#" class="text-sm text-[#3b82f6] hover:underline">Já tem conta? Faça login</a>
+      </div>
+    </form>
