@@ -1,0 +1,43 @@
+<section class="min-h-screen bg-[#18181A] text-white p-8 font-sans">
+    <main class="max-w-6xl mx-auto">
+        <h2 class="text-3xl font-light mb-8 text-white font-[Comic_Sans_MS,cursive,sans-serif]">Dashboard do Gerente</h2>
+        
+        <div class="bg-[#1F1F22] border border-[#333] rounded-2xl overflow-hidden shadow-2xl">
+            <table class="w-full text-left border-collapse">
+                <thead class="bg-[#2A2A2A] text-[#888] text-sm uppercase tracking-wider">
+                    <tr>
+                        <th class="px-6 py-4 font-medium">Nome</th>
+                        <th class="px-6 py-4 font-medium">CPF</th>
+                        <th class="px-6 py-4 font-medium">Salário</th>
+                        <th class="px-6 py-4 font-medium text-right">Ações</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-[#333]">
+                    @for (cliente of clientes; track cliente.id) {
+                    <tr class="hover:bg-[#252528] transition-colors group">
+                        <td class="px-6 py-4">{{cliente.nome}}</td>
+                        <td class="px-6 py-4 text-[#888]">{{cliente.cpf}}</td>
+                        <td class="px-6 py-4 text-[#6dbf73]">{{cliente.salario | currency:'BRL':'symbol'}}</td>
+                        <td class="px-6 py-4 text-right">
+                            <button type="button" class="bg-transparent border border-[#6dbf73] text-[#6dbf73] group-hover:bg-[#6dbf73] group-hover:text-black px-4 py-1.5 rounded-lg text-sm font-medium transition-colors" (click)="openModal(cliente)">
+                                Visualizar
+                            </button>
+                        </td>
+                    </tr>
+                    } @empty {
+                        <tr>
+                            <td colspan="4" class="px-6 py-8 text-center text-[#888] italic">NENHUMA PESSOA CADASTRADA.</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </main>
+
+    @if (isModalOpen) {
+        <app-modal-cliente 
+            [cliente]="selectedCliente" 
+            (close)="closeModal()">
+        </app-modal-cliente>
+    }
+</section>

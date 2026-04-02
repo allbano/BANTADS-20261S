@@ -1,0 +1,97 @@
+    <div class="flex flex-col gap-6 text-[#ccc] font-sans">
+      <div class="text-center mb-2">
+        <h2
+          class="text-2xl font-medium text-white mb-2"
+          style="font-family: 'Comic Sans MS', cursive, sans-serif;"
+        >
+          Confirme seus dados
+        </h2>
+        <p class="text-sm text-[#888]">Revise antes de solicitar</p>
+      </div>
+
+      <!-- Sessão Dados Pessoais -->
+      <div>
+        <div class="flex justify-between items-center border-b border-[#333] pb-2 mb-3">
+          <h3 class="text-white font-medium">Dados Pessoais</h3>
+          <button (click)="onEditarDadosPessoais()" class="text-[#3b82f6] text-sm hover:underline">
+            Editar
+          </button>
+        </div>
+
+        <div class="grid grid-cols-[100px_1fr] gap-x-4 gap-y-2 text-sm">
+          <div class="text-[#888]">Nome</div>
+          <div class="text-white">{{ dadosPessoais?.nome }}</div>
+
+          <div class="text-[#888]">CPF</div>
+          <div class="text-white">{{ dadosPessoais?.cpf }}</div>
+
+          <div class="text-[#888]">Telefone</div>
+          <div class="text-white">{{ dadosPessoais?.telefone }}</div>
+
+          <div class="text-[#888]">Email</div>
+          <div class="text-white">{{ dadosPessoais?.email }}</div>
+
+          <div class="text-[#888]">Salário</div>
+          <div class="text-white">{{ dadosPessoais?.salario | currency: 'BRL' : 'symbol' }}</div>
+        </div>
+      </div>
+
+      <!-- Sessão Endereço -->
+      <div class="pr-2">
+        <div class="flex justify-between items-center border-b border-[#333] pb-2 mb-3 mt-2 pr-2">
+          <h3 class="text-white font-medium">Endereço</h3>
+          <button (click)="onEditarEndereco()" class="text-[#3b82f6] text-sm hover:underline">
+            Editar
+          </button>
+        </div>
+
+        <div class="grid grid-cols-[100px_1fr] gap-x-4 gap-y-2 text-sm">
+          <div class="text-[#888]">Logradouro</div>
+          <div class="text-white">{{ endereco?.logradouro }}, {{ endereco?.numero }}</div>
+
+          <div class="text-[#888]">Complemento</div>
+          <div class="text-white">{{ endereco?.complemento || '-' }}</div>
+
+          <div class="text-[#888]">CEP</div>
+          <div class="text-white">{{ endereco?.cep }}</div>
+
+          <div class="text-[#888]">Cidade/UF</div>
+          <div class="text-white">{{ endereco?.cidade }} / {{ endereco?.uf }}</div>
+        </div>
+      </div>
+
+      <!-- Cálculo Limite -->
+      <div
+        class="bg-[#1A261C] border border-[#233525] rounded-xl px-4 py-4 text-sm text-[#6dbf73] mt-2 text-center"
+      >
+        Limite estimado: {{ limiteEstimado | currency: 'BRL' : 'symbol' }} (50% do salário)
+      </div>
+
+      <!-- Botões -->
+      <div class="flex gap-4 mt-2">
+        <button
+          type="button"
+          (click)="onVoltar()"
+          [disabled]="isCarregando"
+          class="flex-1 bg-transparent border border-[#666] hover:bg-[#222] text-white font-medium py-3 rounded-xl transition-colors disabled:opacity-50"
+        >
+          Voltar
+        </button>
+        <button
+          type="button"
+          (click)="onConfirmar()"
+          [disabled]="isCarregando"
+          class="flex-[1.5] bg-[#6dbf73] hover:bg-[#5da262] text-black font-medium py-3 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+        >
+          @if (isCarregando) {
+            <span
+              class="animate-spin inline-block w-4 h-4 border-2 border-current border-t-transparent rounded-full"
+            ></span>
+          }
+          Solicitar Conta
+        </button>
+      </div>
+      <div class="text-center text-xs text-[#666] -mt-2">
+        Ao solicitar, você concorda com os Termos de Uso.
+      </div>
+    </div>

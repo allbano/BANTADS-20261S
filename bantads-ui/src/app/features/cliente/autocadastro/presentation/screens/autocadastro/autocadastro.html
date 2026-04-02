@@ -1,0 +1,91 @@
+<div class="min-h-screen bg-[#18181A] text-white font-sans flex flex-col">
+  <!-- Header -->
+  <header class="w-full flex items-center justify-between px-10 py-5 border-b border-[#2A2A2A]">
+    <div class="text-2xl font-semibold tracking-wider font-[Comic_Sans_MS,cursive,sans-serif]">
+      BANTADS
+    </div>
+    <div>
+      <button routerLink="auth/login" class="px-6 py-2 border border-[#444] rounded-md text-sm hover:bg-[#2A2A2A] transition-colors">
+        Entrar
+      </button>
+    </div>
+  </header>
+
+  <!-- Main Content Layout -->
+  <main class="flex-1 w-full grid grid-cols-1 lg:grid-cols-2">
+
+      <!-- Lado Esquerdo: Ilusração e Texto -->
+      <div class="hidden lg:flex flex-col items-center justify-center p-12 border-r border-[#2A2A2A]">
+        <div class="w-3/4 aspect-[4/3] bg-[#1F1F22] border border-[#333] rounded-[2rem] flex items-center justify-center text-[#666] italic mb-8 shadow-inner">
+          Ilustracao / Imagem
+        </div>
+        <div class="w-3/4">
+          <p class="text-xl font-light text-[#ccc] leading-relaxed font-[Comic_Sans_MS,cursive,sans-serif]">
+            Abra sua conta em poucos minutos.<br>
+            Sem burocracia, sem taxas escondidas.
+          </p>
+        </div>
+      </div>
+
+      <!-- Lado Direito: Formulário Stepper -->
+      <div class="flex items-center justify-center p-8 lg:p-16 relative">
+        <div class="w-full max-w-lg bg-[#18181A] border border-[#333] rounded-[2rem] p-8 lg:p-12 shadow-2xl relative">
+
+          <!-- Wizard Stepper (3 Steps) -->
+          @if (facade.passoAtual() < 4) {
+            <div class="flex items-center justify-center gap-2 mb-8 pb-4">
+              <!-- Passo 1 -->
+              <div [class]="{'bg-[#6dbf73] text-[#18181A]': facade.passoAtual() >= 1, 'bg-[#333] text-[#888]': facade.passoAtual() < 1}" class="w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm transition-colors cursor-pointer" (click)="facade.setPassoAtual(1)">1</div>
+              <div [class]="{'bg-[#6dbf73]': facade.passoAtual() > 1, 'bg-[#333]': facade.passoAtual() <= 1}" class="w-10 h-[2px] transition-colors"></div>
+
+              <!-- Passo 2 -->
+              <div [class]="{'bg-[#6dbf73] text-[#18181A]': facade.passoAtual() >= 2, 'bg-[#333] text-[#888]': facade.passoAtual() < 2}" class="w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm transition-colors cursor-pointer" (click)="facade.passoAtual() >= 2 && facade.setPassoAtual(2)">2</div>
+              <div [class]="{'bg-[#6dbf73]': facade.passoAtual() > 2, 'bg-[#333]': facade.passoAtual() <= 2}" class="w-10 h-[2px] transition-colors"></div>
+
+              <!-- Passo 3 -->
+              <div [class]="{'bg-[#333] border border-[#444] text-[#888]': facade.passoAtual() < 3, 'bg-[#6dbf73] text-[#18181A] border-none': facade.passoAtual() === 3}" class="w-8 h-8 rounded-[8px] flex items-center justify-center font-bold text-sm transition-colors">3</div>
+            </div>
+          }
+
+          <!-- Formulários Condicionais -->
+          @if (facade.passoAtual() === 1) {
+            <app-form-dados-pessoais-ddd
+              [initialData]="facade.dadosPessoais()"
+              (proximo)="facade.avancarDadosPessoais($event)">
+            </app-form-dados-pessoais-ddd>
+          }
+          @else if (facade.passoAtual() === 2) {
+            <app-form-endereco-ddd
+              [initialData]="facade.endereco()"
+              (voltar)="facade.voltarStep()"
+              (proximo)="facade.avancarEndereco($event)">
+            </app-form-endereco-ddd>
+          }
+          @else if (facade.passoAtual() === 3) {
+            <app-resumo-confirmacao-ddd
+               [dadosPessoais]="facade.dadosPessoais()"
+               [endereco]="facade.endereco()"
+               [limiteEstimado]="facade.limiteEstimado()"
+               [isCarregando]="facade.isCarregando()"
+               (editarDadosPessoais)="facade.voltarEditarDadosPessoais()"
+               (editarEndereco)="facade.voltarEditarEndereco()"
+               (voltar)="facade.voltarStep()"
+               (confirmar)="facade.confirmarESolicitarCadastro()">
+            </app-resumo-confirmacao-ddd>
+          }
+          @else if (facade.passoAtual() === 4) {
+             <!-- Tela de Sucesso -->
+             <div class="text-center py-8">
+               <h2 class="text-3xl font-light mb-4 font-[Comic_Sans_MS,cursive,sans-serif] text-[#6dbf73]">Sucesso!</h2>
+               <div class="bg-[#112a14] border border-[#2d6635] text-[#8ffb99] p-6 rounded-xl text-md leading-relaxed mb-6">
+                 Sua solicitação foi enviada para análise e em breve você receberá um e-mail com os próximos passos.
+               </div>
+               <button routerLink="/" (click)="facade.reset()" class="bg-transparent border border-[#6dbf73] text-[#6dbf73] hover:bg-[#1a2e1d] font-medium py-3 px-8 rounded-xl transition-colors">
+                 Tela Inicial
+               </button>
+             </div>
+          }
+        </div>
+      </div>
+  </main>
+</div>
