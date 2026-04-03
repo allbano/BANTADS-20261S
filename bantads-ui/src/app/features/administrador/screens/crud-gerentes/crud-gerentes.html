@@ -1,4 +1,4 @@
-<div class="min-h-screen bg-[#18181A] text-white font-sans flex flex-col">
+<div class="min-h-screen bg-[#18181A] text-white font-sans flex flex-col relative">
   <header class="w-full flex items-center justify-between px-10 py-5 border-b border-[#2A2A2A]">
     <div class="flex items-center gap-10">
       <div class="text-2xl font-semibold tracking-wider text-[#6dbf73]" style="font-family: 'Comic Sans MS', cursive, sans-serif;">
@@ -10,60 +10,114 @@
         <a routerLink="/admin/relatorios" class="hover:text-white transition-colors pb-1">Relatórios</a>
       </nav>
     </div>
-    <div>
-      <button (click)="sair()" class="px-6 py-2 border border-[#444] rounded-md text-sm hover:bg-[#2A2A2A] transition-colors">Sair</button>
-    </div>
+    <button (click)="sair()" class="px-6 py-2 border border-[#444] rounded-md text-sm hover:bg-[#2A2A2A] transition-colors">Sair</button>
   </header>
 
   <main class="flex-1 w-full p-8 lg:p-12">
-      <div class="w-full max-w-6xl mx-auto bg-[#18181A] border border-[#333] rounded-[2rem] p-8 lg:p-12 shadow-2xl relative">
+    <div class="w-full max-w-6xl mx-auto bg-[#18181A] border border-[#333] rounded-[2rem] p-8 lg:p-12 shadow-2xl">
+      
+      <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-10 gap-4">
+        <div>
+          <h2 class="text-3xl font-light mb-2 font-[Comic Sans MS, cursive, sans-serif] text-white">Gerenciar Gerentes</h2>
+          <p class="text-[#888] text-sm">Cadastre, edite ou remova gerentes.</p>
+        </div>
+        <button (click)="abrirModalNovo()" class="bg-[#6dbf73] text-black font-semibold px-6 py-2 rounded-md hover:bg-[#5aa860] transition-colors shadow-[0_0_15px_rgba(109,191,115,0.3)]">
+          + Novo Gerente
+        </button>
+      </div>
+
+      <div class="overflow-x-auto rounded-xl border border-[#333]">
+        <table class="w-full text-left border-collapse">
+          <thead>
+            <tr class="text-[#888] bg-[#1f1f22] text-xs uppercase tracking-wider">
+              <th class="py-4 px-6 font-medium border-b border-[#333]">Nome</th>
+              <th class="py-4 px-6 font-medium border-b border-[#333]">CPF</th>
+              <th class="py-4 px-6 font-medium border-b border-[#333]">E-mail</th>
+              <th class="py-4 px-6 font-medium border-b border-[#333]">Telefone</th>
+              <th class="py-4 px-6 font-medium border-b border-[#333] text-right">Ações</th>
+            </tr>
+          </thead>
+          <tbody class="text-sm">
+            @for (gerente of gerentes; track gerente.id) {
+              <tr class="border-b border-[#333] hover:bg-[#222] transition-colors">
+                <td class="py-4 px-6 text-white font-medium">
+                  {{ gerente.nome }}
+                  <span class="ml-2 text-[10px] bg-[#112a14] text-[#6dbf73] border border-[#2d6635] px-2 py-0.5 rounded-full">
+                    {{ gerente.clientes }} contas
+                  </span>
+                </td>
+                <td class="py-4 px-6 text-[#aaa]">{{ gerente.cpf }}</td>
+                <td class="py-4 px-6 text-[#aaa]">{{ gerente.email }}</td>
+                <td class="py-4 px-6 text-[#aaa]">{{ gerente.telefone }}</td>
+                <td class="py-4 px-6 text-right space-x-4">
+                  <button (click)="abrirModalEdicao(gerente)" class="text-[#6dbf73] hover:text-white transition-colors">Editar</button>
+                  <button (click)="excluirGerente(gerente.id)" class="text-red-400 hover:text-red-300 transition-colors">Excluir</button>
+                </td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="5" class="py-12 text-center text-[#666] italic">Nenhum gerente cadastrado.</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+
+  @if (exibirModal) {
+    <div class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 p-4">
+      <div class="bg-[#18181A] border border-[#444] rounded-2xl w-full max-w-md shadow-2xl overflow-hidden">
         
-        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-10 gap-4">
+        <div class="px-6 py-4 border-b border-[#333] flex justify-between items-center bg-[#1f1f22]">
+          <h3 class="text-lg font-medium text-white">
+            {{ modoModal === 'inserir' ? 'Novo Gerente (R17)' : 'Editar Gerente (R20)' }}
+          </h3>
+          <button (click)="fecharModal()" class="text-[#888] hover:text-white text-xl">&times;</button>
+        </div>
+
+        <div class="p-6 space-y-4">
           <div>
-            <h2 class="text-3xl font-light mb-2 font-[Comic Sans MS, cursive, sans-serif] text-white">Gerenciar Gerentes</h2>
-            <p class="text-[#888] text-sm">Cadastre, edite ou remova gerentes da plataforma.</p>
+            <label class="block text-xs text-[#888] uppercase tracking-wider mb-1">Nome Completo</label>
+            <input type="text" [(ngModel)]="gerenteForm.nome" class="w-full bg-[#222] border border-[#444] rounded-md px-4 py-2 text-white focus:outline-none focus:border-[#6dbf73]">
           </div>
-          <button (click)="novoGerente()" class="bg-[#6dbf73] text-black font-semibold px-6 py-2 rounded-md hover:bg-[#5aa860] transition-colors">
-            + Novo Gerente
+
+          <div>
+            <label class="block text-xs text-[#888] uppercase tracking-wider mb-1">CPF</label>
+            <input type="text" [(ngModel)]="gerenteForm.cpf" [disabled]="modoModal === 'editar'" 
+                   [class.opacity-50]="modoModal === 'editar'"
+                   class="w-full bg-[#222] border border-[#444] rounded-md px-4 py-2 text-white focus:outline-none focus:border-[#6dbf73] disabled:cursor-not-allowed">
+            @if (modoModal === 'editar') { <span class="text-[10px] text-red-400 mt-1">Impossível alterar CPF.</span> }
+          </div>
+
+          <div>
+            <label class="block text-xs text-[#888] uppercase tracking-wider mb-1">Telefone</label>
+            <input type="text" [(ngModel)]="gerenteForm.telefone" [disabled]="modoModal === 'editar'" 
+                   [class.opacity-50]="modoModal === 'editar'"
+                   class="w-full bg-[#222] border border-[#444] rounded-md px-4 py-2 text-white focus:outline-none focus:border-[#6dbf73] disabled:cursor-not-allowed">
+            @if (modoModal === 'editar') { <span class="text-[10px] text-red-400 mt-1">Impossível alterar Telefone.</span> }
+          </div>
+
+          <div>
+            <label class="block text-xs text-[#888] uppercase tracking-wider mb-1">E-mail</label>
+            <input type="email" [(ngModel)]="gerenteForm.email" class="w-full bg-[#222] border border-[#444] rounded-md px-4 py-2 text-white focus:outline-none focus:border-[#6dbf73]">
+          </div>
+
+          <div>
+            <label class="block text-xs text-[#888] uppercase tracking-wider mb-1">
+              {{ modoModal === 'inserir' ? 'Senha' : 'Nova Senha (opcional)' }}
+            </label>
+            <input type="password" [(ngModel)]="gerenteForm.senha" placeholder="••••••••" class="w-full bg-[#222] border border-[#444] rounded-md px-4 py-2 text-white focus:outline-none focus:border-[#6dbf73]">
+          </div>
+        </div>
+
+        <div class="px-6 py-4 border-t border-[#333] flex justify-end gap-3 bg-[#1f1f22]">
+          <button (click)="fecharModal()" class="px-4 py-2 rounded-md text-sm text-[#ccc] hover:text-white transition-colors">Cancelar</button>
+          <button (click)="salvarGerente()" class="bg-[#6dbf73] text-black font-semibold px-6 py-2 rounded-md hover:bg-[#5aa860] transition-colors text-sm">
+            Salvar Dados
           </button>
         </div>
-
-        <div class="overflow-x-auto">
-          <table class="w-full text-left border-collapse">
-            <thead>
-              <tr class="text-[#888] border-b border-[#444] text-sm uppercase tracking-wider">
-                <th class="py-4 px-4 font-medium">Nome</th>
-                <th class="py-4 px-4 font-medium">E-mail</th>
-                <th class="py-4 px-4 font-medium">CPF</th>
-                <th class="py-4 px-4 font-medium">Clientes</th>
-                <th class="py-4 px-4 font-medium text-right">Ações</th>
-              </tr>
-            </thead>
-            <tbody class="text-sm">
-              @for (gerente of gerentes; track gerente.id) {
-                <tr class="border-b border-[#333] hover:bg-[#222] transition-colors">
-                  <td class="py-4 px-4 text-white">{{ gerente.nome }}</td>
-                  <td class="py-4 px-4 text-[#aaa]">{{ gerente.email }}</td>
-                  <td class="py-4 px-4 text-[#aaa]">{{ gerente.cpf }}</td>
-                  <td class="py-4 px-4">
-                    <span class="bg-[#112a14] border border-[#2d6635] text-[#8ffb99] px-3 py-1 rounded-full text-xs">
-                      {{ gerente.clientes }} contas
-                    </span>
-                  </td>
-                  <td class="py-4 px-4 text-right space-x-4">
-                        <button (click)="editarGerente(gerente)" class="text-[#6dbf73] hover:text-white transition-colors">Editar</button>
-                        <button (click)="excluirGerente(gerente.id)" class="text-red-400 hover:text-red-300 transition-colors">Excluir</button>
-                  </td>
-                </tr>
-              } @empty {
-                <tr>
-                  <td colspan="5" class="py-12 text-center text-[#666] italic">Nenhum gerente cadastrado.</td>
-                </tr>
-              }
-            </tbody>
-          </table>
-        </div>
-
       </div>
-  </main>
+    </div>
+  }
 </div>
