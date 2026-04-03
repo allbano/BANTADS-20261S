@@ -19,7 +19,6 @@ export const routes: Routes = [
     },
     {
         path: 'admin/dashboard',
-        // Atenção ao nome da pasta "dashbord-admin" (sem o 'a') que está nos seus ficheiros
         loadComponent: () => import('./features/administrador/screens/dashbord-admin/dashbord-admin').then(m => m.DashboardAdminComponent)
     },
     {
@@ -29,7 +28,12 @@ export const routes: Routes = [
     {
         path: 'admin/relatorios',
         loadComponent: () => import('./features/administrador/screens/relatorio/relatorio').then(m => m.RelatorioComponent)
+    },
+    {
+      path: 'auth/login',
+      loadComponent: () => import('./features/auth/presentation/screens/login/login').then(m => m.Login)
     }
-    
-    
+
+
+
 ];

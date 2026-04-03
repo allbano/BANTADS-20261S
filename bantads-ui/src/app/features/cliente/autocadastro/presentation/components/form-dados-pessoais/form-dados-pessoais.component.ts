@@ -1,5 +1,6 @@
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 
+import { RouterLink } from '@angular/router';
 import {
   ReactiveFormsModule,
   FormBuilder,
@@ -50,7 +51,7 @@ export function cpfValidator(): AsyncValidatorFn {
 @Component({
   selector: 'app-form-dados-pessoais-ddd',
   standalone: true,
-  imports: [ReactiveFormsModule],
+  imports: [ReactiveFormsModule, RouterLink],
   templateUrl: './form-dados-pessoais.component.html',
   styleUrl: './form-dados-pessoais.component.css'
 })
