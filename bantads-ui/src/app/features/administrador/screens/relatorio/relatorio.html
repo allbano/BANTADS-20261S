@@ -10,71 +10,63 @@
         <a routerLink="/admin/relatorios" class="text-white font-medium border-b-2 border-[#6dbf73] pb-1">Relatórios</a>
       </nav>
     </div>
-    <div>
-      <button class="px-6 py-2 border border-[#444] rounded-md text-sm hover:bg-[#2A2A2A] transition-colors">Sair</button>
-    </div>
+    <button (click)="sair()" class="px-6 py-2 border border-[#444] rounded-md text-sm hover:bg-[#2A2A2A] transition-colors">Sair</button>
   </header>
 
   <main class="flex-1 w-full p-8 lg:p-12">
-      <div class="w-full max-w-6xl mx-auto bg-[#18181A] border border-[#333] rounded-[2rem] p-8 lg:p-12 shadow-2xl relative">
-        
-        <div class="mb-8">
-          <h2 class="text-3xl font-light mb-2 font-[Comic Sans MS, cursive, sans-serif] text-white">Relatório de Clientes</h2>
-          <p class="text-[#888] text-sm">Consulte o relatório de todos os clientes do banco.</p>
-        </div>
-
-        <div class="bg-[#222] border border-[#333] rounded-xl p-6 mb-8 flex flex-col sm:flex-row gap-4">
-        <div class="flex-1">
-          <label class="block text-xs text-[#888] uppercase tracking-wider mb-2">Buscar Cliente</label>
-          <input type="text" [(ngModel)]="termoBusca" placeholder="Nome, CPF ou E-mail..." class="w-full bg-[#18181A] border border-[#444] rounded-md px-4 py-2 text-white placeholder-[#555] focus:outline-none focus:border-[#6dbf73] transition-colors">
-        </div>
-        <div class="w-full sm:w-48">
-          <label class="block text-xs text-[#888] uppercase tracking-wider mb-2">Status</label>
-          <select [(ngModel)]="statusFiltro" class="w-full bg-[#18181A] border border-[#444] rounded-md px-4 py-2 text-white focus:outline-none focus:border-[#6dbf73] transition-colors">
-            <option value="">Todos</option>
-            <option value="ativos">Ativos</option>
-            <option value="inativos">Inativos</option>
-          </select>
-        </div>
-        <div class="flex items-end">
-          <button (click)="filtrar()" class="w-full sm:w-auto bg-[#444] hover:bg-[#555] text-white px-6 py-2 rounded-md transition-colors">
-            Filtrar
-          </button>
-        </div>
+    <div class="w-full max-w-[95%] mx-auto bg-[#18181A] border border-[#333] rounded-[2rem] p-8 shadow-2xl">
+      
+      <div class="mb-8">
+        <h2 class="text-3xl font-light mb-2 font-[Comic Sans MS, cursive, sans-serif] text-white">Relatório de Clientes</h2>
+        <p class="text-[#888] text-sm">Listagem completa e detalhada de todos os clientes do banco.</p>
       </div>
 
-        <div class="overflow-x-auto">
-          <table class="w-full text-left border-collapse">
-            <thead>
-              <tr class="text-[#888] border-b border-[#444] text-sm uppercase tracking-wider">
-                <th class="py-4 px-4 font-medium">Cliente</th>
-                <th class="py-4 px-4 font-medium">CPF</th>
-                <th class="py-4 px-4 font-medium">Gerente Responsável</th>
-                <th class="py-4 px-4 font-medium">Saldo</th>
+      <div class="bg-[#222] border border-[#333] rounded-xl p-4 mb-8 flex gap-4">
+        <input type="text" [(ngModel)]="termoBusca" (input)="filtrar()" placeholder="Filtrar por nome, CPF ou e-mail..." 
+               class="flex-1 bg-[#18181A] border border-[#444] rounded-md px-4 py-2 text-white focus:outline-none focus:border-[#6dbf73]">
+      </div>
+
+      <div class="overflow-x-auto rounded-xl border border-[#333]">
+        <table class="w-full text-left border-collapse min-w-[1200px]">
+          <thead>
+            <tr class="text-[#888] bg-[#1f1f22] text-xs uppercase tracking-wider">
+              <th class="py-4 px-4 font-medium border-b border-[#333]">Cliente (Nome/CPF)</th>
+              <th class="py-4 px-4 font-medium border-b border-[#333]">E-mail</th>
+              <th class="py-4 px-4 font-medium border-b border-[#333]">Salário</th>
+              <th class="py-4 px-4 font-medium border-b border-[#333]">Conta</th>
+              <th class="py-4 px-4 font-medium border-b border-[#333]">Saldo</th>
+              <th class="py-4 px-4 font-medium border-b border-[#333]">Limite</th>
+              <th class="py-4 px-4 font-medium border-b border-[#333]">Gerente (Nome/CPF)</th>
+            </tr>
+          </thead>
+          <tbody class="text-sm">
+            @for (cliente of clientesFiltrados; track cliente.cpf) {
+              <tr class="border-b border-[#333] hover:bg-[#222] transition-colors">
+                <td class="py-4 px-4">
+                  <div class="text-white font-medium">{{ cliente.nome }}</div>
+                  <div class="text-[10px] text-[#666]">{{ cliente.cpf }}</div>
+                </td>
+                <td class="py-4 px-4 text-[#aaa]">{{ cliente.email }}</td>
+                <td class="py-4 px-4 text-[#aaa]">R$ {{ cliente.salario | number:'1.2-2' }}</td>
+                <td class="py-4 px-4 text-[#aaa]">{{ cliente.numeroConta }}</td>
+                <td class="py-4 px-4 font-medium" [ngClass]="{'text-[#6dbf73]': cliente.saldo >= 0, 'text-red-400': cliente.saldo < 0}">
+                  R$ {{ cliente.saldo | number:'1.2-2' }}
+                </td>
+                <td class="py-4 px-4 text-[#aaa]">R$ {{ cliente.limite | number:'1.2-2' }}</td>
+                <td class="py-4 px-4">
+                  <div class="text-[#ccc]">{{ cliente.nomeGerente }}</div>
+                  <div class="text-[10px] text-[#666]">{{ cliente.cpfGerente }}</div>
+                </td>
               </tr>
-            </thead>
-            <tbody class="text-sm">
-              @for (cliente of clientesFiltrados; track cliente.id) {
-                <tr class="border-b border-[#333] hover:bg-[#222] transition-colors" [class.opacity-50]="cliente.status === 'inativos'">
-                  <td class="py-4 px-4 text-white">
-                    {{ cliente.nome }} <br>
-                    <span class="text-[10px] text-[#6dbf73] uppercase">{{ cliente.status }}</span>
-                  </td>
-                  <td class="py-4 px-4 text-[#aaa]">{{ cliente.cpf }}</td>
-                  <td class="py-4 px-4 text-[#aaa]">{{ cliente.gerente }}</td>
-                  <td class="py-4 px-4 font-medium" [ngClass]="{'text-[#6dbf73]': cliente.saldo >= 0, 'text-red-400': cliente.saldo < 0}">
-                    R$ {{ cliente.saldo | number:'1.2-2' }}
-                  </td>
-                </tr>
-              } @empty {
-                <tr>
-                  <td colspan="4" class="py-12 text-center text-[#666] italic">Nenhum cliente encontrado na busca.</td>
-                </tr>
-              }
-            </tbody>
-          </table>
-        </div>
-
+            } @empty {
+              <tr>
+                <td colspan="7" class="py-12 text-center text-[#666] italic">Nenhum cliente encontrado.</td>
+              </tr>
+            }
+          </tbody>
+        </table>
       </div>
+
+    </div>
   </main>
 </div>

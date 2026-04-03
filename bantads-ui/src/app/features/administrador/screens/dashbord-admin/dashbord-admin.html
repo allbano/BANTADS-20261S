@@ -12,7 +12,9 @@
     </div>
     
     <div>
-      <button (click)="sair()" class="px-6 py-2 border border-[#444] rounded-md text-sm hover:bg-[#2A2A2A] transition-colors">Sair</button>
+      <button (click)="sair()" class="px-6 py-2 border border-[#444] rounded-md text-sm hover:bg-[#2A2A2A] transition-colors">
+        Sair
+      </button>
     </div>
   </header>
 
@@ -20,40 +22,50 @@
       <div class="w-full max-w-6xl mx-auto bg-[#18181A] border border-[#333] rounded-[2rem] p-8 lg:p-12 shadow-2xl relative">
         
         <div class="mb-10">
-          <h2 class="text-3xl font-light mb-2 font-[Comic Sans MS, cursive, sans-serif] text-white">Resumo do Sistema</h2>
-          <p class="text-[#888] text-sm">Visão geral das estatísticas do banco BANTADS.</p>
+          <h2 class="text-3xl font-light mb-2 font-[Comic Sans MS, cursive, sans-serif] text-white">Dashboard de Desempenho</h2>
+          <p class="text-[#888] text-sm">Resumo da carteira de clientes de cada gerente (Ordenado por maior saldo positivo).</p>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div class="bg-[#222] border border-[#333] p-6 rounded-2xl flex items-center gap-6">
-            <div class="w-14 h-14 rounded-full bg-[#112a14] border border-[#2d6635] text-[#6dbf73] flex items-center justify-center text-2xl">
-              👥
-            </div>
-            <div>
-              <p class="text-[#888] text-sm mb-1 uppercase tracking-wider">Total de Clientes</p>
-              <p class="text-3xl font-bold text-white">{{ estatisticas.totalClientes }}</p>
-            </div>
-          </div>
-
-          <div class="bg-[#222] border border-[#333] p-6 rounded-2xl flex items-center gap-6">
-            <div class="w-14 h-14 rounded-full bg-[#112a14] border border-[#2d6635] text-[#6dbf73] flex items-center justify-center text-2xl">
-              💼
-            </div>
-            <div>
-              <p class="text-[#888] text-sm mb-1 uppercase tracking-wider">Gerentes Ativos</p>
-              <p class="text-3xl font-bold text-white">{{ estatisticas.totalGerentes }}</p>
-            </div>
-          </div>
-
-          <div class="bg-[#222] border border-[#333] p-6 rounded-2xl flex items-center gap-6">
-            <div class="w-14 h-14 rounded-full bg-[#112a14] border border-[#2d6635] text-[#6dbf73] flex items-center justify-center text-2xl">
-              📊
-            </div>
-            <div>
-              <p class="text-[#888] text-sm mb-1 uppercase tracking-wider">Movimentações</p>
-              <p class="text-3xl font-bold text-white">{{ estatisticas.totalMovimentacoes }}</p>
-            </div>
-          </div>
+        <div class="bg-[#222] border border-[#333] rounded-xl overflow-x-auto">
+          <table class="w-full text-left border-collapse">
+            <thead>
+              <tr class="text-[#888] border-b border-[#444] text-xs uppercase tracking-wider bg-[#1f1f22]">
+                <th class="py-4 px-6 font-medium">Gerente</th>
+                <th class="py-4 px-6 font-medium text-center">Nº de Clientes</th>
+                <th class="py-4 px-6 font-medium text-right">Soma Saldos Positivos</th>
+                <th class="py-4 px-6 font-medium text-right">Soma Saldos Negativos</th>
+              </tr>
+            </thead>
+            <tbody class="text-sm">
+              @for (gerente of gerentesEstatisticas; track gerente.id) {
+                <tr class="border-b border-[#333] hover:bg-[#2a2a2d] transition-colors">
+                  <td class="py-4 px-6 text-white font-medium">
+                    <div class="flex items-center gap-3">
+                      <div class="w-8 h-8 rounded-full bg-[#112a14] border border-[#2d6635] flex items-center justify-center text-[#6dbf73] font-bold text-xs">
+                        {{ gerente.nome.charAt(0) }}
+                      </div>
+                      {{ gerente.nome }}
+                    </div>
+                  </td>
+                  <td class="py-4 px-6 text-center text-[#ccc]">
+                    <span class="bg-[#18181A] border border-[#444] text-[#ccc] px-3 py-1 rounded-full text-xs font-semibold">
+                      {{ gerente.qtdClientes }}
+                    </span>
+                  </td>
+                  <td class="py-4 px-6 text-right font-medium text-[#6dbf73]">
+                    R$ {{ gerente.saldoPositivo | number:'1.2-2' }}
+                  </td>
+                  <td class="py-4 px-6 text-right font-medium text-red-400">
+                    R$ {{ gerente.saldoNegativo | number:'1.2-2' }}
+                  </td>
+                </tr>
+              } @empty {
+                <tr>
+                  <td colspan="4" class="py-12 text-center text-[#666] italic">Nenhum dado encontrado para exibição.</td>
+                </tr>
+              }
+            </tbody>
+          </table>
         </div>
 
       </div>
