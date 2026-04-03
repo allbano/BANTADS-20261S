@@ -1,8 +1,8 @@
 import { Routes } from '@angular/router';
 
-import { DashbordAdmin } from './features/administrador/screens/dashbord-admin/dashbord-admin';
-import { CrudGerentes } from './features/administrador/screens/crud-gerentes/crud-gerentes';
-import { Relatorio } from './features/administrador/screens/relatorio/relatorio';
+import { DashboardAdminComponent } from './features/administrador/screens/dashbord-admin/dashbord-admin';
+import { CrudGerentesComponent } from './features/administrador/screens/crud-gerentes/crud-gerentes';
+import { RelatorioComponent } from './features/administrador/screens/relatorio/relatorio';
 
 export const routes: Routes = [
     {
@@ -20,15 +20,15 @@ export const routes: Routes = [
     {
         path: 'admin/dashboard',
         // Atenção ao nome da pasta "dashbord-admin" (sem o 'a') que está nos seus ficheiros
-        loadComponent: () => import('./features/administrador/screens/dashbord-admin/dashbord-admin').then(m => m.DashbordAdmin)
+        loadComponent: () => import('./features/administrador/screens/dashbord-admin/dashbord-admin').then(m => m.DashboardAdminComponent)
     },
     {
         path: 'admin/gerentes',
-        loadComponent: () => import('./features/administrador/screens/crud-gerentes/crud-gerentes').then(m => m.CrudGerentes)
+        loadComponent: () => import('./features/administrador/screens/crud-gerentes/crud-gerentes').then(m => m.CrudGerentesComponent)
     },
     {
         path: 'admin/relatorios',
-        loadComponent: () => import('./features/administrador/screens/relatorio/relatorio').then(m => m.Relatorio)
+        loadComponent: () => import('./features/administrador/screens/relatorio/relatorio').then(m => m.RelatorioComponent)
     }
     
     
