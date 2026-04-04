@@ -5,8 +5,8 @@
       BANTADS
     </div>
     <div>
-      <button routerLink="auth/login" class="px-6 py-2 border border-[#444] rounded-md text-sm hover:bg-[#2A2A2A] transition-colors">
-        Entrar
+      <button routerLink="/" class="px-6 cursor-pointer py-2 border border-[#444] rounded-md text-sm hover:bg-[#2A2A2A] transition-colors">
+        Voltar
       </button>
     </div>
   </header>
@@ -75,14 +75,38 @@
           }
           @else if (facade.passoAtual() === 4) {
              <!-- Tela de Sucesso -->
-             <div class="text-center py-8">
-               <h2 class="text-3xl font-light mb-4 font-[Comic_Sans_MS,cursive,sans-serif] text-[#6dbf73]">Sucesso!</h2>
-               <div class="bg-[#112a14] border border-[#2d6635] text-[#8ffb99] p-6 rounded-xl text-md leading-relaxed mb-6">
-                 Sua solicitação foi enviada para análise e em breve você receberá um e-mail com os próximos passos.
+             <div class="flex flex-col items-center py-4 font-[Comic_Sans_MS,cursive,sans-serif]">
+
+               <!-- Title Pill -->
+               <div class="bg-[#6dbf73] text-[#18181A] text-xl font-medium py-3 px-8 rounded-2xl mb-6 shadow-md inline-block">
+                 Solicitacao Enviada!
                </div>
-               <button routerLink="/" (click)="facade.reset()" class="bg-transparent border border-[#6dbf73] text-[#6dbf73] hover:bg-[#1a2e1d] font-medium py-3 px-8 rounded-xl transition-colors">
-                 Tela Inicial
+
+               <!-- Subtitle -->
+               <div class="text-center text-[#ccc] text-lg leading-relaxed mb-8">
+                 Sua solicitacao de abertura de conta<br>foi enviada com sucesso.
+               </div>
+
+               <!-- Info Box (What happens next) -->
+               <div class="w-full bg-[#2c2411] border border-[#4a3e1a] rounded-3xl p-6 text-left mb-6 shadow-sm">
+                 <h3 class="text-[#ddd] text-base mb-3">O que acontece agora?</h3>
+                 <div class="h-px w-full bg-[#4a3e1a] mb-4"></div>
+                 <div class="text-[#aaa] space-y-3 text-sm">
+                   <p>1. Um gerente ira analisar sua solicitacao</p>
+                   <p>2. Apos aprovacao, voce recebera um email com sua senha e número de conta</p>
+                 </div>
+               </div>
+
+               <!-- Error/Fallback info box -->
+               <div class="w-full bg-[#2A1818] border border-[#522929] rounded-xl p-3 text-[#e57373] text-sm text-center mb-8">
+                 Em caso de falha, voce sera notificado por email.
+               </div>
+
+               <!-- Button -->
+               <button routerLink="/" (click)="facade.reset()" class="bg-transparent cursor-pointer border border-[#ccc] text-[#ccc] hover:bg-[#222] hover:text-white py-3 px-8 rounded-xl transition-colors">
+                 Voltar para a página inicial
                </button>
+
              </div>
           }
         </div>

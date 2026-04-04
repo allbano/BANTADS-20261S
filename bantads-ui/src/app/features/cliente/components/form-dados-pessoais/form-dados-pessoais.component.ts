@@ -1,5 +1,6 @@
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 
+import { RouterLink } from '@angular/router';
 import {
   ReactiveFormsModule,
   FormBuilder,
@@ -11,7 +12,7 @@ import {
 } from '@angular/forms';
 import { Observable, timer, of } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
-import { DadosPessoais } from '../../../domain/models/autocadastro.model';
+import { DadosPessoais } from '../../domain/models/autocadastro.model';
 
 export function cpfValidator(): AsyncValidatorFn {
   return (control: AbstractControl): Observable<ValidationErrors | null> => {
@@ -50,7 +51,7 @@ export function cpfValidator(): AsyncValidatorFn {
 @Component({
   selector: 'app-form-dados-pessoais-ddd',
   standalone: true,
-  imports: [ReactiveFormsModule],
+  imports: [ReactiveFormsModule, RouterLink],
   templateUrl: './form-dados-pessoais.component.html',
   styleUrl: './form-dados-pessoais.component.css'
 })

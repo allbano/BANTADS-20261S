@@ -2,7 +2,7 @@ import { Component, EventEmitter, Input, OnInit, Output, inject, signal } from '
 
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
-import { Endereco } from '../../../domain/models/autocadastro.model';
+import { Endereco } from '../../domain/models/autocadastro.model';
 
 @Component({
   selector: 'app-form-endereco-ddd',
