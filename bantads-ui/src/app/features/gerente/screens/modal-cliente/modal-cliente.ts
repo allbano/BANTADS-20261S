@@ -1,5 +1,5 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
-import { Cliente } from '../../../../shared/models/cliente.model';
+import type { Cliente } from '../../../cliente/domain';
 import { CurrencyPipe } from '@angular/common';
 
 @Component({

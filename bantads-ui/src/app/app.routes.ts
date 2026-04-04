@@ -18,6 +18,10 @@ export const routes: Routes = [
         loadComponent: () => import('./features/cliente/autocadastro/presentation/screens/autocadastro/autocadastro').then(m => m.AutocadastroComponent)
     },
     {
+      path: 'cliente/dashboard',
+      loadComponent: () => import('./features/cliente/screens/dashboard/dashboard').then(m => m.Dashboard)
+    },
+    {
         path: 'admin/dashboard',
         loadComponent: () => import('./features/administrador/screens/dashbord-admin/dashbord-admin').then(m => m.DashboardAdminComponent)
     },
