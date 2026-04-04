@@ -1,9 +1,8 @@
 import { Routes } from '@angular/router';
 
 import { clienteLogadoGuard } from './core/auth/guards/cliente-logado.guard';
-import { DashboardAdminComponent } from './features/administrador/screens/dashbord-admin/dashbord-admin';
-import { CrudGerentesComponent } from './features/administrador/screens/crud-gerentes/crud-gerentes';
-import { RelatorioComponent } from './features/administrador/screens/relatorio/relatorio';
+import { gerenteLogadoGuard } from './core/auth/guards/gerente-logado.guard';
+import { adminLogadoGuard } from './core/auth/guards/admin-logado.guard';
 import { Home } from './features/public/home/home';
 
 export const routes: Routes = [
@@ -62,22 +61,50 @@ export const routes: Routes = [
     {
         path: 'admin/dashboard',
         loadComponent: () => import('./features/administrador/screens/dashbord-admin/dashbord-admin').then(m => m.DashboardAdminComponent),
+        canActivate: [adminLogadoGuard],
         title: "BANTADS - Dashboard Administrador"
     },
     {
         path: 'admin/gerentes',
         loadComponent: () => import('./features/administrador/screens/crud-gerentes/crud-gerentes').then(m => m.CrudGerentesComponent),
+        canActivate: [adminLogadoGuard],
         title: "BANTADS - Listar Gerentes"
     },
     {
         path: 'admin/relatorios',
         loadComponent: () => import('./features/administrador/screens/relatorio/relatorio').then(m => m.RelatorioComponent),
+        canActivate: [adminLogadoGuard],
         title: "BANTADS - Relatórios"
     },
     {
         path: 'gerente/dashboard',
         loadComponent: () => import('./features/gerente/screens/dashboard-gerente/dashboard-gerente').then(m => m.DashboardGerente),
-        title: "BANTADS - Dashboard Gerente"
+        canActivate: [gerenteLogadoGuard],
+        title: "BANTADS - Aprovações Pendentes"
+    },
+    {
+        path: 'gerente/clientes',
+        loadComponent: () => import('./features/gerente/screens/clientes-gerente/clientes-gerente').then(m => m.ClientesGerente),
+        canActivate: [gerenteLogadoGuard],
+        title: "BANTADS - Clientes do Gerente"
+    },
+    {
+        path: 'gerente/clientes/:id',
+        loadComponent: () => import('./features/gerente/screens/detalhe-cliente/detalhe-cliente').then(m => m.DetalheCliente),
+        canActivate: [gerenteLogadoGuard],
+        title: "BANTADS - Detalhe do Cliente"
+    },
+    {
+        path: 'gerente/consulta',
+        loadComponent: () => import('./features/gerente/screens/consulta-cliente/consulta-cliente').then(m => m.ConsultaCliente),
+        canActivate: [gerenteLogadoGuard],
+        title: "BANTADS - Consulta por CPF"
+    },
+    {
+        path: 'gerente/top-clientes',
+        loadComponent: () => import('./features/gerente/screens/top-clientes/top-clientes').then(m => m.TopClientes),
+        canActivate: [gerenteLogadoGuard],
+        title: "BANTADS - Top 3 Clientes"
     },
 
 ];

@@ -1,7 +1,7 @@
-<div class="min-h-screen bg-[#18181A] text-white font-sans flex flex-col">
+<div class="min-h-screen bg-[#18181A] text-white flex flex-col">
   <!-- Header -->
   <header class="w-full flex items-center justify-between px-10 py-5 border-b border-[#2A2A2A]">
-    <div class="text-2xl font-semibold tracking-wider font-[Comic_Sans_MS,cursive,sans-serif]">
+    <div class="text-2xl font-semibold tracking-wider">
       BANTADS
     </div>
     <div>
@@ -16,11 +16,11 @@
 
       <!-- Lado Esquerdo: Ilusração e Texto -->
       <div class="hidden lg:flex flex-col items-center justify-center p-12 border-r border-[#2A2A2A]">
-        <div class="w-3/4 aspect-[4/3] bg-[#1F1F22] border border-[#333] rounded-[2rem] flex items-center justify-center text-[#666] italic mb-8 shadow-inner">
+        <div class="w-3/4 aspect-4/3 bg-[#1F1F22] border border-[#333] rounded-4xl flex items-center justify-center text-[#666] italic mb-8 shadow-inner">
           Ilustracao / Imagem
         </div>
         <div class="w-3/4">
-          <p class="text-xl font-light text-[#ccc] leading-relaxed font-[Comic_Sans_MS,cursive,sans-serif]">
+          <p class="text-xl font-light text-[#ccc] leading-relaxed">
             Abra sua conta em poucos minutos.<br>
             Sem burocracia, sem taxas escondidas.
           </p>
@@ -29,7 +29,7 @@
 
       <!-- Lado Direito: Formulário Stepper -->
       <div class="flex items-center justify-center p-8 lg:p-16 relative">
-        <div class="w-full max-w-lg bg-[#18181A] border border-[#333] rounded-[2rem] p-8 lg:p-12 shadow-2xl relative">
+        <div class="w-full max-w-lg bg-[#18181A] border border-[#333] rounded-4xl p-8 lg:p-12 shadow-2xl relative">
 
           <!-- Wizard Stepper (3 Steps) -->
           @if (facade.passoAtual() < 4) {
@@ -75,7 +75,7 @@
           }
           @else if (facade.passoAtual() === 4) {
              <!-- Tela de Sucesso -->
-             <div class="flex flex-col items-center py-4 font-[Comic_Sans_MS,cursive,sans-serif]">
+             <div class="flex flex-col items-center py-4">
 
                <!-- Title Pill -->
                <div class="bg-[#6dbf73] text-[#18181A] text-xl font-medium py-3 px-8 rounded-2xl mb-6 shadow-md inline-block">

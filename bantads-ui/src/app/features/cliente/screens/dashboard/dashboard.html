@@ -1,5 +1,5 @@
 <div
-  class="box-border min-h-dvh w-full bg-[#1a1a1a] px-[clamp(1rem,3vw,2rem)] pb-12 font-['Architects_Daughter','Poppins',system-ui,sans-serif] text-neutral-200"
+  class="box-border min-h-dvh w-full bg-[#191919] px-[clamp(1rem,3vw,2rem)] pb-12 text-[#dfdfdf]"
 >
   <app-cliente-top-nav />
 
@@ -10,12 +10,12 @@
 
     @if (facade.resumo(); as r) {
       <header class="mb-8">
-        <h1 class="m-0 text-4xl font-normal leading-tight text-neutral-50">Olá, {{ primeiroNome(r.nomeCliente) }}</h1>
-        <p class="mt-2 text-[1.05rem] text-neutral-400">Bem-vindo ao seu Internet Banking</p>
+        <h1 class="m-0 text-4xl font-normal leading-tight text-[#e5e5e5]">Olá, {{ primeiroNome(r.nomeCliente) }}</h1>
+        <p class="mt-2 text-[1.05rem] text-[#9f9f9f]">Bem-vindo ao seu Internet Banking</p>
       </header>
 
       <section class="mb-10 grid grid-cols-[repeat(auto-fit,minmax(220px,1fr))] gap-4" aria-label="Resumo da conta">
-        <article class="rounded-xl border border-white/[0.06] bg-[#2a2a2a] px-[1.35rem] py-5">
+        <article class="rounded-xl border border-white/6 bg-[#2a2a2a] px-[1.35rem] py-5">
           <h2 class="mb-3 text-[0.9rem] font-medium text-neutral-400">Saldo disponível</h2>
           @if (facade.saldoEhNegativo()) {
             <p class="m-0 text-[1.65rem] font-semibold text-red-400">
@@ -29,7 +29,7 @@
           <p class="mt-[0.65rem] text-[0.9rem] text-neutral-400">Conta: {{ r.numeroConta }}</p>
         </article>
 
-        <article class="rounded-xl border border-white/[0.06] bg-[#2a2a2a] px-[1.35rem] py-5">
+        <article class="rounded-xl border border-white/6 bg-[#2a2a2a] px-[1.35rem] py-5">
           <h2 class="mb-3 text-[0.9rem] font-medium text-neutral-400">Limite de crédito</h2>
           <p class="m-0 text-[1.65rem] font-semibold text-neutral-100">
             {{ r.limiteCredito | currency: 'BRL' : 'symbol' : '1.2-2' }}
@@ -39,13 +39,13 @@
           </p>
         </article>
 
-        <article class="rounded-xl border border-white/[0.06] bg-[#2a2a2a] px-[1.35rem] py-5">
+        <article class="rounded-xl border border-white/6 bg-[#2a2a2a] px-[1.35rem] py-5">
           <h2 class="mb-3 text-[0.9rem] font-medium text-neutral-400">Seu gerente</h2>
           <p class="m-0 text-[1.35rem] font-semibold text-neutral-100">{{ r.gerente.nome }}</p>
           <p class="mt-[0.65rem] text-[0.9rem] text-neutral-400">{{ r.gerente.email }}</p>
         </article>
 
-        <article class="rounded-xl border border-white/[0.06] bg-[#2a2a2a] px-[1.35rem] py-5">
+        <article class="rounded-xl border border-white/6 bg-[#2a2a2a] px-[1.35rem] py-5">
           <h2 class="mb-3 text-[0.9rem] font-medium text-neutral-400">Conta desde</h2>
           <p class="m-0 text-[1.65rem] font-semibold text-neutral-100">{{ r.dataAberturaConta | date: 'dd/MM/yyyy' }}</p>
         </article>
@@ -56,7 +56,7 @@
         <div class="grid grid-cols-[repeat(auto-fit,minmax(200px,1fr))] gap-4">
           <a
             routerLink="/cliente/deposito"
-            class="flex cursor-pointer flex-col items-start gap-[0.35rem] rounded-xl border border-white/[0.08] bg-[#2a2a2a] px-[1.35rem] py-5 text-neutral-200 no-underline transition-colors hover:border-white/15 hover:bg-[#333333]"
+            class="flex cursor-pointer flex-col items-start gap-[0.35rem] rounded-xl border border-white/8 bg-[#2a2a2a] px-[1.35rem] py-5 text-neutral-200 no-underline transition-colors hover:border-white/15 hover:bg-[#333333]"
           >
             <span class="mb-1 font-['Poppins',system-ui,sans-serif] text-[1.75rem] font-bold text-[#6ecf7a]" aria-hidden="true">$+</span>
             <span class="text-[1.15rem] font-semibold">Depositar</span>
@@ -64,7 +64,7 @@
           </a>
           <a
             routerLink="/cliente/saque"
-            class="flex cursor-pointer flex-col items-start gap-[0.35rem] rounded-xl border border-white/[0.08] bg-[#2a2a2a] px-[1.35rem] py-5 text-neutral-200 no-underline transition-colors hover:border-white/15 hover:bg-[#333333]"
+            class="flex cursor-pointer flex-col items-start gap-[0.35rem] rounded-xl border border-white/8 bg-[#2a2a2a] px-[1.35rem] py-5 text-neutral-200 no-underline transition-colors hover:border-white/15 hover:bg-[#333333]"
           >
             <span class="mb-1 font-['Poppins',system-ui,sans-serif] text-[1.75rem] font-bold text-red-400" aria-hidden="true">$-</span>
             <span class="text-[1.15rem] font-semibold">Sacar</span>
@@ -72,7 +72,7 @@
           </a>
           <a
             routerLink="/cliente/transferencia"
-            class="flex cursor-pointer flex-col items-start gap-[0.35rem] rounded-xl border border-white/[0.08] bg-[#2a2a2a] px-[1.35rem] py-5 text-neutral-200 no-underline transition-colors hover:border-white/15 hover:bg-[#333333]"
+            class="flex cursor-pointer flex-col items-start gap-[0.35rem] rounded-xl border border-white/8 bg-[#2a2a2a] px-[1.35rem] py-5 text-neutral-200 no-underline transition-colors hover:border-white/15 hover:bg-[#333333]"
           >
             <span class="mb-1 font-['Poppins',system-ui,sans-serif] text-[1.75rem] font-bold text-blue-400" aria-hidden="true">→</span>
             <span class="text-[1.15rem] font-semibold">Transferir</span>
@@ -80,7 +80,7 @@
           </a>
           <a
             routerLink="/cliente/extrato"
-            class="flex cursor-pointer flex-col items-start gap-[0.35rem] rounded-xl border border-white/[0.08] bg-[#2a2a2a] px-[1.35rem] py-5 text-neutral-200 no-underline transition-colors hover:border-white/15 hover:bg-[#333333]"
+            class="flex cursor-pointer flex-col items-start gap-[0.35rem] rounded-xl border border-white/8 bg-[#2a2a2a] px-[1.35rem] py-5 text-neutral-200 no-underline transition-colors hover:border-white/15 hover:bg-[#333333]"
           >
             <span class="mb-1 font-['Poppins',system-ui,sans-serif] text-[1.75rem] font-bold text-amber-400" aria-hidden="true">≡</span>
             <span class="text-[1.15rem] font-semibold">Extrato</span>

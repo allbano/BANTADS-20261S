@@ -1,12 +1,11 @@
     <form
       [formGroup]="form"
       (ngSubmit)="onSubmit()"
-      class="flex flex-col gap-5 text-[#ccc] font-sans"
+      class="flex flex-col gap-5 text-[#ccc]"
     >
       <div class="text-center mb-6">
         <h2
           class="text-2xl font-medium text-white mb-2"
-          style="font-family: 'Comic Sans MS', cursive, sans-serif;"
         >
           Abra sua conta
         </h2>
@@ -21,7 +20,7 @@
             type="text"
             formControlName="cep"
             placeholder="00000-000"
-            class="w-full flex-[2] bg-[#18181A] border border-[#333] rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#6dbf73] transition-colors"
+            class="w-full flex-2 bg-[#18181A] border border-[#333] rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#6dbf73] transition-colors"
           />
           <button
             type="button"
@@ -42,12 +41,12 @@
 
       <!-- Logradouro e Número -->
       <div class="flex gap-4">
-        <div class="flex flex-col gap-1 flex-[3]">
+        <div class="flex flex-col gap-1 flex-3">
           <label class="text-xs text-[#888] ml-1">Logradouro</label>
           <input
             type="text"
             formControlName="logradouro"
-            class="w-full bg-transparent bg-[#111112] border border-[#333] rounded-xl px-4 py-3 text-sm text-[#888] focus:outline-none cursor-not-allowed"
+            class="w-full bg-[#111112] border border-[#333] rounded-xl px-4 py-3 text-sm text-[#888] focus:outline-none cursor-not-allowed"
           />
         </div>
         <div class="flex flex-col gap-1 flex-1">
@@ -72,12 +71,12 @@
 
       <!-- Cidade e UF -->
       <div class="flex gap-4">
-        <div class="flex flex-col gap-1 flex-[4]">
+        <div class="flex flex-col gap-1 flex-4">
           <label class="text-xs text-[#888] ml-1">Cidade</label>
           <input
             type="text"
             formControlName="cidade"
-            class="w-full bg-transparent bg-[#111112] border border-[#333] rounded-xl px-4 py-3 text-sm text-[#888] focus:outline-none cursor-not-allowed"
+            class="w-full bg-[#111112] border border-[#333] rounded-xl px-4 py-3 text-sm text-[#888] focus:outline-none cursor-not-allowed"
           />
         </div>
         <div class="flex flex-col gap-1 flex-1">
@@ -86,7 +85,7 @@
             type="text"
             formControlName="uf"
             placeholder="UF"
-            class="w-full bg-transparent bg-[#111112] border border-[#333] rounded-xl px-4 py-3 text-sm text-[#888] focus:outline-none uppercase cursor-not-allowed"
+            class="w-full bg-[#111112] border border-[#333] rounded-xl px-4 py-3 text-sm text-[#888] focus:outline-none uppercase cursor-not-allowed"
             maxlength="2"
           />
         </div>

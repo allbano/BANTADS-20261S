@@ -1,35 +1,24 @@
-<div class="min-h-screen bg-[#18181A] text-white font-sans flex flex-col">
-  <header class="w-full flex items-center justify-between px-10 py-5 border-b border-[#2A2A2A]">
-    <div class="flex items-center gap-10">
-      <div class="text-2xl font-semibold tracking-wider text-[#6dbf73]" style="font-family: 'Comic Sans MS', cursive, sans-serif;">
-        BANTADS
-      </div>
-      <nav class="hidden md:flex gap-6 text-[#ccc] text-sm">
-        <a routerLink="/admin/dashboard" class="text-white font-medium border-b-2 border-[#6dbf73] pb-1">Dashboard</a>
-        <a routerLink="/admin/gerentes" class="hover:text-white transition-colors pb-1">Gerentes</a>
-        <a routerLink="/admin/relatorios" class="hover:text-white transition-colors pb-1">Relatórios</a>
-      </nav>
-    </div>
-    
-    <div>
-      <button (click)="sair()" class="px-6 py-2 border border-[#444] rounded-md text-sm hover:bg-[#2A2A2A] transition-colors">
-        Sair
-      </button>
-    </div>
-  </header>
+<div class="box-border min-h-dvh w-full bg-[#191919] px-[clamp(1rem,3vw,2rem)] pb-12 text-[#dfdfdf] flex flex-col">
+  <app-admin-top-nav />
 
-  <main class="flex-1 w-full p-8 lg:p-12">
-      <div class="w-full max-w-6xl mx-auto bg-[#18181A] border border-[#333] rounded-[2rem] p-8 lg:p-12 shadow-2xl relative">
-        
+  <main class="flex-1 w-full pt-8">
+      <div class="w-full max-w-6xl mx-auto bg-[#1f1f1e] border border-neutral-700/60 rounded-4xl p-8 lg:p-12 shadow-xl relative">
+
         <div class="mb-10">
-          <h2 class="text-3xl font-light mb-2 font-[Comic Sans MS, cursive, sans-serif] text-white">Dashboard de Desempenho</h2>
-          <p class="text-[#888] text-sm">Resumo da carteira de clientes de cada gerente (Ordenado por maior saldo positivo).</p>
+          <h2 class="text-3xl font-light mb-2 text-[#e5e5e5]">Dashboard de Desempenho</h2>
+          <p class="text-neutral-400 text-sm">Resumo da carteira de clientes de cada gerente (Ordenado por maior saldo positivo).</p>
         </div>
 
-        <div class="bg-[#222] border border-[#333] rounded-xl overflow-x-auto">
+        @if (facade.erro(); as erro) {
+          <div class="bg-red-500/10 border border-red-500/30 rounded-xl p-4 mb-6 text-red-400 text-sm">
+            {{ erro }}
+          </div>
+        }
+
+        <div class="bg-[#292929] border border-neutral-700/50 rounded-xl overflow-x-auto">
           <table class="w-full text-left border-collapse">
             <thead>
-              <tr class="text-[#888] border-b border-[#444] text-xs uppercase tracking-wider bg-[#1f1f22]">
+              <tr class="text-neutral-500 border-b border-neutral-700/50 text-xs uppercase tracking-wider bg-[#1f1f1e]">
                 <th class="py-4 px-6 font-medium">Gerente</th>
                 <th class="py-4 px-6 font-medium text-center">Nº de Clientes</th>
                 <th class="py-4 px-6 font-medium text-right">Soma Saldos Positivos</th>
@@ -37,22 +26,22 @@
               </tr>
             </thead>
             <tbody class="text-sm">
-              @for (gerente of gerentesEstatisticas; track gerente.id) {
-                <tr class="border-b border-[#333] hover:bg-[#2a2a2d] transition-colors">
-                  <td class="py-4 px-6 text-white font-medium">
+              @for (gerente of facade.estatisticasOrdenadas(); track gerente.gerenteId) {
+                <tr class="border-b border-neutral-700/50 hover:bg-[#252528] transition-colors">
+                  <td class="py-4 px-6 text-neutral-200 font-medium">
                     <div class="flex items-center gap-3">
-                      <div class="w-8 h-8 rounded-full bg-[#112a14] border border-[#2d6635] flex items-center justify-center text-[#6dbf73] font-bold text-xs">
+                      <div class="w-8 h-8 rounded-full bg-[#112a14] border border-[#2d6635] flex items-center justify-center text-[#6ecf7a] font-bold text-xs">
                         {{ gerente.nome.charAt(0) }}
                       </div>
                       {{ gerente.nome }}
                     </div>
                   </td>
-                  <td class="py-4 px-6 text-center text-[#ccc]">
-                    <span class="bg-[#18181A] border border-[#444] text-[#ccc] px-3 py-1 rounded-full text-xs font-semibold">
+                  <td class="py-4 px-6 text-center text-neutral-300">
+                    <span class="bg-[#1a1a1a] border border-neutral-600 text-neutral-300 px-3 py-1 rounded-full text-xs font-semibold">
                       {{ gerente.qtdClientes }}
                     </span>
                   </td>
-                  <td class="py-4 px-6 text-right font-medium text-[#6dbf73]">
+                  <td class="py-4 px-6 text-right font-medium text-[#6ecf7a]">
                     R$ {{ gerente.saldoPositivo | number:'1.2-2' }}
                   </td>
                   <td class="py-4 px-6 text-right font-medium text-red-400">
@@ -61,7 +50,7 @@
                 </tr>
               } @empty {
                 <tr>
-                  <td colspan="4" class="py-12 text-center text-[#666] italic">Nenhum dado encontrado para exibição.</td>
+                  <td colspan="4" class="py-12 text-center text-neutral-500 italic">Nenhum dado encontrado para exibição.</td>
                 </tr>
               }
             </tbody>
@@ -70,4 +59,5 @@
 
       </div>
   </main>
+
 </div>
