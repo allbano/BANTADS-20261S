@@ -12,7 +12,7 @@ import {
 } from '@angular/forms';
 import { Observable, timer, of } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
-import { DadosPessoais } from '../../../domain/models/autocadastro.model';
+import { DadosPessoais } from '../../domain/models/autocadastro.model';
 
 export function cpfValidator(): AsyncValidatorFn {
   return (control: AbstractControl): Observable<ValidationErrors | null> => {

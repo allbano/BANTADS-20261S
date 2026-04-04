@@ -18,7 +18,7 @@ export const routes: Routes = [
     },
     {
         path: 'cliente/autocadastro',
-        loadComponent: () => import('./features/cliente/autocadastro/presentation/screens/autocadastro/autocadastro').then(m => m.AutocadastroComponent),
+        loadComponent: () => import('./features/cliente/screens/autocadastro/autocadastro').then(m => m.AutocadastroComponent),
         title: "BANTADS - Autocadastro"
     },
     {

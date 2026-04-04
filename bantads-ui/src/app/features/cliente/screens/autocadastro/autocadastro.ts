@@ -4,9 +4,9 @@ import { RouterLink } from '@angular/router';
 import { FormDadosPessoaisComponent } from '../../components/form-dados-pessoais/form-dados-pessoais.component';
 import { FormEnderecoComponent } from '../../components/form-endereco/form-endereco.component';
 import { ResumoConfirmacaoComponent } from '../../components/resumo-confirmacao/resumo-confirmacao.component';
-import { AutocadastroFacade } from '../../../application/facades/autocadastro.facade';
-import { AutocadastroRepository } from '../../../domain/repositories/autocadastro.repository';
-import { AutocadastroApiService } from '../../../infrastructure/services/autocadastro-api.service';
+import { AutocadastroFacade } from '../../application/facades/autocadastro.facade';
+import { AutocadastroRepository } from '../../domain/repositories/autocadastro.repository';
+import { AutocadastroApiService } from '../../infrastructure/services/autocadastro-api.service';
 
 @Component({
   selector: 'app-autocadastro-ddd',

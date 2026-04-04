@@ -1,6 +1,6 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { CurrencyPipe } from '@angular/common';
-import { DadosPessoais, Endereco } from '../../../domain/models/autocadastro.model';
+import { DadosPessoais, Endereco } from '../../domain/models/autocadastro.model';
 
 @Component({
   selector: 'app-resumo-confirmacao-ddd',
