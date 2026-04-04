@@ -13,7 +13,7 @@ export const routes: Routes = [
     },
     {
       path: 'auth/login',
-      loadComponent: () => import('./features/auth/presentation/screens/login/login').then(m => m.Login),
+      loadComponent: () => import('./core/auth/screens/login/login').then(m => m.Login),
       title: "BANTADS - Realizar Login"
     },
     {
