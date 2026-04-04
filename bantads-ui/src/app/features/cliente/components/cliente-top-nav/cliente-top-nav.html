@@ -1,0 +1,62 @@
+<header class="flex flex-wrap items-center justify-between gap-4 gap-x-6 border-b border-white/[0.08] py-4">
+  <a
+    routerLink="/cliente/dashboard"
+    class="cursor-pointer font-['Architects_Daughter',cursive] text-[1.75rem] tracking-wide text-neutral-100 no-underline"
+  >
+    BANTADS
+  </a>
+
+  <nav class="flex flex-wrap items-center gap-x-6 gap-y-4 text-[0.95rem]" aria-label="Menu do cliente">
+    <a
+      routerLink="/cliente/dashboard"
+      routerLinkActive="font-semibold !text-[#6ecf7a]"
+      [routerLinkActiveOptions]="{ exact: true }"
+      class="cursor-pointer text-neutral-200 no-underline transition-colors hover:text-white"
+    >
+      Dashboard
+    </a>
+    <a
+      routerLink="/cliente/deposito"
+      routerLinkActive="font-semibold !text-[#6ecf7a]"
+      class="cursor-pointer text-neutral-200 no-underline transition-colors hover:text-white"
+    >
+      Depósito
+    </a>
+    <a
+      routerLink="/cliente/saque"
+      routerLinkActive="font-semibold !text-[#6ecf7a]"
+      class="cursor-pointer text-neutral-200 no-underline transition-colors hover:text-white"
+    >
+      Saque
+    </a>
+    <a
+      routerLink="/cliente/transferencia"
+      routerLinkActive="font-semibold !text-[#6ecf7a]"
+      class="cursor-pointer text-neutral-200 no-underline transition-colors hover:text-white"
+    >
+      Transferência
+    </a>
+    <a
+      routerLink="/cliente/extrato"
+      routerLinkActive="font-semibold !text-[#6ecf7a]"
+      class="cursor-pointer text-neutral-200 no-underline transition-colors hover:text-white"
+    >
+      Extrato
+    </a>
+    <a
+      routerLink="/cliente/perfil"
+      routerLinkActive="font-semibold !text-[#6ecf7a]"
+      class="cursor-pointer text-neutral-200 no-underline transition-colors hover:text-white"
+    >
+      Meu perfil
+    </a>
+  </nav>
+
+  <button
+    type="button"
+    class="cursor-pointer rounded-lg border-none bg-transparent px-2 py-1.5 text-[0.95rem] font-semibold text-red-400 transition-colors hover:bg-red-400/12"
+    (click)="sair()"
+  >
+    Sair
+  </button>
+</header>

@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
 
+import { clienteLogadoGuard } from './core/auth/guards/cliente-logado.guard';
 import { DashboardAdminComponent } from './features/administrador/screens/dashbord-admin/dashbord-admin';
 import { CrudGerentesComponent } from './features/administrador/screens/crud-gerentes/crud-gerentes';
 import { RelatorioComponent } from './features/administrador/screens/relatorio/relatorio';
@@ -24,7 +25,39 @@ export const routes: Routes = [
     {
       path: 'cliente/dashboard',
       loadComponent: () => import('./features/cliente/screens/dashboard/dashboard').then(m => m.Dashboard),
+      canActivate: [clienteLogadoGuard],
       title: "BANTADS - Dashboard Cliente"
+    },
+    {
+      path: 'cliente/deposito',
+      loadComponent: () => import('./features/cliente/screens/deposito/deposito').then(m => m.Deposito),
+      canActivate: [clienteLogadoGuard],
+      title: "BANTADS - Depósito",
+    },
+    {
+      path: 'cliente/saque',
+      loadComponent: () => import('./features/cliente/screens/saque/saque').then(m => m.Saque),
+      canActivate: [clienteLogadoGuard],
+      title: "BANTADS - Saque",
+    },
+    {
+      path: 'cliente/transferencia',
+      loadComponent: () => import('./features/cliente/screens/transferencia/transferencia').then(m => m.Transferencia),
+      canActivate: [clienteLogadoGuard],
+      title: "BANTADS - Transferência",
+    },
+    {
+      path: 'cliente/extrato',
+      loadComponent: () => import('./features/cliente/screens/extrato/extrato').then(m => m.Extrato),
+      canActivate: [clienteLogadoGuard],
+      title: "BANTADS - Extrato",
+    },
+    {
+      path: 'cliente/perfil',
+      loadComponent: () => import('./features/cliente/screens/placeholder/cliente-area-placeholder').then(m => m.ClienteAreaPlaceholder),
+      canActivate: [clienteLogadoGuard],
+      data: { title: 'Meu perfil' },
+      title: "BANTADS - Meu perfil",
     },
     {
         path: 'admin/dashboard',

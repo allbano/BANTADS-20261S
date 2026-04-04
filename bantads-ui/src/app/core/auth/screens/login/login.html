@@ -5,7 +5,7 @@
     <div class="text-2xl font-bold tracking-widest text-neutral-100 uppercase">
       BANTADS
     </div>
-    <a routerLink="/" class="bg-[#71ae7f] hover:bg-[#5b9568] text-neutral-900 font-semibold py-2 px-6 rounded-xl transition-colors duration-300">
+    <a routerLink="/" class="cursor-pointer bg-[#71ae7f] hover:bg-[#5b9568] text-neutral-900 font-semibold py-2 px-6 rounded-xl transition-colors duration-300">
       Voltar
     </a>
   </header>
@@ -27,12 +27,16 @@
 
       <!-- Right Column: Login Card -->
       <div class="w-full flex justify-center">
-        <form class="w-full max-w-md bg-[#1f1f1e] border border-neutral-700/60 rounded-4xl p-8 sm:p-10 shadow-xl flex flex-col">
+        <form (ngSubmit)="onSubmit($event)" class="w-full max-w-md bg-[#1f1f1e] border border-neutral-700/60 rounded-4xl p-8 sm:p-10 shadow-xl flex flex-col">
           
           <div class="text-center mb-10">
             <h2 class="text-2xl sm:text-3xl font-bold text-neutral-100 mb-2">Bem-vindo de volta</h2>
             <p class="text-neutral-400 text-sm">Acesse sua conta <span class="uppercase tracking-wider font-medium text-neutral-300">BANTADS</span></p>
           </div>
+
+          @if (erro(); as mensagem) {
+            <p class="text-red-400 text-sm text-center bg-red-950/40 border border-red-800/60 rounded-xl py-2 px-3" role="alert">{{ mensagem }}</p>
+          }
 
           <div class="space-y-6">
             <!-- Email Field -->
@@ -41,9 +45,13 @@
               <input 
                 type="email" 
                 id="email" 
+                name="email"
+                [(ngModel)]="email"
+                required
+                autocomplete="username"
                 placeholder="seu@email.com" 
-                class="w-full bg-[#141414] border border-neutral-600 focus:border-[#71ae7f] focus:ring-1 focus:ring-[#71ae7f] outline-none rounded-xl px-4 py-3 text-neutral-200 placeholder-neutral-600 transition-all duration-300"
-              >
+                class="w-full rounded-xl border border-neutral-600 bg-[#141414] px-4 py-3 text-neutral-200 outline-none transition-all duration-300 placeholder:text-neutral-600 focus:border-[#71ae7f] focus:ring-1 focus:ring-[#71ae7f] [&:-webkit-autofill]:[box-shadow:inset_0_0_0_30px_#141414] [&:-webkit-autofill]:[-webkit-text-fill-color:#e5e5e5] [&:-webkit-autofill]:[transition:background-color_5000s_ease-in-out_0s]"
+              />
             </div>
 
             <!-- Password Field -->
@@ -52,14 +60,18 @@
               <input 
                 type="password" 
                 id="password" 
+                name="senha"
+                [(ngModel)]="senha"
+                required
+                autocomplete="current-password"
                 placeholder="••••••••" 
-                class="w-full bg-[#141414] border border-neutral-600 focus:border-[#71ae7f] focus:ring-1 focus:ring-[#71ae7f] outline-none rounded-xl px-4 py-3 text-neutral-200 placeholder-neutral-600 transition-all duration-300"
-              >
+                class="w-full rounded-xl border border-neutral-600 bg-[#141414] px-4 py-3 text-neutral-200 outline-none transition-all duration-300 placeholder:text-neutral-600 focus:border-[#71ae7f] focus:ring-1 focus:ring-[#71ae7f] [&:-webkit-autofill]:[box-shadow:inset_0_0_0_30px_#141414] [&:-webkit-autofill]:[-webkit-text-fill-color:#e5e5e5] [&:-webkit-autofill]:[transition:background-color_5000s_ease-in-out_0s]"
+              />
             </div>
             
             <!-- Forgot Password Link -->
             <div class="flex justify-end">
-              <a href="#" class="text-sm text-[#4a89d3] hover:text-[#5fa2f0] transition-colors font-medium">Esqueceu a senha?</a>
+              <a href="#" class="cursor-pointer text-sm text-[#4a89d3] hover:text-[#5fa2f0] transition-colors font-medium">Esqueceu a senha?</a>
             </div>
           </div>
 
@@ -67,7 +79,7 @@
           <div class="mt-8 flex flex-col space-y-4">
             <button 
               type="submit" 
-              class="w-full bg-[#71ae7f] hover:bg-[#5b9568] text-[#0d1610] font-bold text-lg py-3 rounded-xl transition-all duration-300 shadow-md hover:shadow-lg transform active:scale-[0.98]">
+              class="cursor-pointer w-full bg-[#71ae7f] hover:bg-[#5b9568] text-[#0d1610] font-bold text-lg py-3 rounded-xl transition-all duration-300 shadow-md hover:shadow-lg transform active:scale-[0.98]">
               Entrar
             </button>
 
@@ -78,11 +90,11 @@
               <div class="grow border-t border-neutral-700"></div>
             </div>
 
-            <button 
-              type="button" 
-              class="w-full bg-transparent border-2 border-neutral-300 hover:border-white hover:text-white text-neutral-300 font-semibold text-base py-3 px-4 rounded-xl transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-neutral-500 transform active:scale-[0.98]">
+            <a 
+              routerLink="/cliente/autocadastro"
+              class="cursor-pointer w-full text-center bg-transparent border-2 border-neutral-300 hover:border-white hover:text-white text-neutral-300 font-semibold text-base py-3 px-4 rounded-xl transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-neutral-500 transform active:scale-[0.98] inline-block">
               Criar uma nova conta
-            </button>
+            </a>
           </div>
 
         </form>

@@ -1,0 +1,33 @@
+<aside
+  class="h-fit rounded-xl border border-white/[0.08] bg-[#1e1e1e] p-6 shadow-lg md:p-8"
+  aria-label="Resumo da conta"
+>
+  <h2 class="mb-4 border-b border-white/15 pb-2 text-lg font-semibold text-neutral-100">Resumo da conta</h2>
+  <dl class="space-y-3 text-sm text-neutral-300">
+    <div class="flex justify-between gap-4">
+      <dt>Conta</dt>
+      <dd class="font-medium text-neutral-100">{{ numeroConta() }}</dd>
+    </div>
+    <div class="flex justify-between gap-4">
+      @if (saldoNegativo()) {
+        <dt class="text-red-400">Saldo</dt>
+        <dd class="font-semibold text-red-400">
+          - {{ saldo() * -1 | currency: 'BRL' : 'symbol' : '1.2-2' }}
+        </dd>
+      } @else {
+        <dt class="text-[#6ecf7a]">Saldo</dt>
+        <dd class="font-semibold text-[#6ecf7a]">
+          {{ saldo() | currency: 'BRL' : 'symbol' : '1.2-2' }}
+        </dd>
+      }
+    </div>
+    <div class="flex justify-between gap-4">
+      <dt>Limite</dt>
+      <dd class="font-medium text-neutral-100">{{ limite() | currency: 'BRL' : 'symbol' : '1.2-2' }}</dd>
+    </div>
+    <div class="flex justify-between gap-4">
+      <dt>Disponível</dt>
+      <dd class="font-medium text-neutral-100">{{ disponivel() | currency: 'BRL' : 'symbol' : '1.2-2' }}</dd>
+    </div>
+  </dl>
+</aside>

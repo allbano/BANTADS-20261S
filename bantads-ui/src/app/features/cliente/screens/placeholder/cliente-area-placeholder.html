@@ -1,0 +1,17 @@
+<div
+  class="box-border min-h-dvh w-full bg-[#1a1a1a] px-[clamp(1rem,3vw,2rem)] pb-12 font-['Architects_Daughter','Poppins',system-ui,sans-serif] text-neutral-200"
+>
+  <app-cliente-top-nav />
+
+  <main class="pt-8">
+    <p>
+      <a routerLink="/cliente/dashboard" class="cursor-pointer text-blue-400 no-underline hover:underline">
+        ← Voltar ao dashboard
+      </a>
+    </p>
+    <h1 class="mt-4 mb-2 text-3xl text-neutral-50">{{ titulo() }}</h1>
+    <p class="max-w-xl leading-relaxed text-neutral-400">
+      Esta funcionalidade será conectada ao backend nas próximas entregas.
+    </p>
+  </main>
+</div>
