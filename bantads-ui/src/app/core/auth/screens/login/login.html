@@ -1,20 +1,22 @@
-<div class="min-h-screen bg-[#1c1c1a] text-neutral-200 flex flex-col font-sans">
-  
+<div
+  class="box-border min-h-dvh w-full bg-[#1a1a1a] px-[clamp(1rem,3vw,2rem)] pb-12 font-['Architects_Daughter','Poppins',system-ui,sans-serif] text-neutral-200"
+>
+
   <!-- Header Navbar -->
-  <header class="flex justify-between items-center py-6 px-8 md:px-16 w-full">
-    <div class="text-2xl font-bold tracking-widest text-neutral-100 uppercase">
+  <header class="flex flex-wrap items-center justify-between gap-4 gap-x-6 border-b border-white/[0.08] py-4">
+    <div class="font-['Architects_Daughter',cursive] text-[1.75rem] tracking-wide text-neutral-100">
       BANTADS
     </div>
-    <a routerLink="/" class="cursor-pointer bg-[#71ae7f] hover:bg-[#5b9568] text-neutral-900 font-semibold py-2 px-6 rounded-xl transition-colors duration-300">
+    <a routerLink="/" class="cursor-pointer rounded-lg border-none bg-transparent px-2 py-1.5 text-[0.95rem] font-semibold text-[#6ecf7a] transition-colors hover:bg-[#6ecf7a]/12">
       Voltar
     </a>
   </header>
 
   <!-- Main Content Layout -->
-  <main class="grow flex items-center justify-center p-6 md:p-8">
-    
-    <div class="w-full max-w-6xl grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 items-center">
-      
+  <main class="pt-8">
+
+    <div class="w-full max-w-6xl grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 items-center mx-auto">
+
       <!-- Left Column: Illustration Area -->
       <div class="hidden lg:flex flex-col items-center justify-center w-full space-y-6">
         <div class="w-full aspect-video md:aspect-4/3 bg-[#292929] rounded-4xl flex items-center justify-center shadow-lg border border-neutral-700/50">
@@ -28,7 +30,7 @@
       <!-- Right Column: Login Card -->
       <div class="w-full flex justify-center">
         <form (ngSubmit)="onSubmit($event)" class="w-full max-w-md bg-[#1f1f1e] border border-neutral-700/60 rounded-4xl p-8 sm:p-10 shadow-xl flex flex-col">
-          
+
           <div class="text-center mb-10">
             <h2 class="text-2xl sm:text-3xl font-bold text-neutral-100 mb-2">Bem-vindo de volta</h2>
             <p class="text-neutral-400 text-sm">Acesse sua conta <span class="uppercase tracking-wider font-medium text-neutral-300">BANTADS</span></p>
@@ -42,44 +44,44 @@
             <!-- Email Field -->
             <div class="flex flex-col space-y-2">
               <label for="email" class="text-sm font-medium text-neutral-300 ml-1">Email</label>
-              <input 
-                type="email" 
-                id="email" 
+              <input
+                type="email"
+                id="email"
                 name="email"
                 [(ngModel)]="email"
                 required
                 autocomplete="username"
-                placeholder="seu@email.com" 
-                class="w-full rounded-xl border border-neutral-600 bg-[#141414] px-4 py-3 text-neutral-200 outline-none transition-all duration-300 placeholder:text-neutral-600 focus:border-[#71ae7f] focus:ring-1 focus:ring-[#71ae7f] [&:-webkit-autofill]:[box-shadow:inset_0_0_0_30px_#141414] [&:-webkit-autofill]:[-webkit-text-fill-color:#e5e5e5] [&:-webkit-autofill]:[transition:background-color_5000s_ease-in-out_0s]"
+                placeholder="seu@email.com"
+                class="w-full rounded-xl border border-neutral-600 bg-[#141414] px-4 py-3 text-neutral-200 outline-none transition-all duration-300 placeholder:text-neutral-600 focus:border-[#6ecf7a] focus:ring-1 focus:ring-[#6ecf7a] [&:-webkit-autofill]:[box-shadow:inset_0_0_0_30px_#141414] [&:-webkit-autofill]:[-webkit-text-fill-color:#e5e5e5] [&:-webkit-autofill]:[transition:background-color_5000s_ease-in-out_0s]"
               />
             </div>
 
             <!-- Password Field -->
             <div class="flex flex-col space-y-2">
               <label for="password" class="text-sm font-medium text-neutral-300 ml-1">Senha</label>
-              <input 
-                type="password" 
-                id="password" 
+              <input
+                type="password"
+                id="password"
                 name="senha"
                 [(ngModel)]="senha"
                 required
                 autocomplete="current-password"
-                placeholder="••••••••" 
-                class="w-full rounded-xl border border-neutral-600 bg-[#141414] px-4 py-3 text-neutral-200 outline-none transition-all duration-300 placeholder:text-neutral-600 focus:border-[#71ae7f] focus:ring-1 focus:ring-[#71ae7f] [&:-webkit-autofill]:[box-shadow:inset_0_0_0_30px_#141414] [&:-webkit-autofill]:[-webkit-text-fill-color:#e5e5e5] [&:-webkit-autofill]:[transition:background-color_5000s_ease-in-out_0s]"
+                placeholder="••••••••"
+                class="w-full rounded-xl border border-neutral-600 bg-[#141414] px-4 py-3 text-neutral-200 outline-none transition-all duration-300 placeholder:text-neutral-600 focus:border-[#6ecf7a] focus:ring-1 focus:ring-[#6ecf7a] [&:-webkit-autofill]:[box-shadow:inset_0_0_0_30px_#141414] [&:-webkit-autofill]:[-webkit-text-fill-color:#e5e5e5] [&:-webkit-autofill]:[transition:background-color_5000s_ease-in-out_0s]"
               />
             </div>
-            
+
             <!-- Forgot Password Link -->
             <div class="flex justify-end">
-              <a href="#" class="cursor-pointer text-sm text-[#4a89d3] hover:text-[#5fa2f0] transition-colors font-medium">Esqueceu a senha?</a>
+              <a href="#" class="cursor-pointer text-sm text-blue-400 hover:text-blue-300 transition-colors font-medium">Esqueceu a senha?</a>
             </div>
           </div>
 
           <!-- Buttons Area -->
           <div class="mt-8 flex flex-col space-y-4">
-            <button 
-              type="submit" 
-              class="cursor-pointer w-full bg-[#71ae7f] hover:bg-[#5b9568] text-[#0d1610] font-bold text-lg py-3 rounded-xl transition-all duration-300 shadow-md hover:shadow-lg transform active:scale-[0.98]">
+            <button
+              type="submit"
+              class="cursor-pointer w-full bg-[#6ecf7a] hover:bg-[#5fa268] text-[#0d1610] font-bold text-lg py-3 rounded-xl transition-all duration-300 shadow-md hover:shadow-lg transform active:scale-[0.98]">
               Entrar
             </button>
 
@@ -90,7 +92,7 @@
               <div class="grow border-t border-neutral-700"></div>
             </div>
 
-            <a 
+            <a
               routerLink="/cliente/autocadastro"
               class="cursor-pointer w-full text-center bg-transparent border-2 border-neutral-300 hover:border-white hover:text-white text-neutral-300 font-semibold text-base py-3 px-4 rounded-xl transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-neutral-500 transform active:scale-[0.98] inline-block">
               Criar uma nova conta

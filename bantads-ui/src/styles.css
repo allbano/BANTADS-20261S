@@ -6,7 +6,8 @@
   }
 
   body {
-    @apply min-h-dvh bg-[#f1faee] font-sans;
+    @apply min-h-dvh bg-[#191919] text-[#dfdfdf];
+    font-family: "Inter", sans-serif;
   }
 
   html {
