@@ -1,0 +1,82 @@
+<div
+  class="box-border min-h-dvh w-full bg-[#121212] px-[clamp(1rem,3vw,2rem)] pb-12 font-['Architects_Daughter','Poppins',system-ui,sans-serif] text-neutral-200"
+>
+  <app-cliente-top-nav />
+
+  @if (facade.resumo(); as r) {
+    <header class="mb-8 pt-6">
+      <h1 class="text-3xl font-normal text-neutral-50 md:text-4xl">Transferir</h1>
+      <p class="mt-2 text-neutral-400">Envie dinheiro para outra conta BANTADS</p>
+    </header>
+
+    <div class="grid gap-8 lg:grid-cols-[1fr_minmax(260px,320px)] lg:items-start">
+      <section
+        class="rounded-xl border border-white/[0.08] bg-[#1e1e1e] p-6 shadow-lg md:p-8"
+        aria-label="Formulário de transferência"
+      >
+        <p class="mb-6 text-sm text-neutral-400">
+          Disponível para transferência
+          <span class="mt-1 block text-2xl font-semibold text-neutral-100">
+            {{ disponivel(r) | currency: 'BRL' : 'symbol' : '1.2-2' }}
+          </span>
+        </p>
+
+        <label for="conta-dest" class="mb-2 block text-sm font-medium text-neutral-300">Conta destino</label>
+        <input
+          id="conta-dest"
+          name="contaDestino"
+          type="text"
+          inputmode="numeric"
+          maxlength="4"
+          placeholder="Número da conta (4 dígitos)"
+          [(ngModel)]="contaDestino"
+          class="mb-6 w-full rounded-xl border border-neutral-600 bg-[#141414] px-4 py-3 text-neutral-100 outline-none placeholder:text-neutral-600 focus:border-[#6ecf7a] focus:ring-1 focus:ring-[#6ecf7a]"
+        />
+
+        <label for="valor-trf" class="mb-2 block text-sm font-medium text-neutral-300">Valor da transferência</label>
+        <div class="relative mb-6">
+          <span class="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-neutral-500">R$</span>
+          <input
+            id="valor-trf"
+            name="valorTrf"
+            type="number"
+            min="0.01"
+            step="0.01"
+            [(ngModel)]="valor"
+            class="w-full rounded-xl border border-neutral-600 bg-[#141414] py-3 pr-4 pl-12 text-neutral-100 outline-none transition-colors focus:border-[#6ecf7a] focus:ring-1 focus:ring-[#6ecf7a]"
+          />
+        </div>
+
+        <button
+          type="button"
+          class="w-full cursor-pointer rounded-xl bg-[#6ecf7a] py-3.5 text-lg font-bold text-neutral-950 transition-opacity hover:opacity-90"
+          (click)="confirmar()"
+        >
+          Confirmar transferência
+        </button>
+
+        @if (facade.feedback(); as fb) {
+          <p
+            class="mt-4 rounded-xl border px-4 py-3 text-sm"
+            [class.border-green-600/50]="!fb.erro"
+            [class.bg-green-950/30]="!fb.erro"
+            [class.text-green-300]="!fb.erro"
+            [class.border-red-500/50]="fb.erro"
+            [class.bg-red-950/30]="fb.erro"
+            [class.text-red-300]="fb.erro"
+            role="status"
+          >
+            {{ fb.texto }}
+          </p>
+        }
+      </section>
+
+      <app-resumo-conta-lateral
+        [numeroConta]="r.numeroConta"
+        [saldo]="r.saldo"
+        [limite]="r.limiteCredito"
+        [disponivel]="disponivel(r)"
+      />
+    </div>
+  }
+</div>

@@ -1,5 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
+import { SessaoClienteService } from '../../../../core/auth/services/sessao-cliente.service';
 import { Dashboard } from './dashboard';
 
 describe('Dashboard', () => {
@@ -10,6 +11,8 @@ describe('Dashboard', () => {
     await TestBed.configureTestingModule({
       imports: [Dashboard],
     }).compileComponents();
+
+    TestBed.inject(SessaoClienteService).iniciar(1);
 
     fixture = TestBed.createComponent(Dashboard);
     component = fixture.componentInstance;

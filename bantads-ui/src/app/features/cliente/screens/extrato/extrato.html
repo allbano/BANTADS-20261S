@@ -1,0 +1,95 @@
+<div
+  class="box-border min-h-dvh w-full bg-[#121212] px-[clamp(1rem,3vw,2rem)] pb-12 font-['Architects_Daughter','Poppins',system-ui,sans-serif] text-neutral-200"
+>
+  <app-cliente-top-nav />
+
+  @if (facade.resumo(); as r) {
+    <header class="mb-6 flex flex-col gap-4 pt-6 md:flex-row md:flex-wrap md:items-end md:justify-between">
+      <div>
+        <h1 class="text-3xl font-normal text-neutral-50 md:text-4xl">Extrato</h1>
+        <p class="mt-2 text-neutral-400">Consulte suas movimentações por período</p>
+      </div>
+      <div class="flex flex-wrap items-end gap-4">
+        <div>
+          <label for="dt-ini" class="mb-1 block text-xs text-neutral-500">Início</label>
+          <input
+            id="dt-ini"
+            type="date"
+            name="dataInicio"
+            [(ngModel)]="dataInicio"
+            class="cursor-pointer rounded-xl border border-neutral-600 bg-[#141414] px-3 py-2 text-neutral-100 outline-none focus:border-[#6ecf7a]"
+          />
+        </div>
+        <div>
+          <label for="dt-fim" class="mb-1 block text-xs text-neutral-500">Fim</label>
+          <input
+            id="dt-fim"
+            type="date"
+            name="dataFim"
+            [(ngModel)]="dataFim"
+            class="cursor-pointer rounded-xl border border-neutral-600 bg-[#141414] px-3 py-2 text-neutral-100 outline-none focus:border-[#6ecf7a]"
+          />
+        </div>
+        <button
+          type="button"
+          class="cursor-pointer rounded-xl bg-[#6ecf7a] px-6 py-2 font-bold text-neutral-950 transition-opacity hover:opacity-90"
+          (click)="filtrar()"
+        >
+          Filtrar
+        </button>
+        <div class="md:ml-auto md:text-right">
+          <p class="text-xs text-neutral-400">Saldo atual</p>
+          @if (saldoNegativo(r.saldo)) {
+            <p class="text-xl font-semibold text-red-400 md:text-2xl">
+              - {{ r.saldo * -1 | currency: 'BRL' : 'symbol' : '1.2-2' }}
+            </p>
+          } @else {
+            <p class="text-xl font-semibold text-[#6ecf7a] md:text-2xl">
+              {{ r.saldo | currency: 'BRL' : 'symbol' : '1.2-2' }}
+            </p>
+          }
+        </div>
+      </div>
+    </header>
+
+    <div class="overflow-hidden rounded-xl border border-white/[0.08] bg-[#1e1e1e] p-4 md:p-6">
+      @for (bloco of facade.dias(); track bloco.data) {
+        <section class="mb-8 last:mb-0">
+          <h2 class="mb-3 text-lg font-semibold text-neutral-100">{{ formatarDia(bloco.data) }}</h2>
+          <div class="overflow-x-auto rounded-lg border border-white/[0.06]">
+            <table class="w-full min-w-[640px] border-collapse text-sm">
+              <thead>
+                <tr class="border-b border-white/10 text-left text-neutral-400">
+                  <th class="px-3 py-2 font-medium">Data/hora</th>
+                  <th class="px-3 py-2 font-medium">Tipo</th>
+                  <th class="px-3 py-2 font-medium">Origem/destino</th>
+                  <th class="px-3 py-2 text-right font-medium">Valor</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-white/[0.06]">
+                @for (m of bloco.movimentacoes; track m.id) {
+                  <tr [class]="classeLinha(m)">
+                    <td class="whitespace-nowrap px-3 py-2">{{ m.instante | date: 'dd/MM/yyyy HH:mm' }}</td>
+                    <td class="px-3 py-2">{{ rotuloTipo(m.tipo) }}</td>
+                    <td class="px-3 py-2">{{ contraparte(m) }}</td>
+                    <td class="whitespace-nowrap px-3 py-2 text-right">
+                      {{ prefixoValor(m) }}{{ m.valor | number: '1.2-2' }}
+                    </td>
+                  </tr>
+                }
+                <tr class="border-t border-white/15 bg-white/[0.04] text-neutral-100">
+                  <td colspan="3" class="px-3 py-3 font-medium">
+                    Saldo consolidado {{ formatarDia(bloco.data) }}:
+                  </td>
+                  <td class="px-3 py-3 text-right font-semibold">
+                    {{ bloco.saldoConsolidadoFimDia | currency: 'BRL' : 'symbol' : '1.2-2' }}
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+      }
+    </div>
+  }
+</div>
