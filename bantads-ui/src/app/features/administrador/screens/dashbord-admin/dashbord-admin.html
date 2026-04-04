@@ -1,22 +1,5 @@
 <div class="box-border min-h-dvh w-full bg-[#191919] px-[clamp(1rem,3vw,2rem)] pb-12 text-[#dfdfdf] flex flex-col">
-  <header class="w-full flex flex-wrap items-center justify-between gap-4 gap-x-6 border-b border-white/8 py-4">
-    <div class="flex items-center gap-10">
-      <div class="text-[1.75rem] tracking-wide text-[#e5e5e5]">
-        BANTADS
-      </div>
-      <nav class="hidden md:flex gap-6 text-[0.95rem]">
-        <a routerLink="/admin/dashboard" class="text-[#6ecf7a]! font-semibold no-underline transition-colors hover:text-white">Dashboard</a>
-        <a routerLink="/admin/gerentes" class="text-neutral-200 no-underline transition-colors hover:text-white">Gerentes</a>
-        <a routerLink="/admin/relatorios" class="text-neutral-200 no-underline transition-colors hover:text-white">Relatórios</a>
-      </nav>
-    </div>
-
-    <div>
-      <button (click)="sair()" class="cursor-pointer rounded-lg border-none bg-transparent px-2 py-1.5 text-[0.95rem] font-semibold text-red-400 transition-colors hover:bg-red-400/12">
-        Sair
-      </button>
-    </div>
-  </header>
+  <app-admin-top-nav />
 
   <main class="flex-1 w-full pt-8">
       <div class="w-full max-w-6xl mx-auto bg-[#1f1f1e] border border-neutral-700/60 rounded-4xl p-8 lg:p-12 shadow-xl relative">
@@ -25,6 +8,12 @@
           <h2 class="text-3xl font-light mb-2 text-[#e5e5e5]">Dashboard de Desempenho</h2>
           <p class="text-neutral-400 text-sm">Resumo da carteira de clientes de cada gerente (Ordenado por maior saldo positivo).</p>
         </div>
+
+        @if (facade.erro(); as erro) {
+          <div class="bg-red-500/10 border border-red-500/30 rounded-xl p-4 mb-6 text-red-400 text-sm">
+            {{ erro }}
+          </div>
+        }
 
         <div class="bg-[#292929] border border-neutral-700/50 rounded-xl overflow-x-auto">
           <table class="w-full text-left border-collapse">
@@ -37,7 +26,7 @@
               </tr>
             </thead>
             <tbody class="text-sm">
-              @for (gerente of gerentesEstatisticas; track gerente.id) {
+              @for (gerente of facade.estatisticasOrdenadas(); track gerente.gerenteId) {
                 <tr class="border-b border-neutral-700/50 hover:bg-[#252528] transition-colors">
                   <td class="py-4 px-6 text-neutral-200 font-medium">
                     <div class="flex items-center gap-3">
@@ -70,4 +59,5 @@
 
       </div>
   </main>
+
 </div>

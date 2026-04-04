@@ -1,66 +1,59 @@
-<div class="min-h-screen bg-[#18181A] text-white flex flex-col">
-  <header class="w-full flex items-center justify-between px-10 py-5 border-b border-[#2A2A2A]">
-    <div class="flex items-center gap-10">
-      <div class="text-2xl font-semibold tracking-wider text-[#6dbf73]">
-        BANTADS
-      </div>
-      <nav class="hidden md:flex gap-6 text-[#ccc] text-sm">
-        <a routerLink="/admin/dashboard" class="hover:text-white transition-colors pb-1">Dashboard</a>
-        <a routerLink="/admin/gerentes" class="hover:text-white transition-colors pb-1">Gerentes</a>
-        <a routerLink="/admin/relatorios" class="text-white font-medium border-b-2 border-[#6dbf73] pb-1">Relatórios</a>
-      </nav>
-    </div>
-    <button (click)="sair()" class="px-6 py-2 border border-[#444] rounded-md text-sm hover:bg-[#2A2A2A] transition-colors">Sair</button>
-  </header>
+<div class="box-border min-h-dvh w-full bg-[#191919] px-[clamp(1rem,3vw,2rem)] pb-12 text-[#dfdfdf] flex flex-col">
+  <app-admin-top-nav />
 
-  <main class="flex-1 w-full p-8 lg:p-12">
-    <div class="w-full max-w-[95%] mx-auto bg-[#18181A] border border-[#333] rounded-[2rem] p-8 shadow-2xl">
-      
+  <main class="flex-1 w-full pt-8">
+    <div class="w-full max-w-[95%] mx-auto bg-[#1f1f1e] border border-neutral-700/60 rounded-4xl p-8 lg:p-12 shadow-xl">
+
       <div class="mb-8">
-        <h2 class="text-3xl font-light mb-2 font-[Comic Sans MS, cursive, sans-serif] text-white">Relatório de Clientes</h2>
-        <p class="text-[#888] text-sm">Listagem completa e detalhada de todos os clientes do banco.</p>
+        <h2 class="text-3xl font-light mb-2 text-[#e5e5e5]">Relatório de Clientes</h2>
+        <p class="text-neutral-400 text-sm">Listagem completa e detalhada de todos os clientes do banco.</p>
       </div>
 
-      <div class="bg-[#222] border border-[#333] rounded-xl p-4 mb-8 flex gap-4">
-        <input type="text" [(ngModel)]="termoBusca" (input)="filtrar()" placeholder="Filtrar por nome, CPF ou e-mail..." 
-               class="flex-1 bg-[#18181A] border border-[#444] rounded-md px-4 py-2 text-white focus:outline-none focus:border-[#6dbf73]">
+      <div class="bg-[#292929] border border-neutral-700/50 rounded-xl p-4 mb-8 flex gap-4">
+        <input
+          type="text"
+          [ngModel]="facade.filtro()"
+          (ngModelChange)="facade.setFiltro($event)"
+          placeholder="Filtrar por nome, CPF ou e-mail..."
+          class="flex-1 bg-[#191919] border border-neutral-600 rounded-md px-4 py-2 text-white focus:outline-none focus:border-[#6ecf7a]"
+        >
       </div>
 
-      <div class="overflow-x-auto rounded-xl border border-[#333]">
+      <div class="overflow-x-auto rounded-xl border border-neutral-700/50">
         <table class="w-full text-left border-collapse min-w-[1200px]">
           <thead>
-            <tr class="text-[#888] bg-[#1f1f22] text-xs uppercase tracking-wider">
-              <th class="py-4 px-4 font-medium border-b border-[#333]">Cliente (Nome/CPF)</th>
-              <th class="py-4 px-4 font-medium border-b border-[#333]">E-mail</th>
-              <th class="py-4 px-4 font-medium border-b border-[#333]">Salário</th>
-              <th class="py-4 px-4 font-medium border-b border-[#333]">Conta</th>
-              <th class="py-4 px-4 font-medium border-b border-[#333]">Saldo</th>
-              <th class="py-4 px-4 font-medium border-b border-[#333]">Limite</th>
-              <th class="py-4 px-4 font-medium border-b border-[#333]">Gerente (Nome/CPF)</th>
+            <tr class="text-neutral-500 bg-[#1f1f1e] text-xs uppercase tracking-wider">
+              <th class="py-4 px-4 font-medium border-b border-neutral-700/50">Cliente (Nome/CPF)</th>
+              <th class="py-4 px-4 font-medium border-b border-neutral-700/50">E-mail</th>
+              <th class="py-4 px-4 font-medium border-b border-neutral-700/50">Salário</th>
+              <th class="py-4 px-4 font-medium border-b border-neutral-700/50">Conta</th>
+              <th class="py-4 px-4 font-medium border-b border-neutral-700/50">Saldo</th>
+              <th class="py-4 px-4 font-medium border-b border-neutral-700/50">Limite</th>
+              <th class="py-4 px-4 font-medium border-b border-neutral-700/50">Gerente (Nome/CPF)</th>
             </tr>
           </thead>
           <tbody class="text-sm">
-            @for (cliente of clientesFiltrados; track cliente.cpf) {
-              <tr class="border-b border-[#333] hover:bg-[#222] transition-colors">
+            @for (cliente of facade.clientesFiltrados(); track cliente.cpf) {
+              <tr class="border-b border-neutral-700/50 hover:bg-[#252528] transition-colors">
                 <td class="py-4 px-4">
-                  <div class="text-white font-medium">{{ cliente.nome }}</div>
-                  <div class="text-[10px] text-[#666]">{{ cliente.cpf }}</div>
+                  <div class="text-neutral-200 font-medium">{{ cliente.nome }}</div>
+                  <div class="text-[10px] text-neutral-500">{{ cliente.cpf }}</div>
                 </td>
-                <td class="py-4 px-4 text-[#aaa]">{{ cliente.email }}</td>
-                <td class="py-4 px-4 text-[#aaa]">R$ {{ cliente.salario | number:'1.2-2' }}</td>
-                <td class="py-4 px-4 text-[#aaa]">{{ cliente.numeroConta }}</td>
-                <td class="py-4 px-4 font-medium" [ngClass]="{'text-[#6dbf73]': cliente.saldo >= 0, 'text-red-400': cliente.saldo < 0}">
+                <td class="py-4 px-4 text-neutral-400">{{ cliente.email }}</td>
+                <td class="py-4 px-4 text-neutral-400">R$ {{ cliente.salario | number:'1.2-2' }}</td>
+                <td class="py-4 px-4 text-neutral-400">{{ cliente.numeroConta }}</td>
+                <td class="py-4 px-4 font-medium" [class]="cliente.saldo >= 0 ? 'text-[#6ecf7a]' : 'text-red-400'">
                   R$ {{ cliente.saldo | number:'1.2-2' }}
                 </td>
-                <td class="py-4 px-4 text-[#aaa]">R$ {{ cliente.limite | number:'1.2-2' }}</td>
+                <td class="py-4 px-4 text-neutral-400">R$ {{ cliente.limite | number:'1.2-2' }}</td>
                 <td class="py-4 px-4">
-                  <div class="text-[#ccc]">{{ cliente.nomeGerente }}</div>
-                  <div class="text-[10px] text-[#666]">{{ cliente.cpfGerente }}</div>
+                  <div class="text-neutral-300">{{ cliente.nomeGerente }}</div>
+                  <div class="text-[10px] text-neutral-500">{{ cliente.cpfGerente }}</div>
                 </td>
               </tr>
             } @empty {
               <tr>
-                <td colspan="7" class="py-12 text-center text-[#666] italic">Nenhum cliente encontrado.</td>
+                <td colspan="7" class="py-12 text-center text-neutral-500 italic">Nenhum cliente encontrado.</td>
               </tr>
             }
           </tbody>

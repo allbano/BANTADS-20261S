@@ -1,0 +1,41 @@
+<header class="flex flex-wrap items-center justify-between gap-4 gap-x-6 border-b border-white/8 py-4">
+  <a
+    routerLink="/admin/dashboard"
+    class="cursor-pointer font-['Architects_Daughter',cursive] text-[1.75rem] tracking-wide text-neutral-100 no-underline"
+  >
+    BANTADS
+  </a>
+
+  <nav class="flex flex-wrap items-center gap-x-6 gap-y-4 text-[0.95rem]" aria-label="Menu do administrador">
+    <a
+      routerLink="/admin/dashboard"
+      routerLinkActive="font-semibold !text-[#6ecf7a]"
+      [routerLinkActiveOptions]="{ exact: true }"
+      class="cursor-pointer text-neutral-200 no-underline transition-colors hover:text-white"
+    >
+      Dashboard
+    </a>
+    <a
+      routerLink="/admin/gerentes"
+      routerLinkActive="font-semibold !text-[#6ecf7a]"
+      class="cursor-pointer text-neutral-200 no-underline transition-colors hover:text-white"
+    >
+      Gerentes
+    </a>
+    <a
+      routerLink="/admin/relatorios"
+      routerLinkActive="font-semibold !text-[#6ecf7a]"
+      class="cursor-pointer text-neutral-200 no-underline transition-colors hover:text-white"
+    >
+      Relatórios
+    </a>
+  </nav>
+
+  <button
+    type="button"
+    class="cursor-pointer rounded-lg border-none bg-transparent px-2 py-1.5 text-[0.95rem] font-semibold text-red-400 transition-colors hover:bg-red-400/12"
+    (click)="sair()"
+  >
+    Sair
+  </button>
+</header>
