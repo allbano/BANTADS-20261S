@@ -1,0 +1,83 @@
+<!-- Overlay de fundo escuro -->
+<div class="fixed inset-0 bg-[#000000cc] z-50 flex items-center justify-center p-4">
+    <!-- Container do Modal -->
+    <div class="bg-[#18181A] border border-[#333] rounded-2xl w-full max-w-lg shadow-2xl relative overflow-hidden flex flex-col animate-[fadeIn_0.2s_ease-out]">
+
+        <!-- Cabeçalho -->
+        <div class="flex items-center justify-between px-6 py-4 border-b border-[#2A2A2A]">
+            <h4 class="text-xl font-medium text-white">Pedido de Autocadastro</h4>
+            <button type="button" class="text-[#888] hover:text-white transition-colors" aria-label="Fechar" (click)="onFechar()">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+            </button>
+        </div>
+
+        <!-- Corpo do Modal -->
+        @if (pedido) {
+            <div class="p-6 text-[#ccc] space-y-3 font-light max-h-[60vh] overflow-y-auto">
+                <!-- Dados Pessoais -->
+                <h5 class="text-sm uppercase tracking-wider text-neutral-500 mb-2">Dados Pessoais</h5>
+                <div class="grid grid-cols-3 gap-2">
+                    <span class="text-[#888]">Nome:</span>
+                    <span class="col-span-2 text-white">{{ pedido.nome }}</span>
+                </div>
+                <div class="grid grid-cols-3 gap-2">
+                    <span class="text-[#888]">CPF:</span>
+                    <span class="col-span-2 text-white">{{ pedido.cpf }}</span>
+                </div>
+                <div class="grid grid-cols-3 gap-2">
+                    <span class="text-[#888]">E-mail:</span>
+                    <span class="col-span-2 text-white">{{ pedido.email }}</span>
+                </div>
+                <div class="grid grid-cols-3 gap-2">
+                    <span class="text-[#888]">Telefone:</span>
+                    <span class="col-span-2 text-white">{{ pedido.telefone }}</span>
+                </div>
+                <div class="grid grid-cols-3 gap-2">
+                    <span class="text-[#888]">Salário:</span>
+                    <span class="col-span-2 text-[#6dbf73] font-medium">{{ pedido.salario | currency:'BRL':'symbol' }}</span>
+                </div>
+                <div class="grid grid-cols-3 gap-2">
+                    <span class="text-[#888]">Limite estimado:</span>
+                    <span class="col-span-2 text-white">
+                        @if (pedido.salario >= 2000) {
+                            {{ pedido.salario / 2 | currency:'BRL':'symbol' }}
+                        } @else {
+                            <span class="text-neutral-500 italic">Sem limite (salário &lt; R$ 2.000)</span>
+                        }
+                    </span>
+                </div>
+
+                <!-- Endereço -->
+                <h5 class="text-sm uppercase tracking-wider text-neutral-500 mt-4 mb-2">Endereço</h5>
+                <div class="grid grid-cols-3 gap-2">
+                    <span class="text-[#888]">CEP:</span>
+                    <span class="col-span-2 text-white">{{ pedido.endereco.cep }}</span>
+                </div>
+                <div class="grid grid-cols-3 gap-2">
+                    <span class="text-[#888]">Logradouro:</span>
+                    <span class="col-span-2 text-white">{{ pedido.endereco.logradouro }}, {{ pedido.endereco.numero }}</span>
+                </div>
+                @if (pedido.endereco.complemento) {
+                    <div class="grid grid-cols-3 gap-2">
+                        <span class="text-[#888]">Complemento:</span>
+                        <span class="col-span-2 text-white">{{ pedido.endereco.complemento }}</span>
+                    </div>
+                }
+                <div class="grid grid-cols-3 gap-2">
+                    <span class="text-[#888]">Cidade/UF:</span>
+                    <span class="col-span-2 text-white">{{ pedido.endereco.cidade }} / {{ pedido.endereco.uf }}</span>
+                </div>
+            </div>
+        }
+
+        <!-- Rodapé do Modal -->
+        <div class="flex gap-4 px-6 py-4 bg-[#111112] border-t border-[#2A2A2A]">
+            <button type="button" class="flex-1 bg-red-500/15 hover:bg-red-500/25 border border-red-500/40 text-red-400 font-medium px-4 py-2.5 rounded-xl transition-colors" (click)="onRejeitar()">
+                Recusar
+            </button>
+            <button type="button" class="flex-1 bg-[#6dbf73] hover:bg-[#5da262] text-black font-medium px-4 py-2.5 rounded-xl transition-colors" (click)="onAprovar()">
+                Aprovar
+            </button>
+        </div>
+    </div>
+</div>

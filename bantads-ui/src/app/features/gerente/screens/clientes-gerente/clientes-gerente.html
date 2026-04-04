@@ -1,0 +1,69 @@
+<div class="box-border min-h-dvh w-full px-[clamp(1rem,3vw,2rem)] pb-12">
+  <app-gerente-top-nav />
+
+  <main class="pt-6 max-w-6xl mx-auto">
+    <header class="mb-8 flex flex-wrap items-end justify-between gap-4">
+      <div>
+        <h1 class="m-0 text-4xl font-normal leading-tight text-[#e5e5e5]">Meus Clientes</h1>
+        <p class="mt-2 text-[1.05rem] text-[#9f9f9f]">Todos os clientes aprovados sob sua gestão</p>
+      </div>
+
+      <!-- Campo de pesquisa -->
+      <div class="relative">
+        <input
+          type="text"
+          placeholder="Pesquisar por CPF ou Nome..."
+          class="w-72 bg-[#111] border border-[#333] rounded-xl px-4 py-2.5 pl-10 text-white text-[0.9rem] focus:outline-none focus:border-[#6dbf73]/60 transition-colors placeholder:text-neutral-600"
+          [ngModel]="facade.filtro()"
+          (ngModelChange)="facade.setFiltro($event)"
+        />
+        <svg class="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-600" xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+      </div>
+    </header>
+
+    <!-- Tabela de Clientes -->
+    <div class="bg-[#1f1f1e] border border-neutral-700/60 rounded-2xl overflow-hidden shadow-xl">
+      <table class="w-full text-left border-collapse">
+        <thead class="bg-[#292929] text-neutral-500 text-sm uppercase tracking-wider">
+          <tr>
+            <th class="px-6 py-4 font-medium">CPF</th>
+            <th class="px-6 py-4 font-medium">Nome</th>
+            <th class="px-6 py-4 font-medium">Cidade</th>
+            <th class="px-6 py-4 font-medium">Estado</th>
+            <th class="px-6 py-4 font-medium text-right">Saldo</th>
+            <th class="px-6 py-4 font-medium text-right">Limite</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-neutral-700/50">
+          @for (cliente of facade.clientesFiltrados(); track cliente.id) {
+            <tr class="hover:bg-[#252528] transition-colors group">
+              <td class="px-6 py-4 text-neutral-400 font-mono text-[0.9rem]">{{ cliente.cpf }}</td>
+              <td class="px-6 py-4">
+                <a
+                  [routerLink]="['/gerente/clientes', cliente.id]"
+                  class="text-neutral-100 underline underline-offset-2 decoration-neutral-600 hover:decoration-[#6ecf7a] hover:text-[#6ecf7a] transition-colors text-[0.95rem]"
+                >
+                  {{ cliente.nome }}
+                </a>
+              </td>
+              <td class="px-6 py-4 text-neutral-300">{{ cliente.endereco.cidade }}</td>
+              <td class="px-6 py-4 text-neutral-400">{{ cliente.endereco.uf }}</td>
+              <td class="px-6 py-4 text-right"
+                [class]="cliente.saldo < 0 ? 'text-red-400' : 'text-[#6ecf7a]'"
+              >
+                {{ cliente.saldo | currency:'BRL':'symbol' }}
+              </td>
+              <td class="px-6 py-4 text-right text-neutral-300">{{ cliente.limite | currency:'BRL':'symbol' }}</td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="6" class="px-6 py-12 text-center text-neutral-500 italic">
+                Nenhum cliente encontrado com o filtro informado.
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </main>
+</div>

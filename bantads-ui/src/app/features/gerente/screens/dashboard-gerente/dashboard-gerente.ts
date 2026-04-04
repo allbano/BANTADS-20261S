@@ -1,42 +1,66 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject, OnInit, signal } from '@angular/core';
 import { CurrencyPipe } from '@angular/common';
 
-import { Cliente, ClienteRepository } from '../../../cliente/domain';
-import { CLIENTES_DEMONSTRACAO } from '../../../cliente/infrastructure/data/clientes-demonstracao';
-import { ClienteLocalStorageService } from '../../../cliente/infrastructure/services/cliente-local-storage.service';
-import { ModalCliente } from '../modal-cliente/modal-cliente';
-
+import { DashboardGerenteFacade } from '../../application/facades/dashboard-gerente.facade';
+import { AprovacaoRepository } from '../../domain/repositories/aprovacao.repository';
+import { AprovacaoMockService } from '../../infrastructure/services/aprovacao-mock.service';
+import { GerenteTopNav } from '../../components/gerente-top-nav/gerente-top-nav';
+import { ModalAprovarRejeitar } from '../../components/modal-aprovar-rejeitar/modal-aprovar-rejeitar';
+import { ModalRejeitarMotivo } from '../../components/modal-rejeitar-motivo/modal-rejeitar-motivo';
+import type { PedidoAutocadastro } from '../../domain/models/pedido-autocadastro.model';
 
 @Component({
   selector: 'app-dashboard-gerente',
-  imports: [ CurrencyPipe, ModalCliente],
-  standalone: true,
+  imports: [CurrencyPipe, GerenteTopNav, ModalAprovarRejeitar, ModalRejeitarMotivo],
   templateUrl: './dashboard-gerente.html',
-  styleUrl: './dashboard-gerente.css',
   providers: [
-    { provide: ClienteRepository, useClass: ClienteLocalStorageService },
+    DashboardGerenteFacade,
+    { provide: AprovacaoRepository, useExisting: AprovacaoMockService },
   ],
 })
 export class DashboardGerente implements OnInit {
+  readonly facade = inject(DashboardGerenteFacade);
 
-  isModalOpen = false;
-  selectedCliente: Cliente | null = null;
-
-  private clienteRepository = inject(ClienteRepository);
-  clientes: Cliente[] = [];
+  readonly pedidoSelecionado = signal<PedidoAutocadastro | null>(null);
+  readonly modalDetalhesAberto = signal(false);
+  readonly modalMotivoAberto = signal(false);
+  readonly pedidoParaRejeitar = signal<number | null>(null);
 
   ngOnInit(): void {
-    // this.clientes = this.clienteRepository.listarTodos();
-    this.clientes = [...CLIENTES_DEMONSTRACAO];
+    this.facade.carregar();
   }
 
-  openModal(cliente: Cliente) {
-    this.selectedCliente = cliente;
-    this.isModalOpen = true;
+  abrirDetalhes(pedido: PedidoAutocadastro): void {
+    this.pedidoSelecionado.set(pedido);
+    this.modalDetalhesAberto.set(true);
   }
 
-  closeModal() {
-    this.isModalOpen = false;
-    this.selectedCliente = null;
+  fecharDetalhes(): void {
+    this.modalDetalhesAberto.set(false);
+    this.pedidoSelecionado.set(null);
+  }
+
+  aprovarPedido(pedidoId: number): void {
+    this.fecharDetalhes();
+    this.facade.aprovar(pedidoId);
+  }
+
+  iniciarRejeicao(pedidoId: number): void {
+    this.fecharDetalhes();
+    this.pedidoParaRejeitar.set(pedidoId);
+    this.modalMotivoAberto.set(true);
+  }
+
+  confirmarRejeicao(motivo: string): void {
+    const pedidoId = this.pedidoParaRejeitar();
+    if (pedidoId !== null) {
+      this.facade.rejeitar(pedidoId, motivo);
+    }
+    this.fecharModalMotivo();
+  }
+
+  fecharModalMotivo(): void {
+    this.modalMotivoAberto.set(false);
+    this.pedidoParaRejeitar.set(null);
   }
 }

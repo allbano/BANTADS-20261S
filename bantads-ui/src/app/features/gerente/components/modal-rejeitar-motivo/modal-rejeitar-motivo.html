@@ -1,0 +1,43 @@
+<!-- Overlay de fundo escuro -->
+<div class="fixed inset-0 bg-[#000000cc] z-60 flex items-center justify-center p-4">
+    <!-- Container do Modal -->
+    <div class="bg-[#18181A] border border-[#333] rounded-2xl w-full max-w-md shadow-2xl relative overflow-hidden flex flex-col animate-[fadeIn_0.2s_ease-out]">
+
+        <!-- Cabeçalho -->
+        <div class="flex items-center justify-between px-6 py-4 border-b border-[#2A2A2A]">
+            <h4 class="text-xl font-medium text-white">Motivo da Recusa</h4>
+            <button type="button" class="text-[#888] hover:text-white transition-colors" aria-label="Cancelar" (click)="onCancelar()">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+            </button>
+        </div>
+
+        <!-- Corpo -->
+        <div class="p-6">
+            <label for="motivo-rejeicao" class="block text-[0.9rem] text-neutral-400 mb-2">
+                Informe o motivo da rejeição do cadastro:
+            </label>
+            <textarea
+                id="motivo-rejeicao"
+                class="w-full min-h-[120px] bg-[#111] border border-[#333] rounded-xl px-4 py-3 text-white text-[0.95rem] resize-y focus:outline-none focus:border-[#6dbf73]/60 transition-colors placeholder:text-neutral-600"
+                placeholder="Descreva o motivo da recusa..."
+                [ngModel]="motivo()"
+                (ngModelChange)="motivo.set($event)"
+            ></textarea>
+        </div>
+
+        <!-- Rodapé -->
+        <div class="flex gap-4 px-6 py-4 bg-[#111112] border-t border-[#2A2A2A]">
+            <button type="button" class="flex-1 bg-[#2A2A2A] hover:bg-[#333] border border-[#444] text-white px-4 py-2.5 rounded-xl transition-colors" (click)="onCancelar()">
+                Cancelar
+            </button>
+            <button
+                type="button"
+                class="flex-1 bg-red-500 hover:bg-red-600 text-white font-medium px-4 py-2.5 rounded-xl transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                [disabled]="!motivo().trim()"
+                (click)="onConfirmar()"
+            >
+                Confirmar Recusa
+            </button>
+        </div>
+    </div>
+</div>

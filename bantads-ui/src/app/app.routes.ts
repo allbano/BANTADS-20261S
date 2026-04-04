@@ -77,7 +77,27 @@ export const routes: Routes = [
     {
         path: 'gerente/dashboard',
         loadComponent: () => import('./features/gerente/screens/dashboard-gerente/dashboard-gerente').then(m => m.DashboardGerente),
-        title: "BANTADS - Dashboard Gerente"
+        title: "BANTADS - Aprovações Pendentes"
+    },
+    {
+        path: 'gerente/clientes',
+        loadComponent: () => import('./features/gerente/screens/clientes-gerente/clientes-gerente').then(m => m.ClientesGerente),
+        title: "BANTADS - Clientes do Gerente"
+    },
+    {
+        path: 'gerente/clientes/:id',
+        loadComponent: () => import('./features/gerente/screens/detalhe-cliente/detalhe-cliente').then(m => m.DetalheCliente),
+        title: "BANTADS - Detalhe do Cliente"
+    },
+    {
+        path: 'gerente/consulta',
+        loadComponent: () => import('./features/gerente/screens/consulta-cliente/consulta-cliente').then(m => m.ConsultaCliente),
+        title: "BANTADS - Consulta por CPF"
+    },
+    {
+        path: 'gerente/top-clientes',
+        loadComponent: () => import('./features/gerente/screens/top-clientes/top-clientes').then(m => m.TopClientes),
+        title: "BANTADS - Top 3 Clientes"
     },
 
 ];

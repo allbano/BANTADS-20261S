@@ -1,0 +1,51 @@
+<div class="box-border min-h-dvh w-full px-[clamp(1rem,3vw,2rem)] pb-12">
+  <app-gerente-top-nav />
+
+  <main class="pt-6 max-w-5xl mx-auto">
+    <header class="mb-8">
+      <h1 class="m-0 text-4xl font-normal leading-tight text-[#e5e5e5]">🏆 Top 3 Clientes</h1>
+      <p class="mt-2 text-[1.05rem] text-[#9f9f9f]">Clientes com os maiores saldos em conta (todos os gerentes)</p>
+    </header>
+
+    <div class="bg-[#1f1f1e] border border-neutral-700/60 rounded-2xl overflow-hidden shadow-xl">
+      <table class="w-full text-left border-collapse">
+        <thead class="bg-[#292929] text-neutral-500 text-sm uppercase tracking-wider">
+          <tr>
+            <th class="px-6 py-4 font-medium w-12">#</th>
+            <th class="px-6 py-4 font-medium">CPF</th>
+            <th class="px-6 py-4 font-medium">Nome</th>
+            <th class="px-6 py-4 font-medium">Cidade</th>
+            <th class="px-6 py-4 font-medium">Estado</th>
+            <th class="px-6 py-4 font-medium text-right">Saldo</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-neutral-700/50">
+          @for (cliente of facade.topClientes(); track cliente.cpf; let i = $index) {
+            <tr class="hover:bg-[#252528] transition-colors">
+              <td class="px-6 py-4">
+                @switch (i) {
+                  @case (0) { <span class="text-2xl">🥇</span> }
+                  @case (1) { <span class="text-2xl">🥈</span> }
+                  @case (2) { <span class="text-2xl">🥉</span> }
+                }
+              </td>
+              <td class="px-6 py-4 text-neutral-400 font-mono text-[0.9rem]">{{ cliente.cpf }}</td>
+              <td class="px-6 py-4 text-white font-medium">{{ cliente.nome }}</td>
+              <td class="px-6 py-4 text-neutral-300">{{ cliente.cidade }}</td>
+              <td class="px-6 py-4 text-neutral-400">{{ cliente.estado }}</td>
+              <td class="px-6 py-4 text-right text-[#6ecf7a] font-semibold text-[1.1rem]">
+                {{ cliente.saldo | currency:'BRL':'symbol' }}
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="6" class="px-6 py-12 text-center text-neutral-500 italic">
+                Nenhum cliente encontrado.
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </main>
+</div>

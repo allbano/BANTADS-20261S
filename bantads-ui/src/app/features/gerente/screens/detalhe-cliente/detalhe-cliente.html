@@ -1,0 +1,100 @@
+<div class="box-border min-h-dvh w-full px-[clamp(1rem,3vw,2rem)] pb-12">
+  <app-gerente-top-nav />
+
+  <main class="pt-6 max-w-4xl mx-auto">
+    <a routerLink="/gerente/clientes" class="inline-flex items-center gap-1 text-neutral-400 hover:text-white transition-colors text-[0.9rem] no-underline mb-6">
+      ← Voltar para lista
+    </a>
+
+    @if (cliente(); as c) {
+      <header class="mb-8">
+        <h1 class="m-0 text-3xl font-normal leading-tight text-[#e5e5e5]">{{ c.nome }}</h1>
+        <p class="mt-1 text-[0.95rem] text-neutral-500">CPF: {{ c.cpf }}</p>
+      </header>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <!-- Dados Pessoais -->
+        <section class="rounded-xl border border-white/6 bg-[#1f1f1e] p-6">
+          <h2 class="text-sm uppercase tracking-wider text-neutral-500 mb-5">Dados Pessoais</h2>
+          <dl class="space-y-3">
+            <div class="flex justify-between">
+              <dt class="text-neutral-500">Nome</dt>
+              <dd class="text-white">{{ c.nome }}</dd>
+            </div>
+            <div class="flex justify-between">
+              <dt class="text-neutral-500">CPF</dt>
+              <dd class="text-white font-mono text-[0.9rem]">{{ c.cpf }}</dd>
+            </div>
+            <div class="flex justify-between">
+              <dt class="text-neutral-500">E-mail</dt>
+              <dd class="text-white">{{ c.email }}</dd>
+            </div>
+            <div class="flex justify-between">
+              <dt class="text-neutral-500">Telefone</dt>
+              <dd class="text-white">{{ c.telefone }}</dd>
+            </div>
+            <div class="flex justify-between">
+              <dt class="text-neutral-500">Salário</dt>
+              <dd class="text-[#6ecf7a] font-medium">{{ c.salario | currency:'BRL':'symbol' }}</dd>
+            </div>
+          </dl>
+        </section>
+
+        <!-- Dados da Conta -->
+        <section class="rounded-xl border border-white/6 bg-[#1f1f1e] p-6">
+          <h2 class="text-sm uppercase tracking-wider text-neutral-500 mb-5">Conta Corrente</h2>
+          <dl class="space-y-3">
+            <div class="flex justify-between">
+              <dt class="text-neutral-500">Nº da Conta</dt>
+              <dd class="text-white font-mono text-lg font-semibold">{{ c.numeroConta }}</dd>
+            </div>
+            <div class="flex justify-between">
+              <dt class="text-neutral-500">Saldo</dt>
+              <dd [class]="c.saldo < 0 ? 'text-red-400 font-semibold text-lg' : 'text-[#6ecf7a] font-semibold text-lg'">
+                {{ c.saldo | currency:'BRL':'symbol' }}
+              </dd>
+            </div>
+            <div class="flex justify-between">
+              <dt class="text-neutral-500">Limite</dt>
+              <dd class="text-white">{{ c.limite | currency:'BRL':'symbol' }}</dd>
+            </div>
+            <div class="flex justify-between">
+              <dt class="text-neutral-500">Abertura</dt>
+              <dd class="text-white">{{ c.dataAberturaConta | date:'dd/MM/yyyy' }}</dd>
+            </div>
+          </dl>
+        </section>
+
+        <!-- Endereço -->
+        <section class="rounded-xl border border-white/6 bg-[#1f1f1e] p-6 md:col-span-2">
+          <h2 class="text-sm uppercase tracking-wider text-neutral-500 mb-5">Endereço</h2>
+          <dl class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div class="flex justify-between">
+              <dt class="text-neutral-500">CEP</dt>
+              <dd class="text-white">{{ c.endereco.cep }}</dd>
+            </div>
+            <div class="flex justify-between">
+              <dt class="text-neutral-500">Logradouro</dt>
+              <dd class="text-white">{{ c.endereco.logradouro }}, {{ c.endereco.numero }}</dd>
+            </div>
+            @if (c.endereco.complemento) {
+              <div class="flex justify-between">
+                <dt class="text-neutral-500">Complemento</dt>
+                <dd class="text-white">{{ c.endereco.complemento }}</dd>
+              </div>
+            }
+            <div class="flex justify-between">
+              <dt class="text-neutral-500">Cidade/UF</dt>
+              <dd class="text-white">{{ c.endereco.cidade }} / {{ c.endereco.uf }}</dd>
+            </div>
+          </dl>
+        </section>
+      </div>
+    } @else {
+      <div class="text-center text-neutral-500 py-16">
+        <p class="text-lg">Cliente não encontrado.</p>
+        <a routerLink="/gerente/clientes" class="text-[#6ecf7a] no-underline hover:underline mt-2 inline-block">Voltar para lista</a>
+      </div>
+    }
+  </main>
+</div>
