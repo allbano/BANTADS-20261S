@@ -4,7 +4,9 @@ import { CurrencyPipe } from '@angular/common';
 
 import { PerfilClienteFacade } from '../../application/facades/perfil-cliente.facade';
 import { ClienteTopNav } from '../../components/cliente-top-nav/cliente-top-nav';
+import { DashboardClienteRepository } from '../../domain/repositories/dashboard-cliente.repository';
 import { PerfilClienteRepository } from '../../domain/repositories/perfil-cliente.repository';
+import { ClienteContaMockService } from '../../infrastructure/services/cliente-conta-mock.service';
 import { PerfilClienteMockService } from '../../infrastructure/services/perfil-cliente-mock.service';
 
 @Component({
@@ -14,6 +16,7 @@ import { PerfilClienteMockService } from '../../infrastructure/services/perfil-c
   providers: [
     PerfilClienteFacade,
     { provide: PerfilClienteRepository, useExisting: PerfilClienteMockService },
+    { provide: DashboardClienteRepository, useExisting: ClienteContaMockService },
   ],
 })
 export class MeuPerfil implements OnInit {

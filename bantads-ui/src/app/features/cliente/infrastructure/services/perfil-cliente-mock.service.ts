@@ -5,6 +5,7 @@ import type { ResultadoOperacao } from '../../domain/models/resultado-operacao.m
 import { PerfilClienteRepository } from '../../domain/repositories/perfil-cliente.repository';
 import { CLIENTES_DEMONSTRACAO } from '../data/clientes-demonstracao';
 import { ClienteLocalStorageService } from './cliente-local-storage.service';
+import { ClienteContaMockService } from './cliente-conta-mock.service';
 
 const ENDERECO_PADRAO = {
   cep: '',
@@ -29,6 +30,7 @@ const ENDERECO_PADRAO = {
 })
 export class PerfilClienteMockService extends PerfilClienteRepository {
   private readonly armazenamento = inject(ClienteLocalStorageService);
+  private readonly conta = inject(ClienteContaMockService);
 
   override buscarPerfil(clienteId: number): PerfilCliente | null {
     // Monta mapa: seed → depois sobrescreve com dados do localStorage
@@ -75,6 +77,18 @@ export class PerfilClienteMockService extends PerfilClienteRepository {
     };
 
     this.armazenamento.atualizar(atualizado);
+
+    if (perfil.salario !== existente.salario) {
+      const saldoAtual = this.conta.obterResumo(perfil.clienteId)?.saldo ?? 0;
+      const saldoNegativo = saldoAtual < 0 ? Math.abs(saldoAtual) : 0;
+      const novoLimiteBase = perfil.salario * 0.5;
+      const novoLimite = Math.max(novoLimiteBase, saldoNegativo);
+      const resultadoLimite = this.conta.atualizarLimiteCredito(perfil.clienteId, novoLimite);
+      if (!resultadoLimite.sucesso) {
+        return resultadoLimite;
+      }
+    }
+
     return { sucesso: true, mensagem: 'Perfil atualizado com sucesso!' };
   }
 

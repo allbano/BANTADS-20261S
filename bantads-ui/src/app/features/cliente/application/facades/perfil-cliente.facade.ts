@@ -1,7 +1,9 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 
+import type { DashboardClienteResumo } from '../../domain/models/dashboard-cliente-resumo.model';
 import type { PerfilCliente } from '../../domain/models/perfil-cliente.model';
+import { DashboardClienteRepository } from '../../domain/repositories/dashboard-cliente.repository';
 import { PerfilClienteRepository } from '../../domain/repositories/perfil-cliente.repository';
 import { SessaoClienteService } from '../../../../core/auth/services/sessao-cliente.service';
 
@@ -21,16 +23,19 @@ export type FeedbackPerfil = { texto: string; erro: boolean };
 @Injectable()
 export class PerfilClienteFacade {
   private readonly repo = inject(PerfilClienteRepository);
+  private readonly contaRepo = inject(DashboardClienteRepository);
   private readonly sessao = inject(SessaoClienteService);
   private readonly fb = inject(FormBuilder);
 
   // ── Estado reativo ──────────────────────────────────────────────
   private readonly _perfil = signal<PerfilCliente | null>(null);
+  private readonly _resumoConta = signal<DashboardClienteResumo | null>(null);
   private readonly _feedbackPerfil = signal<FeedbackPerfil | null>(null);
   private readonly _feedbackSenha = signal<FeedbackPerfil | null>(null);
   private readonly _carregando = signal(false);
 
   readonly perfil = this._perfil.asReadonly();
+  readonly resumoConta = this._resumoConta.asReadonly();
   readonly feedbackPerfil = this._feedbackPerfil.asReadonly();
   readonly feedbackSenha = this._feedbackSenha.asReadonly();
   readonly carregando = this._carregando.asReadonly();
@@ -70,12 +75,16 @@ export class PerfilClienteFacade {
   carregar(): void {
     const id = this.sessao.clienteId();
     if (id === null) {
+      this._perfil.set(null);
+      this._resumoConta.set(null);
       return;
     }
 
     this._carregando.set(true);
     const perfil = this.repo.buscarPerfil(id);
+    const resumoConta = this.contaRepo.obterResumo(id);
     this._perfil.set(perfil);
+    this._resumoConta.set(resumoConta);
     this._carregando.set(false);
 
     if (perfil) {
