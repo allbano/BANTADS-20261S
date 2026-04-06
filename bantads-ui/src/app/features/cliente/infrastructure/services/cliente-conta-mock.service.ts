@@ -212,6 +212,18 @@ export class ClienteContaMockService extends ClienteContaRepository {
     };
   }
 
+  override atualizarLimiteCredito(clienteId: number, novoLimite: number): ResultadoOperacao {
+    if (!Number.isFinite(novoLimite) || novoLimite < 0) {
+      return { sucesso: false, mensagem: 'Limite inválido.' };
+    }
+    const c = this.contas.get(clienteId);
+    if (!c) {
+      return { sucesso: false, mensagem: 'Conta não encontrada.' };
+    }
+    c.limiteCredito = novoLimite;
+    return { sucesso: true, mensagem: 'Limite de crédito atualizado.' };
+  }
+
   override consultarExtrato(clienteId: number, dataInicioIso: string, dataFimIso: string): ExtratoDia[] {
     const c = this.contas.get(clienteId);
     if (!c) {

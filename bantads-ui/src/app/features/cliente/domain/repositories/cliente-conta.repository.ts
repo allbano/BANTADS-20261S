@@ -10,4 +10,5 @@ export abstract class ClienteContaRepository extends DashboardClienteRepository 
   abstract sacar(clienteId: number, valor: number): ResultadoOperacao;
   abstract transferir(clienteIdOrigem: number, numeroContaDestino: string, valor: number): ResultadoOperacao;
   abstract consultarExtrato(clienteId: number, dataInicioIso: string, dataFimIso: string): ExtratoDia[];
+  abstract atualizarLimiteCredito(clienteId: number, novoLimite: number): ResultadoOperacao;
 }
