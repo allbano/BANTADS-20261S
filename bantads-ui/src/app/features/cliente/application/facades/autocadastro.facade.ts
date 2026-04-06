@@ -14,12 +14,14 @@ export class AutocadastroFacade {
   private _dadosPessoais = signal<DadosPessoais | null>(null);
   private _endereco = signal<Endereco | null>(null);
   private _isCarregando = signal<boolean>(false);
+  private _erro = signal<string | null>(null);
 
   // Computeds e getters para acesso read-only da Views
   passoAtual = computed(() => this._passoAtual());
   dadosPessoais = computed(() => this._dadosPessoais());
   endereco = computed(() => this._endereco());
   isCarregando = computed(() => this._isCarregando());
+  erro = computed(() => this._erro());
 
   // Lógica de limite simulado de 50%
   limiteEstimado = computed(() => {
@@ -30,6 +32,7 @@ export class AutocadastroFacade {
   // Ações
   setPassoAtual(passo: number) {
     this._passoAtual.set(passo);
+    this._erro.set(null); // limpa o erro ao trocar de passo
   }
 
   avancarDadosPessoais(dados: DadosPessoais) {
@@ -61,6 +64,7 @@ export class AutocadastroFacade {
 
   confirmarESolicitarCadastro() {
     this._isCarregando.set(true);
+    this._erro.set(null);
 
     const payload: AutocadastroPayload = {
       dadosPessoais: this._dadosPessoais()!,
@@ -72,8 +76,9 @@ export class AutocadastroFacade {
         this._isCarregando.set(false);
         this.setPassoAtual(4); // Exibe Sucesso
       },
-      error: (err) => {
+      error: (err: Error) => {
         console.error('Erro ao processar o cadastro', err);
+        this._erro.set(err.message || 'Ocorreu um erro ao processar sua solicitação.');
         this._isCarregando.set(false);
       }
     });
@@ -83,6 +88,7 @@ export class AutocadastroFacade {
     this._passoAtual.set(1);
     this._dadosPessoais.set(null);
     this._endereco.set(null);
+    this._erro.set(null);
     this._isCarregando.set(false);
   }
 }
