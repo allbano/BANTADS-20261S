@@ -16,7 +16,11 @@
       >
         <p class="mb-6 text-sm text-neutral-400">
           Saldo atual
-          <span class="mt-1 block text-2xl font-semibold text-[#6ecf7a]">
+          <span
+            class="mt-1 block text-2xl font-semibold"
+            [class.text-red-500]="r.saldo < 0"
+            [class.text-[#6ecf7a]]="r.saldo >= 0"
+          >
             {{ r.saldo | currency: 'BRL' : 'symbol' : '1.2-2' }}
           </span>
         </p>

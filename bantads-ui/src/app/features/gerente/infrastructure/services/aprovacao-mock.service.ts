@@ -38,8 +38,15 @@ function agoraIso(): string {
 export class AprovacaoMockService extends AprovacaoRepository {
   private pedidos: PedidoAutocadastro[] = [...PEDIDOS_AUTOCADASTRO_MOCK];
 
-  override listarPendentes(): PedidoAutocadastro[] {
+  override listarPendentes(gerenteId?: number): PedidoAutocadastro[] {
+    if (gerenteId !== undefined) {
+      return this.pedidos.filter(p => p.gerenteId === gerenteId);
+    }
     return [...this.pedidos];
+  }
+
+  override registrarPedido(pedido: PedidoAutocadastro): void {
+    this.pedidos.push(pedido);
   }
 
   /**

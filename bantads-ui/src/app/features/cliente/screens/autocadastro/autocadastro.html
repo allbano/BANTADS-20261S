@@ -62,6 +62,12 @@
             </app-form-endereco-ddd>
           }
           @else if (facade.passoAtual() === 3) {
+            @if (facade.erro()) {
+              <div class="mb-6 rounded-xl border border-red-500/50 bg-[#2A1818] p-4 text-center text-[#e57373]">
+                <p class="font-medium">{{ facade.erro() }}</p>
+                <p class="text-xs text-[#ccc] mt-1">Verifique seus dados ou tente realizar o login.</p>
+              </div>
+            }
             <app-resumo-confirmacao-ddd
                [dadosPessoais]="facade.dadosPessoais()"
                [endereco]="facade.endereco()"

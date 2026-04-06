@@ -14,6 +14,8 @@ export interface PedidoAutocadastro {
   telefone: string;
   salario: number;
   endereco: Endereco;
+  /** O gerente com menos clientes atribuído a esta solicitação. */
+  gerenteId: number;
   /** ISO 8601 — data/hora da solicitação. */
   dataSolicitacao: string;
 }

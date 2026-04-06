@@ -20,6 +20,7 @@ export const PEDIDOS_AUTOCADASTRO_MOCK: PedidoAutocadastro[] = [
       cidade: 'Curitiba',
       uf: 'PR',
     },
+    gerenteId: 1,
     dataSolicitacao: '2026-04-01T14:30:00',
   },
   {
@@ -36,6 +37,7 @@ export const PEDIDOS_AUTOCADASTRO_MOCK: PedidoAutocadastro[] = [
       cidade: 'São Paulo',
       uf: 'SP',
     },
+    gerenteId: 2,
     dataSolicitacao: '2026-04-02T09:15:00',
   },
   {
@@ -53,6 +55,7 @@ export const PEDIDOS_AUTOCADASTRO_MOCK: PedidoAutocadastro[] = [
       cidade: 'Rio de Janeiro',
       uf: 'RJ',
     },
+    gerenteId: 3,
     dataSolicitacao: '2026-04-03T16:45:00',
   },
   {
@@ -69,6 +72,7 @@ export const PEDIDOS_AUTOCADASTRO_MOCK: PedidoAutocadastro[] = [
       cidade: 'Belo Horizonte',
       uf: 'MG',
     },
+    gerenteId: 1,
     dataSolicitacao: '2026-04-03T18:00:00',
   },
 ];

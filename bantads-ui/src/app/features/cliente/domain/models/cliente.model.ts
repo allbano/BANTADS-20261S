@@ -1,4 +1,16 @@
 /**
+ * Endereço completo de um cliente.
+ */
+export interface EnderecoCliente {
+  cep: string;
+  logradouro: string;
+  numero: string;
+  complemento?: string;
+  cidade: string;
+  uf: string;
+}
+
+/**
  * Entidade de domínio que representa um Cliente no BANTADS.
  *
  * Em DDD, modelos de domínio são contratos imutáveis — usamos interface
@@ -11,4 +23,6 @@ export interface Cliente {
   email: string;
   senha: string;
   salario: number;
+  telefone?: string;
+  endereco?: EnderecoCliente;
 }

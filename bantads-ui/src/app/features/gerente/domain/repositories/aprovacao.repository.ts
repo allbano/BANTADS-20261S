@@ -7,8 +7,11 @@ import type { ResultadoAprovacao } from '../models/resultado-aprovacao.model';
  * A camada de domínio define o "o quê"; a infraestrutura define o "como".
  */
 export abstract class AprovacaoRepository {
-  /** Lista todos os pedidos pendentes de decisão. */
-  abstract listarPendentes(): PedidoAutocadastro[];
+  /** Lista todos os pedidos pendentes de decisão (opcionalmente filtrados por gerente). */
+  abstract listarPendentes(gerenteId?: number): PedidoAutocadastro[];
+
+  /** Registra um novo pedido com gerente já designado no momento do autocadastro (R1). */
+  abstract registrarPedido(pedido: PedidoAutocadastro): void;
 
   /**
    * Aprova um pedido: cria conta (número 4 dígitos), calcula limite,
