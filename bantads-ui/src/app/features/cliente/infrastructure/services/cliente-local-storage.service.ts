@@ -37,9 +37,14 @@ export class ClienteLocalStorageService extends ClienteRepository {
   }
 
   atualizar(cliente: Cliente): void {
-    const clientes = this.listarTodos().map(c =>
-      c.id === cliente.id ? cliente : c
-    );
+    const clientes = this.listarTodos();
+    const idx = clientes.findIndex(c => c.id === cliente.id);
+    if (idx !== -1) {
+      clientes[idx] = cliente;
+    } else {
+      // Cliente ainda não está no localStorage (ex: clientes do seed de demonstração)
+      clientes.push(cliente);
+    }
     localStorage.setItem(LS_CHAVE, JSON.stringify(clientes));
   }
 

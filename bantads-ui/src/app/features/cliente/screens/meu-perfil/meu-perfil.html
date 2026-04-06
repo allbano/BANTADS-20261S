@@ -1,0 +1,472 @@
+<div class="box-border min-h-dvh w-full bg-[#191919] px-[clamp(1rem,3vw,2rem)] pb-16 text-[#dfdfdf]">
+  <app-cliente-top-nav />
+
+  <main class="pt-6">
+    <!-- Cabeçalho da página -->
+    <header class="mb-8">
+      <h1 class="m-0 text-4xl font-normal leading-tight text-[#e5e5e5]">
+        Meu&nbsp;Perfil
+      </h1>
+      @if (facade.perfil(); as p) {
+        <p class="mt-2 text-[1.05rem] text-[#9f9f9f]">
+          Gerencie seus dados pessoais e endereço, {{ facade.nomeExibido() }}.
+        </p>
+      }
+    </header>
+
+    @if (facade.perfil(); as p) {
+      <div class="grid gap-8 xl:grid-cols-[1fr_minmax(280px,340px)] xl:items-start">
+
+        <!-- ══════════════════════════════════════════════════════════
+             Coluna principal — formulários
+        ══════════════════════════════════════════════════════════ -->
+        <div class="flex flex-col gap-6">
+
+          <!-- ── Dados Pessoais ── -->
+          <section
+            class="rounded-2xl border border-white/[0.07] bg-[#222222] p-6 shadow-lg md:p-8"
+            aria-labelledby="sec-dados-titulo"
+          >
+            <h2 id="sec-dados-titulo" class="mb-6 text-[1.25rem] font-semibold text-neutral-100">
+              Dados Pessoais
+            </h2>
+
+            <form
+              [formGroup]="facade.formDados"
+              (ngSubmit)="facade.salvarPerfil()"
+              novalidate
+              id="form-dados-pessoais"
+            >
+              <div class="grid gap-5 sm:grid-cols-2">
+
+                <!-- Nome -->
+                <div class="flex flex-col gap-1.5 sm:col-span-2">
+                  <label for="pf-nome" class="text-sm font-medium text-neutral-300">
+                    Nome completo <span class="text-red-400">*</span>
+                  </label>
+                  <input
+                    id="pf-nome"
+                    type="text"
+                    formControlName="nome"
+                    autocomplete="name"
+                    placeholder="Seu nome completo"
+                    class="rounded-xl border border-neutral-700 bg-[#161616] px-4 py-3 text-neutral-100 outline-none transition-colors focus:border-[#6ecf7a] focus:ring-1 focus:ring-[#6ecf7a]"
+                    [class.border-red-500]="facade.formDados.get('nome')?.invalid && facade.formDados.get('nome')?.touched"
+                  />
+                  @if (facade.formDados.get('nome')?.invalid && facade.formDados.get('nome')?.touched) {
+                    <p class="text-xs text-red-400" role="alert">Nome é obrigatório (mínimo 2 caracteres).</p>
+                  }
+                </div>
+
+                <!-- CPF (readonly) -->
+                <div class="flex flex-col gap-1.5">
+                  <label for="pf-cpf" class="text-sm font-medium text-neutral-400">
+                    CPF <span class="text-xs text-neutral-500">(não editável)</span>
+                  </label>
+                  <input
+                    id="pf-cpf"
+                    type="text"
+                    formControlName="cpf"
+                    readonly
+                    class="cursor-not-allowed rounded-xl border border-neutral-800 bg-[#111111] px-4 py-3 text-neutral-500 outline-none"
+                  />
+                </div>
+
+                <!-- Telefone -->
+                <div class="flex flex-col gap-1.5">
+                  <label for="pf-telefone" class="text-sm font-medium text-neutral-300">
+                    Telefone <span class="text-red-400">*</span>
+                  </label>
+                  <input
+                    id="pf-telefone"
+                    type="tel"
+                    formControlName="telefone"
+                    autocomplete="tel"
+                    placeholder="(00) 00000-0000"
+                    class="rounded-xl border border-neutral-700 bg-[#161616] px-4 py-3 text-neutral-100 outline-none transition-colors focus:border-[#6ecf7a] focus:ring-1 focus:ring-[#6ecf7a]"
+                    [class.border-red-500]="facade.formDados.get('telefone')?.invalid && facade.formDados.get('telefone')?.touched"
+                  />
+                  @if (facade.formDados.get('telefone')?.invalid && facade.formDados.get('telefone')?.touched) {
+                    <p class="text-xs text-red-400" role="alert">Telefone é obrigatório.</p>
+                  }
+                </div>
+
+                <!-- E-mail -->
+                <div class="flex flex-col gap-1.5">
+                  <label for="pf-email" class="text-sm font-medium text-neutral-300">
+                    E-mail <span class="text-red-400">*</span>
+                  </label>
+                  <input
+                    id="pf-email"
+                    type="email"
+                    formControlName="email"
+                    autocomplete="email"
+                    placeholder="seu@email.com"
+                    class="rounded-xl border border-neutral-700 bg-[#161616] px-4 py-3 text-neutral-100 outline-none transition-colors focus:border-[#6ecf7a] focus:ring-1 focus:ring-[#6ecf7a]"
+                    [class.border-red-500]="facade.formDados.get('email')?.invalid && facade.formDados.get('email')?.touched"
+                  />
+                  @if (facade.formDados.get('email')?.invalid && facade.formDados.get('email')?.touched) {
+                    <p class="text-xs text-red-400" role="alert">E-mail inválido.</p>
+                  }
+                </div>
+
+                <!-- Salário -->
+                <div class="flex flex-col gap-1.5">
+                  <label for="pf-salario" class="text-sm font-medium text-neutral-300">
+                    Salário <span class="text-red-400">*</span>
+                  </label>
+                  <div class="relative">
+                    <span class="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-neutral-500">R$</span>
+                    <input
+                      id="pf-salario"
+                      type="number"
+                      min="0"
+                      step="0.01"
+                      formControlName="salario"
+                      placeholder="0.00"
+                      class="w-full rounded-xl border border-neutral-700 bg-[#161616] py-3 pr-4 pl-12 text-neutral-100 outline-none transition-colors focus:border-[#6ecf7a] focus:ring-1 focus:ring-[#6ecf7a]"
+                      [class.border-red-500]="facade.formDados.get('salario')?.invalid && facade.formDados.get('salario')?.touched"
+                    />
+                  </div>
+                  @if (facade.formDados.get('salario')?.invalid && facade.formDados.get('salario')?.touched) {
+                    <p class="text-xs text-red-400" role="alert">Salário inválido (deve ser maior ou igual a 0).</p>
+                  }
+                </div>
+
+              </div><!-- /grid dados -->
+
+              <!-- Feedback dados -->
+              @if (facade.feedbackPerfil(); as fb) {
+                <p
+                  class="mt-5 rounded-xl border px-4 py-3 text-sm"
+                  [class.border-green-600/50]="!fb.erro"
+                  [class.bg-green-950/30]="!fb.erro"
+                  [class.text-green-300]="!fb.erro"
+                  [class.border-red-500/50]="fb.erro"
+                  [class.bg-red-950/30]="fb.erro"
+                  [class.text-red-300]="fb.erro"
+                  role="status"
+                >
+                  {{ fb.texto }}
+                </p>
+              }
+            </form>
+          </section>
+
+          <!-- ── Endereço ── -->
+          <section
+            class="rounded-2xl border border-white/[0.07] bg-[#222222] p-6 shadow-lg md:p-8"
+            aria-labelledby="sec-endereco-titulo"
+          >
+            <h2 id="sec-endereco-titulo" class="mb-6 text-[1.25rem] font-semibold text-neutral-100">
+              Endereço
+            </h2>
+
+            <form
+              [formGroup]="facade.formEndereco"
+              (ngSubmit)="facade.salvarPerfil()"
+              novalidate
+              id="form-endereco"
+            >
+              <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+
+                <!-- CEP -->
+                <div class="flex flex-col gap-1.5">
+                  <label for="pf-cep" class="text-sm font-medium text-neutral-300">CEP <span class="text-red-400">*</span></label>
+                  <input
+                    id="pf-cep"
+                    type="text"
+                    formControlName="cep"
+                    autocomplete="postal-code"
+                    placeholder="00000-000"
+                    class="rounded-xl border border-neutral-700 bg-[#161616] px-4 py-3 text-neutral-100 outline-none transition-colors focus:border-[#6ecf7a] focus:ring-1 focus:ring-[#6ecf7a]"
+                    [class.border-red-500]="facade.formEndereco.get('cep')?.invalid && facade.formEndereco.get('cep')?.touched"
+                  />
+                  @if (facade.formEndereco.get('cep')?.invalid && facade.formEndereco.get('cep')?.touched) {
+                    <p class="text-xs text-red-400" role="alert">CEP é obrigatório.</p>
+                  }
+                </div>
+
+                <!-- Logradouro -->
+                <div class="flex flex-col gap-1.5 sm:col-span-2">
+                  <label for="pf-logradouro" class="text-sm font-medium text-neutral-300">Logradouro <span class="text-red-400">*</span></label>
+                  <input
+                    id="pf-logradouro"
+                    type="text"
+                    formControlName="logradouro"
+                    autocomplete="street-address"
+                    placeholder="Rua, Avenida..."
+                    class="rounded-xl border border-neutral-700 bg-[#161616] px-4 py-3 text-neutral-100 outline-none transition-colors focus:border-[#6ecf7a] focus:ring-1 focus:ring-[#6ecf7a]"
+                    [class.border-red-500]="facade.formEndereco.get('logradouro')?.invalid && facade.formEndereco.get('logradouro')?.touched"
+                  />
+                  @if (facade.formEndereco.get('logradouro')?.invalid && facade.formEndereco.get('logradouro')?.touched) {
+                    <p class="text-xs text-red-400" role="alert">Logradouro é obrigatório.</p>
+                  }
+                </div>
+
+                <!-- Número -->
+                <div class="flex flex-col gap-1.5">
+                  <label for="pf-numero" class="text-sm font-medium text-neutral-300">Número <span class="text-red-400">*</span></label>
+                  <input
+                    id="pf-numero"
+                    type="text"
+                    formControlName="numero"
+                    placeholder="123"
+                    class="rounded-xl border border-neutral-700 bg-[#161616] px-4 py-3 text-neutral-100 outline-none transition-colors focus:border-[#6ecf7a] focus:ring-1 focus:ring-[#6ecf7a]"
+                    [class.border-red-500]="facade.formEndereco.get('numero')?.invalid && facade.formEndereco.get('numero')?.touched"
+                  />
+                  @if (facade.formEndereco.get('numero')?.invalid && facade.formEndereco.get('numero')?.touched) {
+                    <p class="text-xs text-red-400" role="alert">Número é obrigatório.</p>
+                  }
+                </div>
+
+                <!-- Complemento -->
+                <div class="flex flex-col gap-1.5">
+                  <label for="pf-complemento" class="text-sm font-medium text-neutral-300">Complemento</label>
+                  <input
+                    id="pf-complemento"
+                    type="text"
+                    formControlName="complemento"
+                    placeholder="Apto, Bloco..."
+                    class="rounded-xl border border-neutral-700 bg-[#161616] px-4 py-3 text-neutral-100 outline-none transition-colors focus:border-[#6ecf7a] focus:ring-1 focus:ring-[#6ecf7a]"
+                  />
+                </div>
+
+                <!-- Cidade -->
+                <div class="flex flex-col gap-1.5">
+                  <label for="pf-cidade" class="text-sm font-medium text-neutral-300">Cidade <span class="text-red-400">*</span></label>
+                  <input
+                    id="pf-cidade"
+                    type="text"
+                    formControlName="cidade"
+                    autocomplete="address-level2"
+                    placeholder="Curitiba"
+                    class="rounded-xl border border-neutral-700 bg-[#161616] px-4 py-3 text-neutral-100 outline-none transition-colors focus:border-[#6ecf7a] focus:ring-1 focus:ring-[#6ecf7a]"
+                    [class.border-red-500]="facade.formEndereco.get('cidade')?.invalid && facade.formEndereco.get('cidade')?.touched"
+                  />
+                  @if (facade.formEndereco.get('cidade')?.invalid && facade.formEndereco.get('cidade')?.touched) {
+                    <p class="text-xs text-red-400" role="alert">Cidade é obrigatória.</p>
+                  }
+                </div>
+
+                <!-- UF -->
+                <div class="flex flex-col gap-1.5">
+                  <label for="pf-uf" class="text-sm font-medium text-neutral-300">UF <span class="text-red-400">*</span></label>
+                  <input
+                    id="pf-uf"
+                    type="text"
+                    formControlName="uf"
+                    autocomplete="address-level1"
+                    placeholder="PR"
+                    maxlength="2"
+                    class="w-full rounded-xl border border-neutral-700 bg-[#161616] px-4 py-3 text-neutral-100 uppercase outline-none transition-colors focus:border-[#6ecf7a] focus:ring-1 focus:ring-[#6ecf7a]"
+                    [class.border-red-500]="facade.formEndereco.get('uf')?.invalid && facade.formEndereco.get('uf')?.touched"
+                  />
+                  @if (facade.formEndereco.get('uf')?.invalid && facade.formEndereco.get('uf')?.touched) {
+                    <p class="text-xs text-red-400" role="alert">UF é obrigatória (2 letras).</p>
+                  }
+                </div>
+
+              </div><!-- /grid endereço -->
+            </form>
+          </section>
+
+          <!-- Botão salvar (abrange ambos os formulários) -->
+          <button
+            type="button"
+            id="btn-salvar-perfil"
+            class="w-full cursor-pointer rounded-xl bg-[#6ecf7a] py-3.5 text-lg font-bold text-neutral-950 transition-opacity hover:opacity-90 active:scale-[.98]"
+            (click)="facade.salvarPerfil()"
+          >
+            Salvar alterações
+          </button>
+
+          <!-- ── Alterar Senha (colapsável) ── -->
+          <section
+            class="overflow-hidden rounded-2xl border border-white/[0.07] bg-[#222222] shadow-lg"
+            aria-labelledby="sec-senha-titulo"
+          >
+            <button
+              type="button"
+              id="btn-toggle-senha"
+              class="flex w-full cursor-pointer items-center justify-between border-none bg-transparent px-6 py-5 text-left text-neutral-100 transition-colors hover:bg-white/3"
+              (click)="toggleSenha()"
+              [attr.aria-expanded]="senhaAberta"
+            >
+              <span class="text-[1.1rem] font-semibold">Alterar senha</span>
+              <span
+                class="text-neutral-400 transition-transform duration-300"
+                [class.rotate-180]="senhaAberta"
+                aria-hidden="true"
+              >▼</span>
+            </button>
+
+            @if (senhaAberta) {
+              <div class="border-t border-white/6 px-6 pb-6 pt-5">
+                <form
+                  [formGroup]="facade.formSenha"
+                  (ngSubmit)="facade.alterarSenha()"
+                  novalidate
+                  id="form-alterar-senha"
+                >
+                  <div class="grid gap-5 sm:grid-cols-2">
+
+                    <!-- Senha atual (ocupa linha inteira) -->
+                    <div class="flex flex-col gap-1.5 sm:col-span-2">
+                      <label for="pf-senha-atual" class="text-sm font-medium text-neutral-300">
+                        Senha atual <span class="text-red-400">*</span>
+                      </label>
+                      <input
+                        id="pf-senha-atual"
+                        type="password"
+                        formControlName="senhaAtual"
+                        autocomplete="current-password"
+                        placeholder="••••••••"
+                        class="rounded-xl border border-neutral-700 bg-[#161616] px-4 py-3 text-neutral-100 outline-none transition-colors focus:border-[#6ecf7a] focus:ring-1 focus:ring-[#6ecf7a]"
+                        [class.border-red-500]="facade.formSenha.get('senhaAtual')?.invalid && facade.formSenha.get('senhaAtual')?.touched"
+                      />
+                      @if (facade.formSenha.get('senhaAtual')?.invalid && facade.formSenha.get('senhaAtual')?.touched) {
+                        <p class="text-xs text-red-400" role="alert">Informe a senha atual.</p>
+                      }
+                    </div>
+
+                    <!-- Nova senha -->
+                    <div class="flex flex-col gap-1.5">
+                      <label for="pf-nova-senha" class="text-sm font-medium text-neutral-300">
+                        Nova senha <span class="text-red-400">*</span>
+                      </label>
+                      <input
+                        id="pf-nova-senha"
+                        type="password"
+                        formControlName="novaSenha"
+                        autocomplete="new-password"
+                        placeholder="Mínimo 4 caracteres"
+                        class="rounded-xl border border-neutral-700 bg-[#161616] px-4 py-3 text-neutral-100 outline-none transition-colors focus:border-[#6ecf7a] focus:ring-1 focus:ring-[#6ecf7a]"
+                        [class.border-red-500]="facade.formSenha.get('novaSenha')?.invalid && facade.formSenha.get('novaSenha')?.touched"
+                      />
+                      @if (facade.formSenha.get('novaSenha')?.invalid && facade.formSenha.get('novaSenha')?.touched) {
+                        <p class="text-xs text-red-400" role="alert">Mínimo de 4 caracteres.</p>
+                      }
+                    </div>
+
+                    <!-- Confirmar nova senha -->
+                    <div class="flex flex-col gap-1.5">
+                      <label for="pf-confirmar-senha" class="text-sm font-medium text-neutral-300">
+                        Confirmar nova senha <span class="text-red-400">*</span>
+                      </label>
+                      <input
+                        id="pf-confirmar-senha"
+                        type="password"
+                        formControlName="confirmarSenha"
+                        autocomplete="new-password"
+                        placeholder="Repita a nova senha"
+                        class="rounded-xl border border-neutral-700 bg-[#161616] px-4 py-3 text-neutral-100 outline-none transition-colors focus:border-[#6ecf7a] focus:ring-1 focus:ring-[#6ecf7a]"
+                        [class.border-red-500]="facade.formSenha.get('confirmarSenha')?.invalid && facade.formSenha.get('confirmarSenha')?.touched"
+                      />
+                      @if (facade.formSenha.get('confirmarSenha')?.invalid && facade.formSenha.get('confirmarSenha')?.touched) {
+                        <p class="text-xs text-red-400" role="alert">Confirme a nova senha.</p>
+                      }
+                    </div>
+
+                  </div><!-- /grid senha -->
+
+                  <!-- Feedback senha -->
+                  @if (facade.feedbackSenha(); as fb) {
+                    <p
+                      class="mt-5 rounded-xl border px-4 py-3 text-sm"
+                      [class.border-green-600/50]="!fb.erro"
+                      [class.bg-green-950/30]="!fb.erro"
+                      [class.text-green-300]="!fb.erro"
+                      [class.border-red-500/50]="fb.erro"
+                      [class.bg-red-950/30]="fb.erro"
+                      [class.text-red-300]="fb.erro"
+                      role="status"
+                    >
+                      {{ fb.texto }}
+                    </p>
+                  }
+
+                  <button
+                    type="submit"
+                    id="btn-alterar-senha"
+                    class="mt-5 cursor-pointer rounded-xl border border-neutral-600 bg-transparent px-6 py-3 text-sm font-semibold text-neutral-200 transition-colors hover:border-neutral-400 hover:bg-white/5"
+                  >
+                    Confirmar nova senha
+                  </button>
+
+                </form>
+              </div>
+            }
+          </section>
+
+        </div><!-- /coluna principal -->
+
+        <!-- ══════════════════════════════════════════════════════════
+             Coluna lateral — card de resumo do perfil
+        ══════════════════════════════════════════════════════════ -->
+        <aside
+          class="flex flex-col gap-4"
+          aria-label="Resumo do perfil"
+        >
+          <!-- Avatar + nome -->
+          <div class="flex flex-col items-center gap-3 rounded-2xl border border-white/[0.07] bg-[#222222] p-6 text-center shadow-lg">
+            <!-- Avatar gerado com iniciais -->
+            <div
+              class="flex h-20 w-20 items-center justify-center rounded-full bg-[#6ecf7a]/20 text-3xl font-bold text-[#6ecf7a]"
+              aria-hidden="true"
+            >
+              {{ facade.nomeExibido().charAt(0).toUpperCase() }}
+            </div>
+            <div>
+              <p class="text-lg font-semibold text-neutral-100">{{ facade.perfil()?.nome }}</p>
+              <p class="mt-0.5 text-sm text-neutral-500">{{ facade.perfil()?.email }}</p>
+            </div>
+          </div>
+
+          <!-- Detalhes -->
+          <div class="rounded-2xl border border-white/[0.07] bg-[#222222] p-6 shadow-lg">
+            <h3 class="mb-4 text-[0.85rem] font-semibold uppercase tracking-widest text-neutral-500">
+              Informações
+            </h3>
+
+            <dl class="flex flex-col gap-4">
+              <div class="flex flex-col gap-0.5">
+                <dt class="text-xs text-neutral-500">CPF</dt>
+                <dd class="font-medium text-neutral-200">{{ facade.formDados.get('cpf')?.value }}</dd>
+              </div>
+              <div class="flex flex-col gap-0.5">
+                <dt class="text-xs text-neutral-500">Telefone</dt>
+                <dd class="font-medium text-neutral-200">
+                  {{ facade.perfil()?.telefone || '—' }}
+                </dd>
+              </div>
+              <div class="flex flex-col gap-0.5">
+                <dt class="text-xs text-neutral-500">Salário cadastrado</dt>
+                <dd class="font-medium text-[#6ecf7a]">
+                  {{ (facade.perfil()?.salario ?? 0) | currency: 'BRL' : 'symbol' : '1.2-2' }}
+                </dd>
+              </div>
+              @if (facade.perfil()?.endereco; as end) {
+                <div class="flex flex-col gap-0.5">
+                  <dt class="text-xs text-neutral-500">Cidade</dt>
+                  <dd class="font-medium text-neutral-200">{{ end.cidade }} — {{ end.uf }}</dd>
+                </div>
+              }
+            </dl>
+          </div>
+
+          <!-- Dica -->
+          <div class="rounded-2xl border border-blue-500/20 bg-blue-500/5 p-4">
+            <p class="text-xs leading-relaxed text-blue-300/80">
+              💡 Campos marcados com <span class="text-red-400">*</span> são obrigatórios. Seus
+              dados são salvos localmente neste navegador.
+            </p>
+          </div>
+        </aside>
+
+      </div><!-- /grid -->
+    } @else {
+      <p class="mt-10 text-center text-neutral-500">Carregando perfil…</p>
+    }
+  </main>
+</div>

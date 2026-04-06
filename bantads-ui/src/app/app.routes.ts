@@ -53,9 +53,8 @@ export const routes: Routes = [
     },
     {
       path: 'cliente/perfil',
-      loadComponent: () => import('./features/cliente/screens/placeholder/cliente-area-placeholder').then(m => m.ClienteAreaPlaceholder),
+      loadComponent: () => import('./features/cliente/screens/meu-perfil/meu-perfil').then(m => m.MeuPerfil),
       canActivate: [clienteLogadoGuard],
-      data: { title: 'Meu perfil' },
       title: "BANTADS - Meu perfil",
     },
     {
