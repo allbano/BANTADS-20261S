@@ -1,7 +1,6 @@
 package br.dac.bantads.ms_funcionario.model;
 
 import java.io.Serial;
-import java.math.BigDecimal;
 import java.util.UUID;
 
 import com.fasterxml.uuid.Generators;
@@ -10,9 +9,7 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
-import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 import br.dac.bantads.ms_funcionario.dto.enums.TipoFuncionario;
 
 @Entity
