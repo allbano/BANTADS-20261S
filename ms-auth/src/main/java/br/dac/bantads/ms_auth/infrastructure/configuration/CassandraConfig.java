@@ -60,4 +60,9 @@ public class CassandraConfig extends AbstractCassandraConfiguration {
                         .withSimpleReplication(1)
         );
     }
+
+    @Override
+    public String[] getEntityBasePackages() {
+        return new String[] { "br.dac.bantads.ms_auth" };
+    }
 }
