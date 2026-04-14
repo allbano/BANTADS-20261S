@@ -4,6 +4,21 @@ server:
 spring:
   application:
     name: ms-auth
-  data:
-    mongodb:
-      uri: ${SPRING_DATA_MONGODB_URI:mongodb://admin:admin@localhost:55003/db_auth?authSource=admin}
+  cassandra:
+    contact-points: localhost
+    port: 9042
+    local-datacenter: datacenter1
+    keyspace-name: ms_auth
+    schema-action: create_if_not_exists
+
+auth:
+  jwt:
+    issuer: ${JWT_ISSUER:ms-auth}
+    secret: ${JWT_SECRET:change-me-in-production}
+    expiration-minutes: ${JWT_EXPIRATION_MINUTES:60}
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
