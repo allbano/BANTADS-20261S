@@ -8,15 +8,15 @@ import org.springframework.context.annotation.Configuration;
 
 @Configuration
 @OpenAPIDefinition(
-        info = @Info(
-                title = "ms-auth API",
-                version = "v1",
-                description = "API de autenticacao com MongoDB e JWT",
-                contact = @Contact(name = "BANTADS")
-        ),
-        servers = {
-                @Server(url = "http://localhost:8085", description = "Ambiente local")
-        }
+    info = @Info(
+        title = "BANTADS - ms-auth API",
+        version = "v1",
+        description = "Microsserviço de autenticação",
+        contact = @Contact(name = "BANTADS")
+    ),
+    servers = {
+        @Server(url = "http://localhost:${server.port}", description = "Ambiente local")
+    }
 )
 public class OpenApiConfiguration {
 }
