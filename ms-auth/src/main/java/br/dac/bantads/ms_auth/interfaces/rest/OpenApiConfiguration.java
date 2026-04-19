@@ -11,7 +11,7 @@ import org.springframework.context.annotation.Configuration;
         info = @Info(
                 title = "ms-auth API",
                 version = "v1",
-                description = "API de autenticacao com ScyllaDB e JWT",
+                description = "API de autenticacao com MongoDB e JWT",
                 contact = @Contact(name = "BANTADS")
         ),
         servers = {

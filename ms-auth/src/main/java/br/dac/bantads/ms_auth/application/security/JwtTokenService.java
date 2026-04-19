@@ -1,4 +1,4 @@
-package br.dac.bantads.ms_auth.application.ports;
+package br.dac.bantads.ms_auth.application.security;
 
 import br.dac.bantads.ms_auth.domain.account.UserAccount;
 

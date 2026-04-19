@@ -1,6 +1,6 @@
 package br.dac.bantads.ms_auth.infrastructure.security;
 
-import br.dac.bantads.ms_auth.application.ports.JwtTokenService;
+import br.dac.bantads.ms_auth.application.security.JwtTokenService;
 import br.dac.bantads.ms_auth.domain.account.UserAccount;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;

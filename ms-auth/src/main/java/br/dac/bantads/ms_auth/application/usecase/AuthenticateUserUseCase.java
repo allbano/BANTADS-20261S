@@ -3,9 +3,9 @@ package br.dac.bantads.ms_auth.application.usecase;
 import br.dac.bantads.ms_auth.application.dto.AuthRequest;
 import br.dac.bantads.ms_auth.application.dto.AuthResponse;
 import br.dac.bantads.ms_auth.application.exception.InvalidCredentialsException;
-import br.dac.bantads.ms_auth.application.ports.JwtTokenService;
-import br.dac.bantads.ms_auth.application.ports.PasswordHasher;
-import br.dac.bantads.ms_auth.application.ports.UserAccountRepository;
+import br.dac.bantads.ms_auth.application.security.JwtTokenService;
+import br.dac.bantads.ms_auth.application.security.PasswordHasher;
+import br.dac.bantads.ms_auth.domain.account.UserAccountRepository;
 import br.dac.bantads.ms_auth.domain.account.UserAccount;
 import org.springframework.stereotype.Service;
 
@@ -30,8 +30,7 @@ public class AuthenticateUserUseCase {
                 .findByEmail(request.email())
                 .orElseThrow(InvalidCredentialsException::new);
 
-        String requestHash = passwordHasher.sha256(request.password());
-        if (!account.passwordMatches(requestHash)) {
+        if (!passwordHasher.matches(request.password(), account.getPasswordHash())) {
             throw new InvalidCredentialsException();
         }
 

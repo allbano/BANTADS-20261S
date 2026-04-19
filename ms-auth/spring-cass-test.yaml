@@ -1,5 +1,0 @@
-spring:
-  cassandra:
-    keyspace-name: ms_auth
-    schema-action: create_if_not_exists
-    script-locations: classpath:schema.cql
