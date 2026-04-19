@@ -6,8 +6,8 @@ import br.dac.bantads.ms_auth.application.dto.CreateAccountWithPasswordRequest;
 import br.dac.bantads.ms_auth.application.dto.CreateAccountWithoutPasswordRequest;
 import br.dac.bantads.ms_auth.application.dto.UpdateAccountRequest;
 import br.dac.bantads.ms_auth.application.exception.AccountNotFoundException;
-import br.dac.bantads.ms_auth.application.ports.PasswordHasher;
-import br.dac.bantads.ms_auth.application.ports.UserAccountRepository;
+import br.dac.bantads.ms_auth.application.security.PasswordHasher;
+import br.dac.bantads.ms_auth.domain.account.UserAccountRepository;
 import br.dac.bantads.ms_auth.domain.account.AccountRole;
 import br.dac.bantads.ms_auth.domain.account.UserAccount;
 import org.springframework.stereotype.Service;
@@ -33,7 +33,7 @@ public class UserAccountService {
     public CreateAccountResponse createWithPassword(CreateAccountWithPasswordRequest request) {
         UserAccount account = new UserAccount(
                 request.email(),
-                passwordHasher.sha256(request.password()),
+                passwordHasher.hash(request.password()),
                 request.accountRole()
         );
         UserAccount saved = userAccountRepository.save(account);
@@ -44,7 +44,7 @@ public class UserAccountService {
         String generatedPassword = generateRandomPassword6Letters();
         UserAccount account = new UserAccount(
                 request.email(),
-                passwordHasher.sha256(generatedPassword),
+                passwordHasher.hash(generatedPassword),
                 request.accountRole()
         );
         UserAccount saved = userAccountRepository.save(account);
@@ -54,7 +54,7 @@ public class UserAccountService {
     public UserAccount createOrUpdateWithPassword(String email, String rawPassword, AccountRole accountRole) {
         UserAccount account = new UserAccount(
                 email,
-                passwordHasher.sha256(rawPassword),
+                passwordHasher.hash(rawPassword),
                 accountRole
         );
         return userAccountRepository.save(account);
@@ -82,7 +82,7 @@ public class UserAccountService {
                 
         String updatedPassword = existing.getPasswordHash();
         if (request.password() != null && !request.password().isBlank()) {
-            updatedPassword = passwordHasher.sha256(request.password());
+            updatedPassword = passwordHasher.hash(request.password());
         }
 
         AccountRole updatedRole = existing.getAccountRole();
@@ -103,7 +103,7 @@ public class UserAccountService {
     }
 
     public String generateRandomPasswordHash6Letters() {
-        return passwordHasher.sha256(generateRandomPassword6Letters());
+        return passwordHasher.hash(generateRandomPassword6Letters());
     }
 
     private String generateRandomPassword6Letters() {

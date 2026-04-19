@@ -4,12 +4,8 @@ server:
 spring:
   application:
     name: ms-auth
-  cassandra:
-    contact-points: localhost
-    port: 9042
-    local-datacenter: datacenter1
-    keyspace-name: ms_auth
-    schema-action: create_if_not_exists
+  mongodb:
+    uri: mongodb://localhost:27017/ms_auth
 
 auth:
   jwt:
@@ -21,4 +17,4 @@ springdoc:
   api-docs:
     path: /v3/api-docs
   swagger-ui:
-    path: /swagger-ui.html
+    path: /swagger-ui

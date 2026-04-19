@@ -1,17 +1,16 @@
 services:
-  scylladb:
-    image: scylladb/scylla:2025.4
-    container_name: ms-auth-scylladb
-    command: --smp 1 --memory 750M --overprovisioned 1 --api-address 0.0.0.0
+  mongodb:
+    image: mongo:latest
+    container_name: ms-auth-mongodb
     ports:
-      - "9042:9042"
+      - "27017:27017"
     healthcheck:
-      test: ["CMD-SHELL", "cqlsh -e 'DESCRIBE KEYSPACES' 127.0.0.1 9042"]
+      test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/test --quiet
       interval: 10s
       timeout: 5s
-      retries: 20
+      retries: 5
     volumes:
-      - scylla-data:/var/lib/scylla
+      - mongo-data:/data/db
 
 volumes:
-  scylla-data:
+  mongo-data:
