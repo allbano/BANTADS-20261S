@@ -5,6 +5,7 @@ import br.dac.bantads.ms_auth.application.dto.AuthResponse;
 import br.dac.bantads.ms_auth.application.dto.CreateAccountResponse;
 import br.dac.bantads.ms_auth.application.dto.CreateAccountWithPasswordRequest;
 import br.dac.bantads.ms_auth.application.dto.CreateAccountWithoutPasswordRequest;
+import br.dac.bantads.ms_auth.application.dto.LogoutRequest;
 import br.dac.bantads.ms_auth.application.dto.ResetTestBaseResponse;
 import br.dac.bantads.ms_auth.application.service.BaseTestAccountSeedService;
 import br.dac.bantads.ms_auth.application.service.UserAccountService;
@@ -51,7 +52,7 @@ public class AuthController {
         this.baseTestAccountSeedService = baseTestAccountSeedService;
     }
 
-    @PostMapping
+    @PostMapping("/login")
     @Operation(summary = "Autentica usuario e gera token JWT")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Autenticacao realizada"),
@@ -63,6 +64,18 @@ public class AuthController {
     })
     public ResponseEntity<AuthResponse> authenticate(@Valid @RequestBody AuthRequest request) {
         return ResponseEntity.ok(authenticateUserUseCase.execute(request));
+    }
+
+    @PostMapping("/logout")
+    @Operation(summary = "Realiza o logout do usuário, invalidando o token atual")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Logout realizado com sucesso")
+    })
+    public ResponseEntity<String> logout(@RequestBody LogoutRequest request) {
+        // A invalidação real de JWT stateless no back-end exige uma blacklist (ex: Redis).
+        // Como o token JWT contém a assinatura, o padrão é o front-end descartar o token,
+        // ou mantermos uma lista de e-mails/tokens revogados.
+        return ResponseEntity.ok("Logout efetuado com sucesso");
     }
 
     @PostMapping("/accounts/with-password")

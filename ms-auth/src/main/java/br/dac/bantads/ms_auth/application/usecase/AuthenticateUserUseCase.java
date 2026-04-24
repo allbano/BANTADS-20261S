@@ -36,10 +36,10 @@ public class AuthenticateUserUseCase {
 
         String token = jwtTokenService.generate(account);
         return new AuthResponse(
-                "Bearer",
                 token,
-                account.getEmail(),
-                account.getAccountRole().authority()
+                "bearer",
+                account.getAccountRole().name(),
+                new AuthResponse.UsuarioDTO(account.getEmail())
         );
     }
 }

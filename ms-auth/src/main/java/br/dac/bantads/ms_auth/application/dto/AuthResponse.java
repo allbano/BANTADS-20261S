@@ -1,9 +1,12 @@
 package br.dac.bantads.ms_auth.application.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 public record AuthResponse(
-        String tokenType,
-        String token,
-        String email,
-        String accountRole
+        @JsonProperty("access_token") String accessToken,
+        @JsonProperty("token_type") String tokenType,
+        String tipo,
+        UsuarioDTO usuario
 ) {
+    public record UsuarioDTO(String email) {}
 }
