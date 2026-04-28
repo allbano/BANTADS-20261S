@@ -1,32 +1,12 @@
 const jwt = require('jsonwebtoken');
 
-function verifyJWT(req, res, next) {
-    const token = req.headers['authorization']?.split(' ')[1]; // Formato "Bearer XXXXX" [cite: 193]
-
-    if (!token) {
-        return res.status(401).json({ auth: false, message: 'Nenhum token fornecido.' });
-    }
-
-    jwt.verify(token, JWT_SECRET, (err, decoded) => {
-        if (err) {
-            return res.status(401).json({ auth: false, message: 'Falha na autenticação do token.' });
-        }
-        
-        // Guarda o ID ou perfil do utilizador para uso posterior, se necessário
-        req.userId = decoded.id;
-        req.userRole = decoded.role;
-        next();
-    });
-}
-
-const jwt = require('jsonwebtoken');
-
 /**
- * Middleware para verificação de token JWT
- * Bloqueia acesso a funcionalidades sem login com sucesso 
+ * Middleware para verificação de token JWT.
+ * Valida a identidade do usuário antes de permitir que o API Gateway
+ * repasse a requisição para os microsserviços internos.
  */
 const verifyJWT = (req, res, next) => {
-    // Extrair o header de autorização 
+    // Recupera o header de autorização da requisição
     const authHeader = req.headers['authorization'];
 
     if (!authHeader) {
@@ -36,7 +16,7 @@ const verifyJWT = (req, res, next) => {
         });
     }
 
-    // Verificar o formato "Bearer <TOKEN>" 
+    // Deve seguir o padrão "Bearer <TOKEN>"
     const parts = authHeader.split(' ');
     if (parts.length !== 2 || parts[0] !== 'Bearer') {
         return res.status(401).json({ 
@@ -47,8 +27,9 @@ const verifyJWT = (req, res, next) => {
 
     const token = parts[1];
 
-    // Validar o token usando a Secret configurada no ms-auth
-    // A secret deve ser a mesma 
+    
+    // A chave secreta deve ser idêntica à definida no ms-auth para que a validação funcione.
+
     const secret = process.env.JWT_SECRET || 'change-me-in-production';
 
     jwt.verify(token, secret, (err, decoded) => {
@@ -59,7 +40,6 @@ const verifyJWT = (req, res, next) => {
             });
         }
 
-        // Se válido, guarda os dados do utilizador no request e prossegue 
         req.user = {
             id: decoded.id,
             tipo: decoded.tipo,
