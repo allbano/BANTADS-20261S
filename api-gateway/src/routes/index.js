@@ -22,7 +22,7 @@ app.use(express.json());
 
 /* ROTAS PÚBLICAS */
 app.post('/login', httpProxy(AUTH_URL, {
-    proxyReqPathResolver: () => '/auth/login', // Mapeia para o endpoint real do ms-auth
+    proxyReqPathResolver: () => '/auth/login'// Mapeia para o endpoint real do ms-auth
 }));
 
 app.post('/autocadastro', httpProxy(CLIENTE_URL, {
