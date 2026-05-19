@@ -47,7 +47,6 @@ node_modules/
 .recommenders
 .settings
 .springBeans
-.vscode
 /code
 MANIFEST.MF
 _site/
@@ -72,3 +71,5 @@ secrets.yml
 .git-hooks/
 node_modules
 /.kotlin/
+**/.vscode/*
+
