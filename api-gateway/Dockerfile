@@ -1,19 +1,26 @@
-FROM node:24-alpine
+FROM node:24-alpine AS builder
 
-# Define o diretório do contentor
 WORKDIR /app
 
-# Copia dependências
+# Instala dependências (inclui devDependencies para compilar TS)
 COPY package*.json ./
+RUN npm ci
 
-# Instala as dependências 
-RUN npm install 
-
-# Copia o restante código da pasta api-gateway para o contentor
+# Copia código-fonte e compila TypeScript
 COPY . .
+RUN npm run build
 
-# Expõe a porta que o index.js está utilizando
-EXPOSE 40004
+# ─── Estágio de produção (sem devDependencies) ──────────────────────
+FROM node:24-alpine
 
-# Comando para iniciar a aplicação
-CMD ["node", "src/routes/index.js"]
+WORKDIR /app
+
+COPY package*.json ./
+RUN npm ci --omit=dev
+
+# Copia apenas o código compilado do estágio anterior
+COPY --from=builder /app/dist ./dist
+
+EXPOSE 3000
+
+CMD ["node", "dist/server.js"]
