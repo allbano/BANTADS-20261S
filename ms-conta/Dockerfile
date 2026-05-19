@@ -19,5 +19,5 @@ USER spring:spring
 
 COPY --from=build /workspace/target/*.jar app.jar
 
-EXPOSE 40009
+EXPOSE 40006
 ENTRYPOINT ["java", "-XX:+UseContainerSupport", "-XX:MaxRAMPercentage=75.0", "-jar", "/app/app.jar"]
