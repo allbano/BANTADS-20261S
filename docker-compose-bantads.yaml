@@ -1,231 +1,282 @@
-# CONFIGURAÇÕES GERAIS - COMPOSIÇÃO DOCKER
-# Portas utilizadas em sequência no bantads:
-# Da 40000 em diante:
-# 40000 - Postgre de conta
-# 40001 - Postgre de funcionário 
-# 40002 - Postgre de cliente 
-# 40003 - MongoDB 
-# 40004 - API Gateway 
-# 40005 - RabbitMQ 
-# 40006 - ms-account 
-# 40007 - ms-customer 
-# 40008 - ms-employee 
-# 40009 - ms-auth
+name: bantads
 
-# Bloco de configuração comum para todos os Postgres
-# Isso evita repetição de código (DRY)
-x-postgres-common: &postgres-common
-  image: postgres:18.3-alpine3.23
-  shm_size: 256mb
-  #restart: unless-stopped
+x-common-logging: &common-logging
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "3"
 
-  # NÃO ESQUECER DE CONFIGURAR O ARQUIVO .ENV
-  # NÃO VAI ESTAR NO GITHUB
-  env_file:
-    - .env
-  # Usuário 'postgres' padrão na imagem Alpine
-  user: "70:70" 
-  read_only: true
-  tmpfs:
-    - /var/run/postgresql
-    - /tmp
-  security_opt:
-    - no-new-privileges:true
-  deploy:
-    resources:
-      limits:
-        cpus: '1.0'
-        memory: 512M
-      reservations:
-        cpus: '0.25'
-        memory: 128M
-  logging:
-    driver: "json-file"
-    options:
-      max-size: "10m"
-      max-file: "3"
+x-java-service: &java-service
+  restart: unless-stopped
   networks:
     - bantads-network
-
+  logging: *common-logging
 
 services:
-  # 40000 - Postgre de conta
-  bantads-pg18-account:
-    <<: *postgres-common
-    container_name: bantads-pg18-account
+  bantads-pg-account:
+    image: postgres:18.3-alpine3.23
+    container_name: bantads-pg-account
+    restart: unless-stopped
     environment:
-      PGPORT: 40000
-      # As senhas não estão expostas, mas agora estão claramente documentadas
-      # O Docker vai puxar os valores reais do arquivo .env
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_INITDB_ARGS: "--locale=pt_BR.UTF-8 --encoding=UTF8"
-      LANG: pt_BR.utf8
-    # Descomente o bloco 'ports' APENAS se precisar conectar do seu host local 
-    # (ex: para debugar via MongoDB Compass). 
-    # PRODUÇÃO = COMENTADO.
+      POSTGRES_USER: ${POSTGRES_USER:-bantads}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-bantads123}
+      POSTGRES_DB: ${POSTGRES_DB_ACCOUNT:-bantads_account}
     ports:
-      - "55000:40000"
+      - "55000:5432"
     volumes:
-      - bantads-pg18-account:/var/lib/postgresql
-    #      - ./database/scripts-backend:/docker-entrypoint-initdb.d
+      - bantads-pg-account:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
       interval: 10s
       timeout: 5s
-      retries: 5
+      retries: 10
+      start_period: 20s
+    networks:
+      - bantads-network
+    logging: *common-logging
 
-  # 40001 - Postgre de funcionário 
-  bantads-pg18-custumer:
-    <<: *postgres-common
-    container_name: bantads-pg18-custumer
+  bantads-pg-cliente:
+    image: postgres:18.3-alpine3.23
+    container_name: bantads-pg-cliente
+    restart: unless-stopped
     environment:
-      PGPORT: 40001
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_DB: bantads
-      POSTGRES_INITDB_ARGS: "--locale=pt_BR.UTF-8 --encoding=UTF8"
-      LANG: pt_BR.utf8
-    # Descomente o bloco 'ports' APENAS se precisar conectar do seu host local 
-    # (ex: para debugar via MongoDB Compass). 
-    # PRODUÇÃO = COMENTADO.
+      POSTGRES_USER: ${POSTGRES_USER:-bantads}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-bantads123}
+      POSTGRES_DB: ${POSTGRES_DB_CLIENTE:-bantads_cliente}
     ports:
-      - "55001:40001"
+      - "55001:5432"
     volumes:
-      - bantads-pg18-custumer:/var/lib/postgresql
-    #      - ./database/scripts-backend:/docker-entrypoint-initdb.d
+      - bantads-pg-cliente:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
       interval: 10s
       timeout: 5s
-      retries: 5
+      retries: 10
+      start_period: 20s
+    networks:
+      - bantads-network
+    logging: *common-logging
 
-  # 40002 - Postgre de cliente 
-  bantads-pg18-employee:
-    <<: *postgres-common
-    container_name: bantads-pg18-employee
+  bantads-pg-funcionario:
+    image: postgres:18.3-alpine3.23
+    container_name: bantads-pg-funcionario
+    restart: unless-stopped
     environment:
-      PGPORT: 40002
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_DB: bantads
-      POSTGRES_INITDB_ARGS: "--locale=pt_BR.UTF-8 --encoding=UTF8"
-      LANG: pt_BR.utf8
-    # Descomente o bloco 'ports' APENAS se precisar conectar do seu host local 
-    # (ex: para debugar via MongoDB Compass). 
-    # PRODUÇÃO = COMENTADO.
+      POSTGRES_USER: ${POSTGRES_USER:-bantads}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-bantads123}
+      POSTGRES_DB: ${POSTGRES_DB_FUNCIONARIO:-bantads_funcionario}
     ports:
-      - "55002:40002"
+      - "55002:5432"
     volumes:
-      - bantads-pg18-employee:/var/lib/postgresql
-    #      - ./database/scripts-backend:/docker-entrypoint-initdb.d
+      - bantads-pg-funcionario:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
       interval: 10s
       timeout: 5s
-      retries: 5
+      retries: 10
+      start_period: 20s
+    networks:
+      - bantads-network
+    logging: *common-logging
 
-  # MONGO DB
   bantads-mongodb:
     image: mongo:8.0-jammy
     container_name: bantads-mongodb
-    command: >
-      mongod
-      --port 40003
-      --auth
-      --bind_ip_all
-    # Descomente o bloco 'ports' APENAS se precisar conectar do seu host local 
-    # (ex: para debugar via MongoDB Compass). 
-    # PRODUÇÃO = COMENTADO.
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME:-bantads}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD:-bantads123}
+    command: ["mongod", "--port", "27017", "--auth", "--bind_ip_all"]
     ports:
-      - "55003:40003"
-    # Usuário padrão para boas práticas
-    user: "999:999"
-    read_only: true
-    tmpfs:
-      - /tmp
-      - /data/configdb # Necessário caso o Mongo precise escrever dados de configuração em tempo de execução
-    security_opt:
-      - no-new-privileges:true
-    #restart: unless-stopped
-    # Garante que o banco está vivo e pronto para conexões
-    healthcheck:
-      test: >
-        mongosh --port 40003 --quiet
-        --username $${MONGO_INITDB_ROOT_USERNAME}
-        --password $${MONGO_INITDB_ROOT_PASSWORD}
-        --authenticationDatabase admin
-        --eval "db.adminCommand('ping')"
-      interval: 15s
-      timeout: 10s
-      retries: 5
-      start_period: 30s
-    # Evita que o banco consuma todos os recursos do servidor host
-    deploy:
-      resources:
-        limits:
-          cpus: '1.0'
-          memory: 1G
-        reservations:
-          cpus: '0.25'
-          memory: 256M
-    # Previne que o disco lote com logs do contêiner
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "10m"
-        max-file: "3"
-    # volume do banco de dados
+      - "55003:27017"
     volumes:
       - bantads-mongodb:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--port", "27017", "--quiet", "--eval", "db.adminCommand('ping')"]
+      interval: 15s
+      timeout: 10s
+      retries: 10
+      start_period: 30s
     networks:
       - bantads-network
-    # Lê as credenciais do arquivo .env de forma segura
-    env_file:
-      - .env
-    
+    logging: *common-logging
 
-  # ms-auth
-  bantads-ms-auth:
-    build:
-      context: ./ms-auth
-      dockerfile: Dockerfile
-    container_name: bantads-ms-auth
-    ports:
-      - "8085:8085"
+  bantads-rabbitmq:
+    image: rabbitmq:4.3-management
+    container_name: bantads-rabbitmq
+    restart: unless-stopped
     environment:
-      SPRING_DATA_MONGODB_URI: mongodb://${MONGO_INITDB_ROOT_USERNAME}:${MONGO_INITDB_ROOT_PASSWORD}@bantads-mongodb:40003/db_auth?authSource=admin
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER:-guest}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS:-guest}
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    volumes:
+      - bantads-rabbitmq:/var/lib/rabbitmq
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+    networks:
+      - bantads-network
+    logging: *common-logging
+
+  bantads-ms-auth:
+    <<: *java-service
+    container_name: bantads-ms-auth
+    build:
+      context: ms-auth/
+      dockerfile: Dockerfile
+    ports:
+      - "40009:40009"
+    environment:
+      SERVER_PORT: 40009
+      SPRING_DATA_MONGODB_URI: mongodb://${MONGO_INITDB_ROOT_USERNAME:-bantads}:${MONGO_INITDB_ROOT_PASSWORD:-bantads123}@bantads-mongodb:27017/ms_auth?authSource=admin
+      JWT_ISSUER: ${JWT_ISSUER:-ms-auth}
+      JWT_SECRET: ${JWT_SECRET:-change-me-in-production}
+      JWT_EXPIRATION_MINUTES: ${JWT_EXPIRATION_MINUTES:-60}
+      MAIL_ADDRESS: ${MAIL_ADDRESS:-albanoaws2024@gmail.com}
+      MAIL_PASSWORD: ${MAIL_PASSWORD:-change-me}
+      SPRING_RABBITMQ_HOST: bantads-rabbitmq
+      SPRING_RABBITMQ_PORT: 5672
+      SPRING_RABBITMQ_USERNAME: ${RABBITMQ_DEFAULT_USER:-guest}
+      SPRING_RABBITMQ_PASSWORD: ${RABBITMQ_DEFAULT_PASS:-guest}
     depends_on:
       bantads-mongodb:
         condition: service_healthy
-    deploy:
-      resources:
-        limits:
-          cpus: '1.0'
-          memory: 512M
-        reservations:
-          cpus: '0.25'
-          memory: 256M
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "10m"
-        max-file: "3"
+      bantads-rabbitmq:
+        condition: service_healthy
+
+  bantads-ms-cliente:
+    <<: *java-service
+    container_name: bantads-ms-cliente
+    build:
+      context: ms-cliente/
+      dockerfile: Dockerfile
+    ports:
+      - "40007:40007"
+    environment:
+      SERVER_PORT: 40007
+      SPRING_DATASOURCE_URL: jdbc:postgresql://bantads-pg-cliente:5432/${POSTGRES_DB_CLIENTE:-bantads_cliente}
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER:-bantads}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:-bantads123}
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      SPRING_FLYWAY_ENABLED: false
+      SPRING_RABBITMQ_HOST: bantads-rabbitmq
+      SPRING_RABBITMQ_PORT: 5672
+      SPRING_RABBITMQ_USERNAME: ${RABBITMQ_DEFAULT_USER:-guest}
+      SPRING_RABBITMQ_PASSWORD: ${RABBITMQ_DEFAULT_PASS:-guest}
+    depends_on:
+      bantads-pg-cliente:
+        condition: service_healthy
+      bantads-rabbitmq:
+        condition: service_healthy
+
+  bantads-ms-conta:
+    <<: *java-service
+    container_name: bantads-ms-conta
+    build:
+      context: ms-conta/
+      dockerfile: Dockerfile
+    ports:
+      - "40006:40006"
+    environment:
+      SERVER_PORT: 40006
+      SPRING_DATASOURCE_URL: jdbc:postgresql://bantads-pg-account:5432/${POSTGRES_DB_ACCOUNT:-bantads_account}
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER:-bantads}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:-bantads123}
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      SPRING_FLYWAY_ENABLED: false
+      SPRING_RABBITMQ_HOST: bantads-rabbitmq
+      SPRING_RABBITMQ_PORT: 5672
+      SPRING_RABBITMQ_USERNAME: ${RABBITMQ_DEFAULT_USER:-guest}
+      SPRING_RABBITMQ_PASSWORD: ${RABBITMQ_DEFAULT_PASS:-guest}
+    depends_on:
+      bantads-pg-account:
+        condition: service_healthy
+      bantads-rabbitmq:
+        condition: service_healthy
+
+  bantads-ms-funcionario:
+    <<: *java-service
+    container_name: bantads-ms-funcionario
+    build:
+      context: ms-funcionario/
+      dockerfile: Dockerfile
+    ports:
+      - "40008:40008"
+    environment:
+      SERVER_PORT: 40008
+      SPRING_DATASOURCE_URL: jdbc:postgresql://bantads-pg-funcionario:5432/${POSTGRES_DB_FUNCIONARIO:-bantads_funcionario}
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER:-bantads}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:-bantads123}
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      SPRING_RABBITMQ_HOST: bantads-rabbitmq
+      SPRING_RABBITMQ_PORT: 5672
+      SPRING_RABBITMQ_USERNAME: ${RABBITMQ_DEFAULT_USER:-guest}
+      SPRING_RABBITMQ_PASSWORD: ${RABBITMQ_DEFAULT_PASS:-guest}
+    depends_on:
+      bantads-pg-funcionario:
+        condition: service_healthy
+      bantads-rabbitmq:
+        condition: service_healthy
+
+  bantads-ms-saga:
+    <<: *java-service
+    container_name: bantads-ms-saga
+    build:
+      context: ms-saga/
+      dockerfile: Dockerfile
+    ports:
+      - "40010:40010"
+    environment:
+      SERVER_PORT: 40010
+      SPRING_RABBITMQ_HOST: bantads-rabbitmq
+      SPRING_RABBITMQ_PORT: 5672
+      SPRING_RABBITMQ_USERNAME: ${RABBITMQ_DEFAULT_USER:-guest}
+      SPRING_RABBITMQ_PASSWORD: ${RABBITMQ_DEFAULT_PASS:-guest}
+    depends_on:
+      bantads-rabbitmq:
+        condition: service_healthy
+
+  bantads-api-gateway:
+    container_name: bantads-api-gateway
+    build:
+      context: api-gateway/
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    ports:
+      - "40004:40004"
+    environment:
+      PORT: 40004
+      JWT_SECRET: ${JWT_SECRET:-change-me-in-production}
+      MS_AUTH_URL: http://bantads-ms-auth:40009
+      MS_CLIENTE_URL: http://bantads-ms-cliente:40007
+      MS_CONTA_URL: http://bantads-ms-conta:40006
+      MS_FUNCIONARIO_URL: http://bantads-ms-funcionario:40008
+    depends_on:
+      bantads-ms-auth:
+        condition: service_started
+      bantads-ms-cliente:
+        condition: service_started
+      bantads-ms-conta:
+        condition: service_started
+      bantads-ms-funcionario:
+        condition: service_started
     networks:
       - bantads-network
+    logging: *common-logging
 
 volumes:
-  bantads-pg18-account:
-    name: bantads-pg18-account
-  bantads-pg18-custumer:
-    name: bantads-pg18-custumer
-  bantads-pg18-employee:
-    name: bantads-pg18-employee
+  bantads-pg-account:
+  bantads-pg-cliente:
+  bantads-pg-funcionario:
   bantads-mongodb:
-    name: bantads-mongodb-data
+  bantads-rabbitmq:
 
 networks:
   bantads-network:
     name: bantads-network
     driver: bridge
-    external: false

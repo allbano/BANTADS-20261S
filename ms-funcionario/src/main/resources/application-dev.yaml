@@ -1,0 +1,30 @@
+# ══════════════════════════════════════════════════════════════
+# ms-funcionario — Profile: DEVELOPMENT
+# Credenciais locais hardcoded são aceitáveis aqui.
+# ══════════════════════════════════════════════════════════════
+
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/bantads
+    username: bantads
+    password: bantads123
+    hikari:
+      maximum-pool-size: 5
+      minimum-idle: 1
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: guest
+    password: guest
+
+# ── Logging verboso para debug ──────────────────────────────
+logging:
+  level:
+    br.dac.bantads: DEBUG
+    org.hibernate.SQL: DEBUG
