@@ -1,15 +1,13 @@
-package br.dac.bantads.ms_funcionario.model;
+package br.dac.bantads.ms_funcionario.domain;
 
 import java.io.Serial;
 import java.util.UUID;
 
-import com.fasterxml.uuid.Generators;
+import org.hibernate.annotations.UuidGenerator;
+
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import br.dac.bantads.ms_funcionario.dto.enums.TipoFuncionario;
 
 @Entity
@@ -24,9 +22,14 @@ public class FuncionarioModel {
     private static final long serialVersionUID = 1L;
 
     @Id
-    @GeneratedValue(generator = "uuidv7")
-    @Column(name = "funcionario_uuid", nullable = false, unique = true)
-    private UUID uuidFuncionario;
+    @GeneratedValue
+    @UuidGenerator(style = UuidGenerator.Style.VERSION_7)
+    @Column(name = "funcionario_uuid",
+            nullable = false, 
+            unique = true,
+            updatable = false,
+            columnDefinition = "uuid")
+    private UUID uuid;
 
     @Column(name = "funcionario_cpf", nullable = false, unique = true, length = 11)
     private String cpf;
@@ -41,10 +44,4 @@ public class FuncionarioModel {
     @Column(name = "funcionario_tipo", nullable = false)
     private TipoFuncionario tipo;
 
-    @PrePersist
-    private void prePersist() {
-        if (this.uuidFuncionario == null) {
-            this.uuidFuncionario = Generators.timeBasedEpochGenerator().generate();
-        }
-    }
 }
