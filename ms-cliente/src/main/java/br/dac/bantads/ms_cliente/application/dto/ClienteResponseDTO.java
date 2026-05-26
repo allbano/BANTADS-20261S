@@ -1,4 +1,4 @@
-package br.dac.bantads.ms_cliente.dto;
+package br.dac.bantads.ms_cliente.application.dto;
 
 import java.util.UUID;
 import java.math.BigDecimal;
@@ -9,5 +9,8 @@ public record ClienteResponseDTO(
         String email,
         String cpf,
         BigDecimal salario,
-        EnderecoDTO endereco
+        String endereco,
+        String cep,
+        String cidade,
+        String estado
 ) {}

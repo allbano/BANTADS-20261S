@@ -1,4 +1,4 @@
-package br.dac.bantads.ms_cliente.model;
+package br.dac.bantads.ms_cliente.domain.model;
 
 import java.io.Serial;
 import java.io.Serializable;
@@ -22,7 +22,7 @@ public class ClienteModel implements Serializable {
     @Id
     @GeneratedValue(generator = "uuidv7")
     @Column(name = "cliente_uuid", nullable = false, unique = true)
-    private UUID uuidCliente;
+    private UUID uuid;
 
     @Column(name = "cliente_nome", nullable = false)
     private String nome;
@@ -40,8 +40,17 @@ public class ClienteModel implements Serializable {
     @Column(name = "cliente_salario", precision = 19, scale = 2)
     private BigDecimal salario = BigDecimal.ZERO;
 
-    @Embedded
-    private EnderecoModel endereco;
+    @Column(name = "cliente_endereco")
+    private String endereco;
+
+    @Column(name = "cliente_cep")
+    private String cep;
+
+    @Column(name = "cliente_cidade")
+    private String cidade;
+
+    @Column(name = "cliente_estado")
+    private String estado;
 
     @PrePersist
     private void prePersist() {

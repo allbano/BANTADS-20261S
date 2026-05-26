@@ -1,3 +1,6 @@
 spring:
   application:
     name: ms-cliente
+
+services:
+  conta: ${MS_CONTA_URL:http://localhost:40006}
