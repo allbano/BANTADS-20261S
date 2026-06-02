@@ -67,6 +67,16 @@ public class ContaModel implements Serializable {
     @Column(name = "conta_gerente_uuid", nullable = false)
     private UUID uuidGerente;
 
+    @Builder.Default
+    @Column(name = "conta_ativo", nullable = false)
+    private boolean ativo = false;
+
+    @Column(name = "conta_rejeitado_motivo", length = 200)
+    private String rejeitadoMotivo;
+
+    @Column(name = "conta_rejeitado_data")
+    private LocalDate rejeitadoData;
+
     /**
      * Lista de movimentações vinculadas a esta conta.
      */

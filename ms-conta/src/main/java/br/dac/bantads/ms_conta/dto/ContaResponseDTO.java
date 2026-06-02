@@ -16,5 +16,8 @@ public record ContaResponseDTO(
         LocalDate dataCriacao,
         BigDecimal saldo,
         BigDecimal limite,
-        UUID uuidGerente
+        UUID uuidGerente,
+        boolean ativo,
+        String rejeitadoMotivo,
+        LocalDate rejeitadoData
 ) {}
