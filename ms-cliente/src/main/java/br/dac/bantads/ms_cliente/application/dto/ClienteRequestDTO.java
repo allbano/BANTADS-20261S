@@ -11,5 +11,8 @@ public record ClienteRequestDTO(
         String endereco,
         String cep,
         String cidade,
-        String estado
+        String estado,
+        String senha,
+        String cargo,
+        Boolean ativo
 ) {}

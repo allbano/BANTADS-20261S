@@ -30,7 +30,7 @@ public class ClienteModel implements Serializable {
     @Column(name = "cliente_email", nullable = false, unique = true)
     private String email;
 
-    @Column(name = "cliente_cpf", nullable = false, unique = true, length = 11)
+    @Column(name = "cliente_cpf", nullable = false, unique = true, length = 20)
     private String cpf;
 
     @Column(name = "cliente_telefone")
@@ -51,6 +51,17 @@ public class ClienteModel implements Serializable {
 
     @Column(name = "cliente_estado")
     private String estado;
+
+    @Column(name = "cliente_senha")
+    private String senha;
+
+    @Builder.Default
+    @Column(name = "cliente_ativo", nullable = false)
+    private boolean ativo = true;
+
+    @Builder.Default
+    @Column(name = "cliente_cargo", nullable = false)
+    private String cargo = "CLIENTE";
 
     @PrePersist
     private void prePersist() {

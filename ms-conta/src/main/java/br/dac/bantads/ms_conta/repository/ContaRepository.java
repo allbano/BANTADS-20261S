@@ -30,6 +30,19 @@ public interface ContaRepository extends JpaRepository<ContaModel, UUID> {
 
     long countByUuidGerente(UUID uuidGerente);
 
+    @Query("SELECT c.uuidGerente FROM ContaModel c GROUP BY c.uuidGerente ORDER BY COUNT(c) ASC")
+    List<UUID> findGerentesOrdenadosPorMenosContas(org.springframework.data.domain.Pageable pageable);
+
+    @Query("SELECT c.uuidGerente FROM ContaModel c GROUP BY c.uuidGerente ORDER BY COUNT(c) DESC")
+    List<UUID> findGerentesOrdenadosPorMaisContas(org.springframework.data.domain.Pageable pageable);
+
+    @Query("SELECT c.uuidGerente FROM ContaModel c WHERE c.uuidGerente != :currentGerente GROUP BY c.uuidGerente ORDER BY COUNT(c) ASC")
+    List<UUID> findGerentesOrdenadosPorMenosContasExcluindo(@Param("currentGerente") UUID currentGerente, org.springframework.data.domain.Pageable pageable);
+
+    List<ContaModel> findByUuidGerenteAndAtivo(UUID uuidGerente, boolean ativo);
+
+    List<ContaModel> findByUuidGerenteOrderBySaldoDesc(UUID uuidGerente);
+
     @Query("SELECT c FROM ContaModel c ORDER BY c.saldo DESC LIMIT 3")
     List<ContaModel> findTop3ByOrderBySaldoDesc();
 
