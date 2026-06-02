@@ -17,7 +17,7 @@ public class FuncionarioConsumer {
     @RabbitListener(queues = "funcionario-queue")
     public void listenFuncionarioQueue(@Payload FuncionarioRequestDTO funcionarioDTO) {
         try {
-            System.out.println("Mensagem recebida para o funcionário: " + funcionarioDTO.getNome());
+            System.out.println("Mensagem recebida para o funcionário: " + funcionarioDTO.nome());
             service.saveOrUpdate(funcionarioDTO);
         } catch (Exception e) {
             System.err.println("Erro ao processar fila de funcionários: " + e.getMessage());

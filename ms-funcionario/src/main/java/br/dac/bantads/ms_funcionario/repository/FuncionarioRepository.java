@@ -6,8 +6,19 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.UUID;
 
+import java.util.Optional;
+import java.util.List;
+
 public interface FuncionarioRepository extends JpaRepository<FuncionarioModel, UUID> {
 
-    boolean exexistsByCpf(String cpf);
+    boolean existsByCpf(String cpf);
+
+    boolean existsByEmail(String email);
+
+    Optional<FuncionarioModel> findByCpf(String cpf);
+
+    Optional<FuncionarioModel> findByEmail(String email);
+
+    List<FuncionarioModel> findByTipo(TipoFuncionario tipo);
 
 }

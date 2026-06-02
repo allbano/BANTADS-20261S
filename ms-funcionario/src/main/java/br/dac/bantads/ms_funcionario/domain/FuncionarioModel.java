@@ -44,4 +44,10 @@ public class FuncionarioModel {
     @Column(name = "funcionario_tipo", nullable = false)
     private TipoFuncionario tipo;
 
+    @Column(name = "funcionario_telefone")
+    private String telefone;
+
+    @Column(name = "funcionario_senha")
+    private String senha;
+
 }
