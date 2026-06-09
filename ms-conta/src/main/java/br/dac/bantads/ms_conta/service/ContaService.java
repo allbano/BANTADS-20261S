@@ -2,9 +2,11 @@ package br.dac.bantads.ms_conta.service;
 
 import br.dac.bantads.ms_conta.dto.ContaRabbitDTO;
 import br.dac.bantads.ms_conta.model.ContaModel;
+import br.dac.bantads.ms_conta.model.event.ContaAtualizadaEvent;
 import br.dac.bantads.ms_conta.repository.ContaRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,6 +22,8 @@ import java.util.*;
 public class ContaService {
 
     private final ContaRepository contaRepository;
+    private final ApplicationEventPublisher eventPublisher;
+    private final ContaEventHandler contaEventHandler;
     private final Random random = new Random();
 
     public BigDecimal calculateLimit(BigDecimal salario) {
@@ -78,7 +82,9 @@ public class ContaService {
                 .build();
 
         log.info("Salvando nova conta para o cliente {}, sob a gerência do gerente {}", clientUuid, managerUuid);
-        return contaRepository.save(conta);
+        ContaModel saved = contaRepository.save(conta);
+        eventPublisher.publishEvent(new ContaAtualizadaEvent(saved));
+        return saved;
     }
 
     @Transactional
@@ -86,6 +92,7 @@ public class ContaService {
         contaRepository.findByUuidCliente(clientUuid).ifPresent(conta -> {
             log.info("Excluindo conta do cliente: {}", clientUuid);
             contaRepository.delete(conta);
+            contaEventHandler.onContaExcluida(clientUuid);
         });
     }
 
@@ -116,7 +123,9 @@ public class ContaService {
         }
 
         log.info("Atualizando conta do cliente {}: ativa={}, limite={}", clientUuid, conta.isAtivo(), conta.getLimite());
-        return contaRepository.save(conta);
+        ContaModel saved = contaRepository.save(conta);
+        eventPublisher.publishEvent(new ContaAtualizadaEvent(saved));
+        return saved;
     }
 
     @Transactional
@@ -138,7 +147,8 @@ public class ContaService {
         if (!accounts.isEmpty()) {
             ContaModel accountToReassign = accounts.get(0);
             accountToReassign.setUuidGerente(newGerenteUuid);
-            contaRepository.save(accountToReassign);
+            ContaModel saved = contaRepository.save(accountToReassign);
+            eventPublisher.publishEvent(new ContaAtualizadaEvent(saved));
             log.info("Conta {} reatribuída do gerente {} para o gerente {}", accountToReassign.getUuidConta(), busiestManager, newGerenteUuid);
         }
     }
@@ -157,7 +167,8 @@ public class ContaService {
             if (!managers.isEmpty()) {
                 UUID recipientManager = managers.get(0);
                 account.setUuidGerente(recipientManager);
-                contaRepository.save(account);
+                ContaModel saved = contaRepository.save(account);
+                eventPublisher.publishEvent(new ContaAtualizadaEvent(saved));
                 log.info("Conta {} do gerente excluído foi atribuída ao gerente {}", account.getUuidConta(), recipientManager);
             } else {
                 log.warn("Nenhum outro gerente disponível para receber a conta {}", account.getUuidConta());
