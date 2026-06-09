@@ -12,6 +12,9 @@ x-java-service: &java-service
     - bantads-network
   logging: *common-logging
 
+# ══════════════════════════════════════════════════════════════════════
+# INFRAESTRUTURA
+# ══════════════════════════════════════════════════════════════════════
 services:
   bantads-pg-account:
     image: postgres:18.3-alpine3.23
@@ -123,6 +126,9 @@ services:
       - bantads-network
     logging: *common-logging
 
+# ══════════════════════════════════════════════════════════════════════
+# MICROSSERVIÇOS JAVA
+# ══════════════════════════════════════════════════════════════════════
   bantads-ms-auth:
     <<: *java-service
     container_name: bantads-ms-auth
@@ -163,7 +169,8 @@ services:
       SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER:-bantads}
       SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:-bantads123}
       SPRING_JPA_HIBERNATE_DDL_AUTO: update
-      SPRING_FLYWAY_ENABLED: false
+      SPRING_FLYWAY_ENABLED: "false"
+      MS_CONTA_URL: http://bantads-ms-conta:40006
       SPRING_RABBITMQ_HOST: bantads-rabbitmq
       SPRING_RABBITMQ_PORT: 5672
       SPRING_RABBITMQ_USERNAME: ${RABBITMQ_DEFAULT_USER:-guest}
@@ -188,7 +195,7 @@ services:
       SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER:-bantads}
       SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:-bantads123}
       SPRING_JPA_HIBERNATE_DDL_AUTO: update
-      SPRING_FLYWAY_ENABLED: false
+      SPRING_FLYWAY_ENABLED: "false"
       SPRING_RABBITMQ_HOST: bantads-rabbitmq
       SPRING_RABBITMQ_PORT: 5672
       SPRING_RABBITMQ_USERNAME: ${RABBITMQ_DEFAULT_USER:-guest}
@@ -209,10 +216,12 @@ services:
       - "40008:40008"
     environment:
       SERVER_PORT: 40008
+      SPRING_PROFILES_ACTIVE: dev
       SPRING_DATASOURCE_URL: jdbc:postgresql://bantads-pg-funcionario:5432/${POSTGRES_DB_FUNCIONARIO:-bantads_funcionario}
       SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER:-bantads}
       SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:-bantads123}
       SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      SPRING_FLYWAY_ENABLED: "false"
       SPRING_RABBITMQ_HOST: bantads-rabbitmq
       SPRING_RABBITMQ_PORT: 5672
       SPRING_RABBITMQ_USERNAME: ${RABBITMQ_DEFAULT_USER:-guest}
@@ -241,6 +250,9 @@ services:
       bantads-rabbitmq:
         condition: service_healthy
 
+# ══════════════════════════════════════════════════════════════════════
+# API GATEWAY (Node.js / TypeScript)
+# ══════════════════════════════════════════════════════════════════════
   bantads-api-gateway:
     container_name: bantads-api-gateway
     build:
@@ -256,6 +268,7 @@ services:
       MS_CLIENTE_URL: http://bantads-ms-cliente:40007
       MS_CONTA_URL: http://bantads-ms-conta:40006
       MS_FUNCIONARIO_URL: http://bantads-ms-funcionario:40008
+      MS_SAGA_URL: http://bantads-ms-saga:40010
     depends_on:
       bantads-ms-auth:
         condition: service_started
@@ -265,6 +278,25 @@ services:
         condition: service_started
       bantads-ms-funcionario:
         condition: service_started
+      bantads-ms-saga:
+        condition: service_started
+    networks:
+      - bantads-network
+    logging: *common-logging
+
+# ══════════════════════════════════════════════════════════════════════
+# FRONTEND (Angular / nginx)
+# ══════════════════════════════════════════════════════════════════════
+  bantads-ui:
+    container_name: bantads-ui
+    build:
+      context: bantads-ui/
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    ports:
+      - "4200:80"
+    depends_on:
+      - bantads-api-gateway
     networks:
       - bantads-network
     logging: *common-logging
