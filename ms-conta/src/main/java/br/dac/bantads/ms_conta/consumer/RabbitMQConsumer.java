@@ -26,12 +26,39 @@ public class RabbitMQConsumer {
     @RabbitListener(queues = RabbitMQConfig.FILA_REGISTRO_CONTA_CLIENTE)
     public void registraNovoCliente(String msg) {
         log.info("Mensagem recebida na fila {}: {}", RabbitMQConfig.FILA_REGISTRO_CONTA_CLIENTE, msg);
+        String sagaId = null;
         try {
             ContaRabbitDTO dto = objectMapper.readValue(msg, ContaRabbitDTO.class);
+            sagaId = dto.getSagaId();
             ContaModel conta = contaService.registrarConta(dto);
             log.info("Conta registrada com sucesso para o cliente: {}. UUID da Conta: {}", conta.getUuidCliente(), conta.getUuidConta());
+            publicarSagaContaCriada(sagaId, conta.getUuidCliente().toString());
         } catch (Exception e) {
             log.error("Erro ao registrar novo cliente a partir da fila: {}", e.getMessage(), e);
+            publicarSagaContaErro(sagaId, e.getMessage());
+        }
+    }
+
+    private void publicarSagaContaCriada(String sagaId, String uuidCliente) {
+        if (sagaId == null || sagaId.isBlank()) return;
+        try {
+            String json = String.format(
+                    "{\"sagaId\":\"%s\",\"sucesso\":true,\"uuidCliente\":\"%s\"}", sagaId, uuidCliente);
+            rabbitTemplate.convertAndSend(RabbitMQConfig.SAGA_EVT_CONTA_CRIADA, json);
+        } catch (Exception e) {
+            log.error("Falha ao publicar SAGA_EVT_CONTA_CRIADA", e);
+        }
+    }
+
+    private void publicarSagaContaErro(String sagaId, String motivo) {
+        if (sagaId == null || sagaId.isBlank()) return;
+        try {
+            String m = motivo != null ? motivo.replace("\"", "'") : "erro no ms-conta";
+            String json = String.format(
+                    "{\"sagaId\":\"%s\",\"sucesso\":false,\"mensagem\":\"%s\"}", sagaId, m);
+            rabbitTemplate.convertAndSend(RabbitMQConfig.SAGA_EVT_CONTA_ERRO, json);
+        } catch (Exception e) {
+            log.error("Falha ao publicar SAGA_EVT_CONTA_ERRO", e);
         }
     }
 

@@ -17,6 +17,10 @@ public class RabbitMQConfig {
     public static final String FILA_DISTRIBUI_CONTAS_GERENTE = "FILA_DISTRIBUI_CONTAS_GERENTE";
     public static final String FILA_NOTIFICA_UPDATE_CONTA = "FILA_NOTIFICA_UPDATE_CONTA";
 
+    // Filas do padrão Saga
+    public static final String SAGA_EVT_CONTA_CRIADA = "SAGA_EVT_CONTA_CRIADA";
+    public static final String SAGA_EVT_CONTA_ERRO   = "SAGA_EVT_CONTA_ERRO";
+
     @Bean
     public Queue registroContaClienteQueue() {
         return new Queue(FILA_REGISTRO_CONTA_CLIENTE, true);
@@ -45,6 +49,16 @@ public class RabbitMQConfig {
     @Bean
     public Queue notificaUpdateContaQueue() {
         return new Queue(FILA_NOTIFICA_UPDATE_CONTA, true);
+    }
+
+    @Bean
+    public Queue sagaEvtContaCriadaQueue() {
+        return new Queue(SAGA_EVT_CONTA_CRIADA, true);
+    }
+
+    @Bean
+    public Queue sagaEvtContaErroQueue() {
+        return new Queue(SAGA_EVT_CONTA_ERRO, true);
     }
 
     @Bean

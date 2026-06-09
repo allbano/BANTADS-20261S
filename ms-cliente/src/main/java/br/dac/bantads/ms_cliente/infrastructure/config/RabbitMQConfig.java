@@ -19,6 +19,11 @@ public class RabbitMQConfig {
     public static final String FILA_NOTIFICA_UPDATE_CONTA = "FILA_NOTIFICA_UPDATE_CONTA";
     public static final String FILA_AUTENTICACAO = "FILA_AUTENTICACAO";
 
+    // Filas do padrão Saga
+    public static final String SAGA_CMD_EXCLUIR_CLIENTE = "SAGA_CMD_EXCLUIR_CLIENTE";
+    public static final String SAGA_EVT_CLIENTE_CRIADO  = "SAGA_EVT_CLIENTE_CRIADO";
+    public static final String SAGA_EVT_CLIENTE_ERRO    = "SAGA_EVT_CLIENTE_ERRO";
+
     @Bean
     public ObjectMapper objectMapper() {
         return JsonMapper.builder().findAndAddModules().build();
@@ -62,5 +67,20 @@ public class RabbitMQConfig {
     @Bean
     public Queue filaAutenticacao() {
         return new Queue(FILA_AUTENTICACAO, true);
+    }
+
+    @Bean
+    public Queue sagaCmdExcluirClienteQueue() {
+        return new Queue(SAGA_CMD_EXCLUIR_CLIENTE, true);
+    }
+
+    @Bean
+    public Queue sagaEvtClienteCriadoQueue() {
+        return new Queue(SAGA_EVT_CLIENTE_CRIADO, true);
+    }
+
+    @Bean
+    public Queue sagaEvtClienteErroQueue() {
+        return new Queue(SAGA_EVT_CLIENTE_ERRO, true);
     }
 }

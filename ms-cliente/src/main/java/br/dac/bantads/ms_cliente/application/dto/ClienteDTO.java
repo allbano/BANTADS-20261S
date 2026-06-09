@@ -39,6 +39,9 @@ public class ClienteDTO implements Serializable {
     private String cargo;
     private boolean ativo;
 
+    // Preenchido pelo ms-saga quando o fluxo é orquestrado; null para fluxo legado
+    private String sagaId;
+
     public UUID getResolvedUuid() {
         if (uuid != null) {
             return uuid;
