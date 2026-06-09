@@ -230,36 +230,77 @@ public class ClienteService {
     public void processaNovoClienteEvent(ClienteDTO dto) {
         try {
             ClienteModel model = toModel(dto);
-            // Hash da senha antes de persistir, conforme lógica legada do RabbitMQ
             model.setSenha(SecurityUtils.hash(dto.getSenha()));
 
             ClienteModel saved = clienteRepository.save(model);
 
-            // Envia para fila de autenticação com a senha original (em texto puro) enviada no evento
-            UsuarioDTO uAuth = new UsuarioDTO(
-                    saved.getUuid().toString(),
-                    saved.getEmail(),
-                    dto.getSenha(),
-                    "CLIENTE",
-                    false
-            );
-
-            rabbitTemplate.convertAndSend(RabbitMQConfig.FILA_AUTENTICACAO, uAuth);
-            
             mailService.sendMail(saved.getEmail(), "BANTADS - Conta criada com sucesso!",
-                    "Sua conta foi criada com sucesso!!");
+                    "Sua conta foi criada com sucesso!! Aguarde a aprovação de um gerente.");
 
             System.out.println("Salvo (" + saved.getNome() + ") via RabbitMQ");
+
+            if (dto.getSagaId() != null && !dto.getSagaId().isBlank()) {
+                // Fluxo orquestrado pelo ms-saga: notifica o orquestrador para avançar
+                publicarEventoSagaClienteCriado(dto.getSagaId(), saved.getUuid().toString());
+            } else {
+                // Fluxo legado (coreografia): envia diretamente para autenticação
+                UsuarioDTO uAuth = new UsuarioDTO(
+                        saved.getUuid().toString(),
+                        saved.getEmail(),
+                        dto.getSenha(),
+                        "CLIENTE",
+                        false
+                );
+                rabbitTemplate.convertAndSend(RabbitMQConfig.FILA_AUTENTICACAO, uAuth);
+            }
         } catch (Exception e) {
             System.err.println("Erro ao salvar cliente via RabbitMQ: " + e.getMessage());
             String errorId = dto.getResolvedUuid() != null ? dto.getResolvedUuid().toString() : "null";
-            rabbitTemplate.convertAndSend(RabbitMQConfig.FILA_ERRO_NOVO_CLIENTE, errorId);
-            rabbitTemplate.convertAndSend(RabbitMQConfig.FILA_ERRO_NOVO_CLIENTE_AUTENTICACAO, errorId);
-            
+
+            if (dto.getSagaId() != null && !dto.getSagaId().isBlank()) {
+                publicarEventoSagaClienteErro(dto.getSagaId(), e.getMessage());
+            } else {
+                rabbitTemplate.convertAndSend(RabbitMQConfig.FILA_ERRO_NOVO_CLIENTE, errorId);
+                rabbitTemplate.convertAndSend(RabbitMQConfig.FILA_ERRO_NOVO_CLIENTE_AUTENTICACAO, errorId);
+            }
+
             if (dto.getEmail() != null) {
                 mailService.sendMail(dto.getEmail(), "BANTADS - Não foi possível criar sua conta!",
                         "Não foi possível criar sua conta!!");
             }
+        }
+    }
+
+    private void publicarEventoSagaClienteCriado(String sagaId, String uuidCliente) {
+        try {
+            String json = String.format(
+                    "{\"sagaId\":\"%s\",\"sucesso\":true,\"uuidCliente\":\"%s\"}", sagaId, uuidCliente);
+            rabbitTemplate.convertAndSend(RabbitMQConfig.SAGA_EVT_CLIENTE_CRIADO, json);
+        } catch (Exception e) {
+            System.err.println("Falha ao publicar SAGA_EVT_CLIENTE_CRIADO: " + e.getMessage());
+        }
+    }
+
+    private void publicarEventoSagaClienteErro(String sagaId, String motivo) {
+        try {
+            String msg = motivo != null ? motivo.replace("\"", "'") : "erro no ms-cliente";
+            String json = String.format(
+                    "{\"sagaId\":\"%s\",\"sucesso\":false,\"mensagem\":\"%s\"}", sagaId, msg);
+            rabbitTemplate.convertAndSend(RabbitMQConfig.SAGA_EVT_CLIENTE_ERRO, json);
+        } catch (Exception e) {
+            System.err.println("Falha ao publicar SAGA_EVT_CLIENTE_ERRO: " + e.getMessage());
+        }
+    }
+
+    public void excluirClientePorUuid(String uuidStr) {
+        try {
+            UUID uuid = UUID.fromString(uuidStr);
+            clienteRepository.findById(uuid).ifPresent(c -> {
+                clienteRepository.deleteById(uuid);
+                System.out.println("Compensação saga: cliente " + uuid + " excluído");
+            });
+        } catch (Exception e) {
+            System.err.println("Erro na compensação de cliente: " + e.getMessage());
         }
     }
 

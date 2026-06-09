@@ -1,3 +1,15 @@
 spring:
   application:
     name: ms-saga
+  rabbitmq:
+    host: ${SPRING_RABBITMQ_HOST:localhost}
+    port: ${SPRING_RABBITMQ_PORT:5672}
+    username: ${SPRING_RABBITMQ_USERNAME:guest}
+    password: ${SPRING_RABBITMQ_PASSWORD:guest}
+
+server:
+  port: ${SERVER_PORT:40010}
+
+logging:
+  level:
+    "[br.dac.bantads.ms_saga]": DEBUG

@@ -18,6 +18,9 @@ public class ContaRabbitDTO {
     private String uuidCliente;
     private String idGerente;
     private String uuidGerente;
+
+    // Preenchido pelo ms-saga quando orquestra o fluxo; null para fluxo legado
+    private String sagaId;
     private BigDecimal saldo;
     private BigDecimal salario;
     private boolean ativo;

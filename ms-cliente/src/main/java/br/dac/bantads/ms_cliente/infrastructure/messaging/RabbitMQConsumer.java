@@ -51,4 +51,16 @@ public class RabbitMQConsumer {
             System.err.println("Erro de parsing JSON na fila NOTIFICA_UPDATE_CONTA: " + e.getMessage());
         }
     }
+
+    // Compensação saga: ms-saga manda excluir o cliente quando algum passo posterior falha
+    @RabbitListener(queues = RabbitMQConfig.SAGA_CMD_EXCLUIR_CLIENTE)
+    public void excluirClienteSaga(String msg) {
+        System.out.println("Mensagem recebida na fila SAGA_CMD_EXCLUIR_CLIENTE: " + msg);
+        try {
+            String uuidStr = objectMapper.readValue(msg, String.class);
+            clienteService.excluirClientePorUuid(uuidStr);
+        } catch (Exception e) {
+            System.err.println("Erro ao processar SAGA_CMD_EXCLUIR_CLIENTE: " + e.getMessage());
+        }
+    }
 }
