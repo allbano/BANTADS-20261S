@@ -253,6 +253,26 @@ services:
       bantads-rabbitmq:
         condition: service_healthy
 
+  bantads-ms-notificacao:
+    <<: *java-service
+    container_name: bantads-ms-notificacao
+    build:
+      context: ms_notificacao/
+      dockerfile: Dockerfile
+    ports:
+      - "40011:40011"
+    environment:
+      SERVER_PORT: 40011
+      SPRING_RABBITMQ_HOST: bantads-rabbitmq
+      SPRING_RABBITMQ_PORT: 5672
+      SPRING_RABBITMQ_USERNAME: ${RABBITMQ_DEFAULT_USER:-guest}
+      SPRING_RABBITMQ_PASSWORD: ${RABBITMQ_DEFAULT_PASS:-guest}
+      MAIL_ADDRESS: ${MAIL_ADDRESS:-albanoaws2024@gmail.com}
+      MAIL_PASSWORD: ${MAIL_PASSWORD:-change-me}
+    depends_on:
+      bantads-rabbitmq:
+        condition: service_healthy
+
 # ══════════════════════════════════════════════════════════════════════
 # API GATEWAY (Node.js / TypeScript)
 # ══════════════════════════════════════════════════════════════════════
