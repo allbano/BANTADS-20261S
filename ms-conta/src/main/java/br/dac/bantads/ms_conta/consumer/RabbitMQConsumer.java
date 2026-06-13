@@ -3,7 +3,7 @@ package br.dac.bantads.ms_conta.consumer;
 import br.dac.bantads.ms_conta.config.RabbitMQConfig;
 import br.dac.bantads.ms_conta.dto.ContaRabbitDTO;
 import br.dac.bantads.ms_conta.dto.NotificacaoRabbitDTO;
-import br.dac.bantads.ms_conta.model.ContaModel;
+import br.dac.bantads.ms_conta.model.cud.ContaModel;
 import br.dac.bantads.ms_conta.service.ContaService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
@@ -44,7 +44,7 @@ public class RabbitMQConsumer {
         try {
             String json = String.format(
                     "{\"sagaId\":\"%s\",\"sucesso\":true,\"uuidCliente\":\"%s\"}", sagaId, uuidCliente);
-            rabbitTemplate.convertAndSend(RabbitMQConfig.SAGA_EVT_CONTA_CRIADA, json);
+            rabbitTemplate.convertAndSend(RabbitMQConfig.EXCHANGE, RabbitMQConfig.SAGA_EVT_CONTA_CRIADA, json);
         } catch (Exception e) {
             log.error("Falha ao publicar SAGA_EVT_CONTA_CRIADA", e);
         }
@@ -56,7 +56,7 @@ public class RabbitMQConsumer {
             String m = motivo != null ? motivo.replace("\"", "'") : "erro no ms-conta";
             String json = String.format(
                     "{\"sagaId\":\"%s\",\"sucesso\":false,\"mensagem\":\"%s\"}", sagaId, m);
-            rabbitTemplate.convertAndSend(RabbitMQConfig.SAGA_EVT_CONTA_ERRO, json);
+            rabbitTemplate.convertAndSend(RabbitMQConfig.EXCHANGE, RabbitMQConfig.SAGA_EVT_CONTA_ERRO, json);
         } catch (Exception e) {
             log.error("Falha ao publicar SAGA_EVT_CONTA_ERRO", e);
         }
@@ -102,7 +102,7 @@ public class RabbitMQConsumer {
                     .build();
 
             String notificationJson = objectMapper.writeValueAsString(notificacao);
-            rabbitTemplate.convertAndSend(RabbitMQConfig.FILA_NOTIFICA_UPDATE_CONTA, notificationJson);
+            rabbitTemplate.convertAndSend(RabbitMQConfig.EXCHANGE, RabbitMQConfig.FILA_NOTIFICA_UPDATE_CONTA, notificationJson);
             log.info("Notificação enviada para a fila {}: {}", RabbitMQConfig.FILA_NOTIFICA_UPDATE_CONTA, notificationJson);
 
         } catch (Exception e) {

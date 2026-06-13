@@ -1,4 +1,4 @@
-package br.dac.bantads.ms_conta.repository;
+package br.dac.bantads.ms_conta.repository.cud;
 
 import java.util.List;
 import java.util.Optional;
@@ -8,7 +8,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-import br.dac.bantads.ms_conta.model.ContaModel;
+import br.dac.bantads.ms_conta.model.cud.ContaModel;
 
 /**
  * Repositório JPA para a entidade ContaModel.

@@ -4,6 +4,7 @@ import br.dac.bantads.ms_auth.application.dto.AccountResponse;
 import br.dac.bantads.ms_auth.application.dto.CreateAccountResponse;
 import br.dac.bantads.ms_auth.application.dto.CreateAccountWithPasswordRequest;
 import br.dac.bantads.ms_auth.application.dto.CreateAccountWithoutPasswordRequest;
+import br.dac.bantads.ms_auth.application.dto.LogoutResponse;
 import br.dac.bantads.ms_auth.application.dto.UpdateAccountRequest;
 import br.dac.bantads.ms_auth.application.exception.AccountNotFoundException;
 import br.dac.bantads.ms_auth.application.exception.EmailNotificationException;
@@ -70,6 +71,21 @@ public class UserAccountService {
                 passwordHasher.hash(rawPassword),
                 accountRole);
         return userAccountRepository.save(account);
+    }
+
+    /**
+     * Monta o LogoutResponse { cpf, nome, email, tipo } a partir do login (e-mail).
+     * O ms-auth so conhece email e tipo; cpf/nome sao compostos pelo api-gateway
+     * (API Composition). Como o JWT e stateless, o logout apenas devolve os dados
+     * de autenticacao do usuario que saiu; o descarte do token e do cliente.
+     */
+    public LogoutResponse logout(String login) {
+        if (login == null || login.isBlank()) {
+            return new LogoutResponse(null, null, login, null);
+        }
+        return userAccountRepository.findByEmail(login)
+                .map(acc -> new LogoutResponse(null, null, acc.getEmail(), acc.getAccountRole().tipoApi()))
+                .orElse(new LogoutResponse(null, null, login, null));
     }
 
     public int deleteAccountsNotIn(Set<String> emails) {

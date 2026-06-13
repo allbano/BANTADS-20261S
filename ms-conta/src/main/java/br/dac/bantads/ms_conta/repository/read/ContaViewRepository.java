@@ -1,6 +1,6 @@
-package br.dac.bantads.ms_conta.repository;
+package br.dac.bantads.ms_conta.repository.read;
 
-import br.dac.bantads.ms_conta.model.ContaView;
+import br.dac.bantads.ms_conta.model.read.ContaView;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;

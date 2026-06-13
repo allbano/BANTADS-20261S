@@ -1,6 +1,7 @@
 spring:
   application:
     name: ms-conta
+  # Datasource PRIMARIO = lado de Comando do CQRS (banco conta_cud)
   datasource:
     url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/bantads_account}
     username: ${SPRING_DATASOURCE_USERNAME:bantads}
@@ -19,3 +20,21 @@ spring:
     port: ${SPRING_RABBITMQ_PORT:5672}
     username: ${SPRING_RABBITMQ_USERNAME:guest}
     password: ${SPRING_RABBITMQ_PASSWORD:guest}
+    listener:
+      simple:
+        default-requeue-rejected: false   # apos esgotar retries, dead-letter para bantads.dlx
+        retry:
+          enabled: true
+          initial-interval: 2000ms
+          max-retries: 3
+          multiplier: 2.0
+          max-interval: 16000ms
+
+# Datasource do lado de CONSULTA do CQRS (banco conta_r), sincronizado por RabbitMQ.
+# Bind via @ConfigurationProperties("read.datasource") em ReadDataSourceConfig.
+read:
+  datasource:
+    url: ${READ_DATASOURCE_URL:jdbc:postgresql://localhost:5432/bantads_account_r}
+    username: ${READ_DATASOURCE_USERNAME:${SPRING_DATASOURCE_USERNAME:bantads}}
+    password: ${READ_DATASOURCE_PASSWORD:${SPRING_DATASOURCE_PASSWORD:bantads123}}
+    driver-class-name: org.postgresql.Driver

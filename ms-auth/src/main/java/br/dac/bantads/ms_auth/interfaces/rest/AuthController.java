@@ -6,16 +6,11 @@ import br.dac.bantads.ms_auth.application.dto.CreateAccountResponse;
 import br.dac.bantads.ms_auth.application.dto.CreateAccountWithPasswordRequest;
 import br.dac.bantads.ms_auth.application.dto.CreateAccountWithoutPasswordRequest;
 import br.dac.bantads.ms_auth.application.dto.LogoutRequest;
+import br.dac.bantads.ms_auth.application.dto.LogoutResponse;
 import br.dac.bantads.ms_auth.application.dto.ResetTestBaseResponse;
 import br.dac.bantads.ms_auth.application.service.BaseTestAccountSeedService;
 import br.dac.bantads.ms_auth.application.service.UserAccountService;
 import br.dac.bantads.ms_auth.application.usecase.AuthenticateUserUseCase;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
-import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -36,7 +31,6 @@ import br.dac.bantads.ms_auth.application.dto.UpdateAccountRequest;
 
 @RestController
 @RequestMapping("/auth")
-@Tag(name = "Auth", description = "Endpoints de autenticacao e gestao de contas")
 public class AuthController {
     private final AuthenticateUserUseCase authenticateUserUseCase;
     private final UserAccountService userAccountService;
@@ -52,38 +46,21 @@ public class AuthController {
         this.baseTestAccountSeedService = baseTestAccountSeedService;
     }
 
+    // R2 - Login: autentica (login/senha) e gera token JWT
     @PostMapping("/login")
-    @Operation(summary = "Autentica usuario e gera token JWT")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Autenticacao realizada"),
-            @ApiResponse(
-                    responseCode = "401",
-                    description = "Credenciais invalidas",
-                    content = @Content(schema = @Schema(implementation = java.util.Map.class))
-            )
-    })
     public ResponseEntity<AuthResponse> authenticate(@Valid @RequestBody AuthRequest request) {
         return ResponseEntity.ok(authenticateUserUseCase.execute(request));
     }
 
+    // R2 - Logout: JWT stateless; retorna os dados de autenticacao do usuario que saiu.
+    // O descarte do token e responsabilidade do cliente; cpf/nome sao compostos pelo gateway.
     @PostMapping("/logout")
-    @Operation(summary = "Realiza o logout do usuário, invalidando o token atual")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Logout realizado com sucesso")
-    })
-    public ResponseEntity<String> logout(@RequestBody LogoutRequest request) {
-        // A invalidação real de JWT stateless no back-end exige uma blacklist (ex: Redis).
-        // Como o token JWT contém a assinatura, o padrão é o front-end descartar o token,
-        // ou mantermos uma lista de e-mails/tokens revogados.
-        return ResponseEntity.ok("Logout efetuado com sucesso");
+    public ResponseEntity<LogoutResponse> logout(@RequestBody(required = false) LogoutRequest request) {
+        String login = request != null ? request.login() : null;
+        return ResponseEntity.ok(userAccountService.logout(login));
     }
 
     @PostMapping("/accounts/with-password")
-    @Operation(summary = "Cria conta informando senha em texto puro")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "201", description = "Conta criada"),
-            @ApiResponse(responseCode = "400", description = "Dados invalidos")
-    })
     public ResponseEntity<CreateAccountResponse> createWithPassword(
             @Valid @RequestBody CreateAccountWithPasswordRequest request
     ) {
@@ -91,47 +68,29 @@ public class AuthController {
     }
 
     @PostMapping("/accounts/without-password")
-    @Operation(summary = "Cria conta com senha aleatoria de 6 letras")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "201", description = "Conta criada com senha gerada"),
-            @ApiResponse(responseCode = "400", description = "Dados invalidos")
-    })
     public ResponseEntity<CreateAccountResponse> createWithoutPassword(
             @Valid @RequestBody CreateAccountWithoutPasswordRequest request
     ) {
         return ResponseEntity.status(HttpStatus.CREATED).body(userAccountService.createWithoutPassword(request));
     }
 
+    // Reboot: reinicia a base de credenciais ao estado do seed
     @PostMapping("/reboot")
-    @Operation(summary = "Reinicia base de usuarios de teste e remove contas extras")
-    @ApiResponse(responseCode = "200", description = "Base reiniciada")
     public ResponseEntity<ResetTestBaseResponse> reboot() {
         return ResponseEntity.ok(baseTestAccountSeedService.rebootBase());
     }
 
     @GetMapping("/accounts")
-    @Operation(summary = "Lista todas as contas cadastradas")
-    @ApiResponse(responseCode = "200", description = "Lista retornada com sucesso")
     public ResponseEntity<List<AccountResponse>> getAllAccounts() {
         return ResponseEntity.ok(userAccountService.getAllAccounts());
     }
 
     @GetMapping("/accounts/{email}")
-    @Operation(summary = "Busca uma conta por email")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Conta encontrada"),
-            @ApiResponse(responseCode = "404", description = "Conta não encontrada")
-    })
     public ResponseEntity<AccountResponse> getAccountByEmail(@PathVariable String email) {
         return ResponseEntity.ok(userAccountService.getAccountByEmail(email));
     }
 
     @PutMapping("/accounts/{email}")
-    @Operation(summary = "Atualiza uma conta existente (senha ou cargo)")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Conta atualizada"),
-            @ApiResponse(responseCode = "404", description = "Conta não encontrada")
-    })
     public ResponseEntity<AccountResponse> updateAccount(
             @PathVariable String email,
             @RequestBody UpdateAccountRequest request
@@ -140,11 +99,6 @@ public class AuthController {
     }
 
     @DeleteMapping("/accounts/{email}")
-    @Operation(summary = "Apaga uma conta por email")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "204", description = "Conta removida com sucesso"),
-            @ApiResponse(responseCode = "404", description = "Conta não encontrada")
-    })
     public ResponseEntity<Void> deleteAccount(@PathVariable String email) {
         userAccountService.deleteAccountByEmail(email);
         return ResponseEntity.noContent().build();

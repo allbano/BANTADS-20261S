@@ -26,11 +26,12 @@ public class AuthenticateUserUseCase {
     }
 
     public AuthResponse execute(AuthRequest request) {
+        // O "login" do contrato oficial corresponde ao e-mail do usuario.
         UserAccount account = userAccountRepository
-                .findByEmail(request.email())
+                .findByEmail(request.login())
                 .orElseThrow(InvalidCredentialsException::new);
 
-        if (!passwordHasher.matches(request.password(), account.getPasswordHash())) {
+        if (!passwordHasher.matches(request.senha(), account.getPasswordHash())) {
             throw new InvalidCredentialsException();
         }
 
@@ -38,7 +39,7 @@ public class AuthenticateUserUseCase {
         return new AuthResponse(
                 token,
                 "bearer",
-                account.getAccountRole().name(),
+                account.getAccountRole().tipoApi(),
                 new AuthResponse.UsuarioDTO(account.getEmail())
         );
     }

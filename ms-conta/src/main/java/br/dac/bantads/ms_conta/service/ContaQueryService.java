@@ -1,8 +1,8 @@
 package br.dac.bantads.ms_conta.service;
 
 import br.dac.bantads.ms_conta.dto.ContaResponseDTO;
-import br.dac.bantads.ms_conta.model.ContaView;
-import br.dac.bantads.ms_conta.repository.ContaViewRepository;
+import br.dac.bantads.ms_conta.model.read.ContaView;
+import br.dac.bantads.ms_conta.repository.read.ContaViewRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;

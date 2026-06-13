@@ -1,4 +1,4 @@
-package br.dac.bantads.ms_conta.model;
+package br.dac.bantads.ms_conta.model.cud;
 
 import java.io.Serial;
 import java.io.Serializable;

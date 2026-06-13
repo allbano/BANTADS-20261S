@@ -251,7 +251,7 @@ public class ClienteService {
                         "CLIENTE",
                         false
                 );
-                rabbitTemplate.convertAndSend(RabbitMQConfig.FILA_AUTENTICACAO, uAuth);
+                rabbitTemplate.convertAndSend(RabbitMQConfig.EXCHANGE, RabbitMQConfig.FILA_AUTENTICACAO, uAuth);
             }
         } catch (Exception e) {
             System.err.println("Erro ao salvar cliente via RabbitMQ: " + e.getMessage());
@@ -260,8 +260,8 @@ public class ClienteService {
             if (dto.getSagaId() != null && !dto.getSagaId().isBlank()) {
                 publicarEventoSagaClienteErro(dto.getSagaId(), e.getMessage());
             } else {
-                rabbitTemplate.convertAndSend(RabbitMQConfig.FILA_ERRO_NOVO_CLIENTE, errorId);
-                rabbitTemplate.convertAndSend(RabbitMQConfig.FILA_ERRO_NOVO_CLIENTE_AUTENTICACAO, errorId);
+                rabbitTemplate.convertAndSend(RabbitMQConfig.EXCHANGE, RabbitMQConfig.FILA_ERRO_NOVO_CLIENTE, errorId);
+                rabbitTemplate.convertAndSend(RabbitMQConfig.EXCHANGE, RabbitMQConfig.FILA_ERRO_NOVO_CLIENTE_AUTENTICACAO, errorId);
             }
 
             if (dto.getEmail() != null) {
@@ -275,7 +275,7 @@ public class ClienteService {
         try {
             String json = String.format(
                     "{\"sagaId\":\"%s\",\"sucesso\":true,\"uuidCliente\":\"%s\"}", sagaId, uuidCliente);
-            rabbitTemplate.convertAndSend(RabbitMQConfig.SAGA_EVT_CLIENTE_CRIADO, json);
+            rabbitTemplate.convertAndSend(RabbitMQConfig.EXCHANGE, RabbitMQConfig.SAGA_EVT_CLIENTE_CRIADO, json);
         } catch (Exception e) {
             System.err.println("Falha ao publicar SAGA_EVT_CLIENTE_CRIADO: " + e.getMessage());
         }
@@ -286,7 +286,7 @@ public class ClienteService {
             String msg = motivo != null ? motivo.replace("\"", "'") : "erro no ms-cliente";
             String json = String.format(
                     "{\"sagaId\":\"%s\",\"sucesso\":false,\"mensagem\":\"%s\"}", sagaId, msg);
-            rabbitTemplate.convertAndSend(RabbitMQConfig.SAGA_EVT_CLIENTE_ERRO, json);
+            rabbitTemplate.convertAndSend(RabbitMQConfig.EXCHANGE, RabbitMQConfig.SAGA_EVT_CLIENTE_ERRO, json);
         } catch (Exception e) {
             System.err.println("Falha ao publicar SAGA_EVT_CLIENTE_ERRO: " + e.getMessage());
         }
@@ -348,7 +348,7 @@ public class ClienteService {
         } catch (Exception e) {
             System.err.println("Erro ao atualizar cliente via RabbitMQ: " + e.getMessage());
             // Envia o estado atual ou uuid para a fila de erro
-            rabbitTemplate.convertAndSend(RabbitMQConfig.FILA_ERRO_UPDATE_CLIENTE, uuid.toString());
+            rabbitTemplate.convertAndSend(RabbitMQConfig.EXCHANGE, RabbitMQConfig.FILA_ERRO_UPDATE_CLIENTE, uuid.toString());
         }
     }
 

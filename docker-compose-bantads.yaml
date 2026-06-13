@@ -38,6 +38,28 @@ services:
       - bantads-network
     logging: *common-logging
 
+  bantads-pg-account-r:
+    image: postgres:18.3-alpine3.23
+    container_name: bantads-pg-account-r
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-bantads}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-bantads123}
+      POSTGRES_DB: ${POSTGRES_DB_ACCOUNT_R:-bantads_account_r}
+    ports:
+      - "55004:5432"
+    volumes:
+      - bantads-pg-account-r:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+    networks:
+      - bantads-network
+    logging: *common-logging
+
   bantads-pg-cliente:
     image: postgres:18.3-alpine3.23
     container_name: bantads-pg-cliente
@@ -194,9 +216,13 @@ services:
       - "40006:40006"
     environment:
       SERVER_PORT: 40006
+      # CQRS: datasource de Comando (conta_cud) e de Consulta (conta_r)
       SPRING_DATASOURCE_URL: jdbc:postgresql://bantads-pg-account:5432/${POSTGRES_DB_ACCOUNT:-bantads_account}
       SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER:-bantads}
       SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:-bantads123}
+      READ_DATASOURCE_URL: jdbc:postgresql://bantads-pg-account-r:5432/${POSTGRES_DB_ACCOUNT_R:-bantads_account_r}
+      READ_DATASOURCE_USERNAME: ${POSTGRES_USER:-bantads}
+      READ_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:-bantads123}
       SPRING_JPA_HIBERNATE_DDL_AUTO: update
       SPRING_FLYWAY_ENABLED: "false"
       SPRING_RABBITMQ_HOST: bantads-rabbitmq
@@ -205,6 +231,8 @@ services:
       SPRING_RABBITMQ_PASSWORD: ${RABBITMQ_DEFAULT_PASS:-guest}
     depends_on:
       bantads-pg-account:
+        condition: service_healthy
+      bantads-pg-account-r:
         condition: service_healthy
       bantads-rabbitmq:
         condition: service_healthy
@@ -326,6 +354,7 @@ services:
 
 volumes:
   bantads-pg-account:
+  bantads-pg-account-r:
   bantads-pg-cliente:
   bantads-pg-funcionario:
   bantads-mongodb:

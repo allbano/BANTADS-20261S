@@ -1,4 +1,4 @@
-package br.dac.bantads.ms_conta.repository;
+package br.dac.bantads.ms_conta.repository.cud;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -6,7 +6,7 @@ import java.util.UUID;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import br.dac.bantads.ms_conta.model.MovimentacaoModel;
+import br.dac.bantads.ms_conta.model.cud.MovimentacaoModel;
 
 /**
  * Repositório JPA para a entidade MovimentacaoModel.

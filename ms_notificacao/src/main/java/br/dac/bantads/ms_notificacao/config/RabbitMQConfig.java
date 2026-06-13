@@ -2,42 +2,67 @@ package br.dac.bantads.ms_notificacao.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.json.JsonMapper;
+import org.springframework.amqp.core.Binding;
+import org.springframework.amqp.core.BindingBuilder;
+import org.springframework.amqp.core.DirectExchange;
+import org.springframework.amqp.core.ExchangeBuilder;
 import org.springframework.amqp.core.Queue;
+import org.springframework.amqp.core.QueueBuilder;
+import org.springframework.amqp.core.TopicExchange;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 /**
  * Configuracao de mensageria do ms_notificacao.
  *
- * Segue a convencao ja usada pelos demais microsservicos do BANTADS: filas
- * "diretas" e nomeadas (sem exchange explicito -> exchange default do RabbitMQ,
- * com routing key = nome da fila) e payload em JSON String.
+ * Topologia padronizada do BANTADS: exchange unico {@code bantads.topic}
+ * (Topic, durable), routing key = nome logico da fila, e Dead Letter Exchange
+ * {@code bantads.dlx} para mensagens que falham no processamento.
  *
- * Aqui declaramos a UNICA fila que este servico escuta: {@code FILA_NOTIFICACAO}.
- * Como a fila e durable, ela sobrevive a reinicializacoes do broker e as
- * mensagens nao se perdem enquanto nao forem consumidas.
+ * Este servico consome unicamente {@code FILA_NOTIFICACAO}.
  */
 @Configuration
 public class RabbitMQConfig {
 
-    /** Nome da fila de notificacoes. Publicadores devem usar exatamente este nome. */
+    public static final String EXCHANGE = "bantads.topic";
+    public static final String DLX = "bantads.dlx";
+
+    /** Nome da fila de notificacoes. Publicadores usam esta routing key no exchange. */
     public static final String FILA_NOTIFICACAO = "FILA_NOTIFICACAO";
 
-    /**
-     * Declara a fila no broker (idempotente: se ja existir com os mesmos
-     * parametros, nada muda). O segundo argumento {@code true} marca a fila
-     * como durable.
-     */
     @Bean
-    Queue notificacaoQueue() {
-        return new Queue(FILA_NOTIFICACAO, true);
+    TopicExchange bantadsTopic() {
+        return ExchangeBuilder.topicExchange(EXCHANGE).durable(true).build();
     }
 
-    /**
-     * ObjectMapper dedicado para desserializar o JSON recebido na fila.
-     * {@code findAndAddModules()} registra modulos extras no classpath
-     * (ex.: datas do java.time), evitando erros de parsing.
-     */
+    @Bean
+    DirectExchange bantadsDlx() {
+        return ExchangeBuilder.directExchange(DLX).durable(true).build();
+    }
+
+    @Bean
+    Queue notificacaoQueue() {
+        return QueueBuilder.durable(FILA_NOTIFICACAO)
+                .withArgument("x-dead-letter-exchange", DLX)
+                .withArgument("x-dead-letter-routing-key", FILA_NOTIFICACAO + ".dlq")
+                .build();
+    }
+
+    @Bean
+    Queue notificacaoDlq() {
+        return QueueBuilder.durable(FILA_NOTIFICACAO + ".dlq").build();
+    }
+
+    @Bean
+    Binding notificacaoBinding() {
+        return BindingBuilder.bind(notificacaoQueue()).to(bantadsTopic()).with(FILA_NOTIFICACAO);
+    }
+
+    @Bean
+    Binding notificacaoDlqBinding() {
+        return BindingBuilder.bind(notificacaoDlq()).to(bantadsDlx()).with(FILA_NOTIFICACAO + ".dlq");
+    }
+
     @Bean
     ObjectMapper notificacaoObjectMapper() {
         return JsonMapper.builder().findAndAddModules().build();

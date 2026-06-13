@@ -69,7 +69,7 @@ public class GerenteConsumer {
 
             // Notifica atribuição de conta do gerente
             String jsonId = objectMapper.writeValueAsString(novoGerente.getUuid().toString());
-            rabbitTemplate.convertAndSend(RabbitMq.FILA_ATRIBUI_CONTA_GERENTE, jsonId);
+            rabbitTemplate.convertAndSend(RabbitMq.EXCHANGE, RabbitMq.FILA_ATRIBUI_CONTA_GERENTE, jsonId);
 
             // Notifica autenticação
             Usuario uAuth = new Usuario(
@@ -80,7 +80,7 @@ public class GerenteConsumer {
                     true
             );
             String jsonAuth = objectMapper.writeValueAsString(uAuth);
-            rabbitTemplate.convertAndSend(RabbitMq.FILA_AUTENTICACAO, jsonAuth);
+            rabbitTemplate.convertAndSend(RabbitMq.EXCHANGE, RabbitMq.FILA_AUTENTICACAO, jsonAuth);
 
         } catch (Exception e) {
             System.err.println("Erro ao processar fila FILA_CREATE_GERENTE: " + e.getMessage());
@@ -127,7 +127,7 @@ public class GerenteConsumer {
                         false
                 );
                 String jsonAuth = objectMapper.writeValueAsString(uAuth);
-                rabbitTemplate.convertAndSend(RabbitMq.FILA_AUTENTICACAO, jsonAuth);
+                rabbitTemplate.convertAndSend(RabbitMq.EXCHANGE, RabbitMq.FILA_AUTENTICACAO, jsonAuth);
             } else {
                 System.err.println("Nenhum gerente encontrado com o ID fornecido: " + gerenteIdStr);
             }

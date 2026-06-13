@@ -156,7 +156,7 @@ public class AutocadastroSagaOrchestrator {
     private void enviarCompensacaoConta(SagaInstance saga) {
         try {
             String uuidJson = objectMapper.writeValueAsString(saga.getUuidCliente().toString());
-            rabbitTemplate.convertAndSend(RabbitMQConfig.FILA_ERRO_NOVO_CLIENTE, uuidJson);
+            rabbitTemplate.convertAndSend(RabbitMQConfig.EXCHANGE, RabbitMQConfig.FILA_ERRO_NOVO_CLIENTE, uuidJson);
             log.info("SAGA {}: compensação de conta enviada", saga.getSagaId());
         } catch (JsonProcessingException e) {
             log.error("SAGA {}: falha ao serializar compensação de conta", saga.getSagaId(), e);
@@ -166,7 +166,7 @@ public class AutocadastroSagaOrchestrator {
     private void enviarCompensacaoCliente(SagaInstance saga) {
         try {
             String uuidJson = objectMapper.writeValueAsString(saga.getUuidCliente().toString());
-            rabbitTemplate.convertAndSend(RabbitMQConfig.SAGA_CMD_EXCLUIR_CLIENTE, uuidJson);
+            rabbitTemplate.convertAndSend(RabbitMQConfig.EXCHANGE, RabbitMQConfig.SAGA_CMD_EXCLUIR_CLIENTE, uuidJson);
             log.info("SAGA {}: compensação de cliente enviada", saga.getSagaId());
         } catch (JsonProcessingException e) {
             log.error("SAGA {}: falha ao serializar compensação de cliente", saga.getSagaId(), e);
@@ -187,7 +187,7 @@ public class AutocadastroSagaOrchestrator {
     private void publicar(String fila, Map<String, Object> payload, UUID sagaId) {
         try {
             String json = objectMapper.writeValueAsString(payload);
-            rabbitTemplate.convertAndSend(fila, json);
+            rabbitTemplate.convertAndSend(RabbitMQConfig.EXCHANGE, fila, json);
             log.debug("SAGA {}: mensagem publicada em '{}'", sagaId, fila);
         } catch (JsonProcessingException e) {
             log.error("SAGA {}: erro ao serializar para a fila '{}'", sagaId, fila, e);

@@ -15,6 +15,15 @@ spring:
     port: ${SPRING_RABBITMQ_PORT:5672}
     username: ${SPRING_RABBITMQ_USERNAME:guest}
     password: ${SPRING_RABBITMQ_PASSWORD:guest}
+    listener:
+      simple:
+        default-requeue-rejected: false   # apos esgotar retries, dead-letter para bantads.dlx
+        retry:
+          enabled: true
+          initial-interval: 2000ms
+          max-retries: 3
+          multiplier: 2.0
+          max-interval: 16000ms
 
   # Configuracao SMTP usada pelo JavaMailSender (mesmo padrao do ms-auth).
   # MAIL_ADDRESS e o remetente; MAIL_PASSWORD e a senha de app do provedor.

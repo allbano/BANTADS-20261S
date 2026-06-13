@@ -103,10 +103,12 @@
             <artifactId>java-jwt</artifactId>
             <version>4.4.0</version>
         </dependency>
+        <!-- Jackson para (de)serializar o JSON das mensagens da fila (ObjectMapper).
+             Antes vinha transitivamente do springdoc (removido); agora e explicito.
+             Versao gerenciada pelo BOM do spring-boot-starter-parent. -->
         <dependency>
-            <groupId>org.springdoc</groupId>
-            <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
-            <version>2.8.5</version>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
         </dependency>
 	</dependencies>
 

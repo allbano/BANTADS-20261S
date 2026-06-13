@@ -3,7 +3,7 @@ package br.dac.bantads.ms_conta.controller;
 import br.dac.bantads.ms_conta.dto.ExtratoRequestDTO;
 import br.dac.bantads.ms_conta.dto.MovimentacaoRequestDTO;
 import br.dac.bantads.ms_conta.dto.MovimentacaoResponseDTO;
-import br.dac.bantads.ms_conta.model.MovimentacaoModel;
+import br.dac.bantads.ms_conta.model.cud.MovimentacaoModel;
 import br.dac.bantads.ms_conta.service.MovimentacaoService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
