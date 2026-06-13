@@ -1,3 +1,31 @@
+server:
+  # Porta padrao local; em container e sobreposta por SERVER_PORT (ver docker-compose).
+  port: 8086
+
 spring:
+  config:
+    import: optional:file:.env[.properties]
   application:
     name: ms_notificacao
+
+  # Conexao com o RabbitMQ. Defaults para execucao local; em container sao
+  # sobrepostos pelas variaveis SPRING_RABBITMQ_* definidas no docker-compose.
+  rabbitmq:
+    host: ${SPRING_RABBITMQ_HOST:localhost}
+    port: ${SPRING_RABBITMQ_PORT:5672}
+    username: ${SPRING_RABBITMQ_USERNAME:guest}
+    password: ${SPRING_RABBITMQ_PASSWORD:guest}
+
+  # Configuracao SMTP usada pelo JavaMailSender (mesmo padrao do ms-auth).
+  # MAIL_ADDRESS e o remetente; MAIL_PASSWORD e a senha de app do provedor.
+  mail:
+    host: ${MAIL_HOST:smtp.gmail.com}
+    port: ${MAIL_PORT:587}
+    username: ${MAIL_ADDRESS:albanoaws2024@gmail.com}
+    password: ${MAIL_PASSWORD}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
