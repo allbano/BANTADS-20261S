@@ -83,7 +83,7 @@ services:
     logging: *common-logging
 
   bantads-mongodb:
-    image: mongo:8.0-jammy
+    image: mongo:8.2
     container_name: bantads-mongodb
     restart: unless-stopped
     environment:
@@ -139,7 +139,10 @@ services:
       - "40009:40009"
     environment:
       SERVER_PORT: 40009
-      SPRING_DATA_MONGODB_URI: mongodb://${MONGO_INITDB_ROOT_USERNAME:-bantads}:${MONGO_INITDB_ROOT_PASSWORD:-bantads123}@bantads-mongodb:27017/ms_auth?authSource=admin
+      # Spring Boot 4.0 movimentou as props de conexao do Mongo para o prefixo `spring.mongodb.*`
+      # (modulo spring-boot-mongodb). O antigo `spring.data.mongodb.uri` e ignorado, por isso
+      # a variavel correta e SPRING_MONGODB_URI -> spring.mongodb.uri.
+      SPRING_MONGODB_URI: mongodb://${MONGO_INITDB_ROOT_USERNAME:-bantads}:${MONGO_INITDB_ROOT_PASSWORD:-bantads123}@bantads-mongodb:27017/ms_auth?authSource=admin
       JWT_ISSUER: ${JWT_ISSUER:-ms-auth}
       JWT_SECRET: ${JWT_SECRET:-change-me-in-production}
       JWT_EXPIRATION_MINUTES: ${JWT_EXPIRATION_MINUTES:-60}
