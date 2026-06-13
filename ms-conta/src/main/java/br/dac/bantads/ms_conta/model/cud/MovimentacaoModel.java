@@ -30,7 +30,6 @@ public class MovimentacaoModel implements Serializable {
     private static final long serialVersionUID = 1L;
 
     @Id
-    @GeneratedValue(generator = "uuidv7")
     @Column(name = "movimentacao_uuid", nullable = false, unique = true)
     private UUID uuidMovimentacao;
 

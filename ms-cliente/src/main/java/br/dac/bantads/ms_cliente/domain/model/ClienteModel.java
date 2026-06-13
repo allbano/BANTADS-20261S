@@ -20,7 +20,6 @@ public class ClienteModel implements Serializable {
     private static final long serialVersionUID = 1L;
 
     @Id
-    @GeneratedValue(generator = "uuidv7")
     @Column(name = "cliente_uuid", nullable = false, unique = true)
     private UUID uuid;
 
