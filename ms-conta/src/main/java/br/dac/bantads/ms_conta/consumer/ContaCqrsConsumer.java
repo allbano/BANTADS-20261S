@@ -4,6 +4,7 @@ import br.dac.bantads.ms_conta.config.RabbitMQConfig;
 import br.dac.bantads.ms_conta.dto.ContaSyncDTO;
 import br.dac.bantads.ms_conta.model.read.ContaView;
 import br.dac.bantads.ms_conta.repository.read.ContaViewRepository;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
@@ -25,9 +26,11 @@ import java.util.UUID;
 public class ContaCqrsConsumer {
 
     private final ContaViewRepository contaViewRepository;
+    private final ObjectMapper objectMapper;
 
     @RabbitListener(queues = RabbitMQConfig.QUEUE_CONTA_CQRS_ATUALIZADA)
-    public void onContaAtualizada(ContaSyncDTO dto) {
+    public void onContaAtualizada(String msg) throws Exception {
+        ContaSyncDTO dto = objectMapper.readValue(msg, ContaSyncDTO.class);
         ContaView view = ContaView.builder()
                 .uuidConta(dto.uuidConta())
                 .uuidCliente(dto.uuidCliente())

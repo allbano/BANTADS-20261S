@@ -27,7 +27,7 @@ services:
     ports:
       - "55000:5432"
     volumes:
-      - bantads-pg-account:/var/lib/postgresql/data
+      - bantads-pg-account:/var/lib/postgresql
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
       interval: 10s
@@ -49,7 +49,7 @@ services:
     ports:
       - "55004:5432"
     volumes:
-      - bantads-pg-account-r:/var/lib/postgresql/data
+      - bantads-pg-account-r:/var/lib/postgresql
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
       interval: 10s
@@ -71,7 +71,7 @@ services:
     ports:
       - "55001:5432"
     volumes:
-      - bantads-pg-cliente:/var/lib/postgresql/data
+      - bantads-pg-cliente:/var/lib/postgresql
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
       interval: 10s
@@ -93,7 +93,7 @@ services:
     ports:
       - "55002:5432"
     volumes:
-      - bantads-pg-funcionario:/var/lib/postgresql/data
+      - bantads-pg-funcionario:/var/lib/postgresql
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
       interval: 10s

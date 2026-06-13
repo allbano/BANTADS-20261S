@@ -3,6 +3,7 @@ package br.dac.bantads.ms_conta.service;
 import br.dac.bantads.ms_conta.config.RabbitMQConfig;
 import br.dac.bantads.ms_conta.dto.ContaSyncDTO;
 import br.dac.bantads.ms_conta.model.cud.ContaModel;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
@@ -24,6 +25,7 @@ import java.util.UUID;
 public class CqrsPublisher {
 
     private final RabbitTemplate rabbitTemplate;
+    private final ObjectMapper objectMapper;
 
     /** Publica o snapshot atual da conta para projecao na ContaView. */
     public void publicarConta(ContaModel conta) {
@@ -39,8 +41,13 @@ public class CqrsPublisher {
                 conta.getRejeitadoMotivo(),
                 conta.getRejeitadoData()
         );
-        rabbitTemplate.convertAndSend(RabbitMQConfig.EXCHANGE, RabbitMQConfig.RK_CONTA_ATUALIZADA, dto);
-        log.debug("CQRS sync publicado (atualizada) para conta {}", conta.getUuidConta());
+        try {
+            rabbitTemplate.convertAndSend(RabbitMQConfig.EXCHANGE, RabbitMQConfig.RK_CONTA_ATUALIZADA,
+                    objectMapper.writeValueAsString(dto));
+            log.debug("CQRS sync publicado (atualizada) para conta {}", conta.getUuidConta());
+        } catch (Exception e) {
+            log.error("Falha ao serializar/publicar CQRS sync da conta {}", conta.getUuidConta(), e);
+        }
     }
 
     /** Publica a exclusao de uma conta (por UUID de cliente) para remover da ContaView. */

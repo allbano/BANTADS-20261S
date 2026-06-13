@@ -9,7 +9,6 @@ import org.springframework.amqp.core.ExchangeBuilder;
 import org.springframework.amqp.core.Queue;
 import org.springframework.amqp.core.QueueBuilder;
 import org.springframework.amqp.core.TopicExchange;
-import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -109,11 +108,11 @@ public class RabbitMQConfig {
 
     @Bean
     public ObjectMapper objectMapper() {
-        return JsonMapper.builder().findAndAddModules().build();
-    }
-
-    @Bean
-    public Jackson2JsonMessageConverter jackson2JsonMessageConverter(ObjectMapper objectMapper) {
-        return new Jackson2JsonMessageConverter(objectMapper);
+        // Registro explicito do JavaTimeModule: garante (de)serializacao de
+        // LocalDate/LocalDateTime no fat-jar, sem depender do ServiceLoader.
+        return JsonMapper.builder()
+                .addModule(new com.fasterxml.jackson.datatype.jsr310.JavaTimeModule())
+                .findAndAddModules()
+                .build();
     }
 }

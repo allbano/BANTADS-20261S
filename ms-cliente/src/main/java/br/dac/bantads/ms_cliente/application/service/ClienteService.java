@@ -5,6 +5,8 @@ import br.dac.bantads.ms_cliente.domain.model.ClienteModel;
 import br.dac.bantads.ms_cliente.domain.repository.ClienteRepository;
 import br.dac.bantads.ms_cliente.infrastructure.config.RabbitMQConfig;
 import br.dac.bantads.ms_cliente.infrastructure.security.SecurityUtils;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.json.JsonMapper;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.stereotype.Service;
@@ -23,6 +25,7 @@ public class ClienteService {
     private final RestClient restClient;
     private final RabbitTemplate rabbitTemplate;
     private final MailService mailService;
+    private final ObjectMapper objectMapper = JsonMapper.builder().findAndAddModules().build();
 
     public record ContaResponseDTO(
             UUID uuidConta,
@@ -251,7 +254,7 @@ public class ClienteService {
                         "CLIENTE",
                         false
                 );
-                rabbitTemplate.convertAndSend(RabbitMQConfig.EXCHANGE, RabbitMQConfig.FILA_AUTENTICACAO, uAuth);
+                rabbitTemplate.convertAndSend(RabbitMQConfig.EXCHANGE, RabbitMQConfig.FILA_AUTENTICACAO, objectMapper.writeValueAsString(uAuth));
             }
         } catch (Exception e) {
             System.err.println("Erro ao salvar cliente via RabbitMQ: " + e.getMessage());
