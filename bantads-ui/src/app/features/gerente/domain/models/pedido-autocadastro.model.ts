@@ -3,19 +3,15 @@ import type { Endereco } from '../../../cliente/domain/models/autocadastro.model
 /**
  * Pedido de autocadastro pendente de aprovação pelo gerente (R9).
  *
- * Contém os dados pessoais e endereço que o cliente enviou
- * durante o autocadastro, aguardando decisão.
+ * Vem de GET /clientes?filtro=para_aprovar. A identidade é o CPF.
  */
 export interface PedidoAutocadastro {
-  id: number;
-  nome: string;
   cpf: string;
+  nome: string;
   email: string;
   telefone: string;
   salario: number;
   endereco: Endereco;
-  /** O gerente com menos clientes atribuído a esta solicitação. */
-  gerenteId: number;
-  /** ISO 8601 — data/hora da solicitação. */
-  dataSolicitacao: string;
+  /** ISO 8601 — data/hora da solicitação, quando disponível. */
+  dataSolicitacao?: string;
 }

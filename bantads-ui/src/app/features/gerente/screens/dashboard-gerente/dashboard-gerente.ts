@@ -3,7 +3,7 @@ import { CurrencyPipe } from '@angular/common';
 
 import { DashboardGerenteFacade } from '../../application/facades/dashboard-gerente.facade';
 import { AprovacaoRepository } from '../../domain/repositories/aprovacao.repository';
-import { AprovacaoMockService } from '../../infrastructure/services/aprovacao-mock.service';
+import { AprovacaoHttpService } from '../../infrastructure/services/aprovacao-http.service';
 import { GerenteTopNav } from '../../components/gerente-top-nav/gerente-top-nav';
 import { ModalAprovarRejeitar } from '../../components/modal-aprovar-rejeitar/modal-aprovar-rejeitar';
 import { ModalRejeitarMotivo } from '../../components/modal-rejeitar-motivo/modal-rejeitar-motivo';
@@ -15,7 +15,7 @@ import type { PedidoAutocadastro } from '../../domain/models/pedido-autocadastro
   templateUrl: './dashboard-gerente.html',
   providers: [
     DashboardGerenteFacade,
-    { provide: AprovacaoRepository, useExisting: AprovacaoMockService },
+    { provide: AprovacaoRepository, useExisting: AprovacaoHttpService },
   ],
 })
 export class DashboardGerente implements OnInit {
@@ -24,7 +24,7 @@ export class DashboardGerente implements OnInit {
   readonly pedidoSelecionado = signal<PedidoAutocadastro | null>(null);
   readonly modalDetalhesAberto = signal(false);
   readonly modalMotivoAberto = signal(false);
-  readonly pedidoParaRejeitar = signal<number | null>(null);
+  readonly cpfParaRejeitar = signal<string | null>(null);
 
   ngOnInit(): void {
     this.facade.carregar();
@@ -40,27 +40,27 @@ export class DashboardGerente implements OnInit {
     this.pedidoSelecionado.set(null);
   }
 
-  aprovarPedido(pedidoId: number): void {
+  aprovarPedido(cpf: string): void {
     this.fecharDetalhes();
-    this.facade.aprovar(pedidoId);
+    this.facade.aprovar(cpf);
   }
 
-  iniciarRejeicao(pedidoId: number): void {
+  iniciarRejeicao(cpf: string): void {
     this.fecharDetalhes();
-    this.pedidoParaRejeitar.set(pedidoId);
+    this.cpfParaRejeitar.set(cpf);
     this.modalMotivoAberto.set(true);
   }
 
   confirmarRejeicao(motivo: string): void {
-    const pedidoId = this.pedidoParaRejeitar();
-    if (pedidoId !== null) {
-      this.facade.rejeitar(pedidoId, motivo);
+    const cpf = this.cpfParaRejeitar();
+    if (cpf !== null) {
+      this.facade.rejeitar(cpf, motivo);
     }
     this.fecharModalMotivo();
   }
 
   fecharModalMotivo(): void {
     this.modalMotivoAberto.set(false);
-    this.pedidoParaRejeitar.set(null);
+    this.cpfParaRejeitar.set(null);
   }
 }

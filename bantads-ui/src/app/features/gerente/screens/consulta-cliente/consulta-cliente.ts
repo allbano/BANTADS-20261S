@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 
 import { ConsultaClienteFacade } from '../../application/facades/consulta-cliente.facade';
 import { ClientesGerenteRepository } from '../../domain/repositories/clientes-gerente.repository';
-import { ClientesGerenteMockService } from '../../infrastructure/services/clientes-gerente-mock.service';
+import { ClientesGerenteHttpService } from '../../infrastructure/services/clientes-gerente-http.service';
 import { GerenteTopNav } from '../../components/gerente-top-nav/gerente-top-nav';
 
 /**
@@ -16,7 +16,7 @@ import { GerenteTopNav } from '../../components/gerente-top-nav/gerente-top-nav'
   templateUrl: './consulta-cliente.html',
   providers: [
     ConsultaClienteFacade,
-    { provide: ClientesGerenteRepository, useExisting: ClientesGerenteMockService },
+    { provide: ClientesGerenteRepository, useExisting: ClientesGerenteHttpService },
   ],
 })
 export class ConsultaCliente {

@@ -13,19 +13,19 @@ import type { PedidoAutocadastro } from '../../domain/models/pedido-autocadastro
 })
 export class ModalAprovarRejeitar {
   @Input() pedido: PedidoAutocadastro | null = null;
-  @Output() aprovar = new EventEmitter<number>();
-  @Output() rejeitar = new EventEmitter<number>();
+  @Output() aprovar = new EventEmitter<string>();
+  @Output() rejeitar = new EventEmitter<string>();
   @Output() fechar = new EventEmitter<void>();
 
   onAprovar(): void {
     if (this.pedido) {
-      this.aprovar.emit(this.pedido.id);
+      this.aprovar.emit(this.pedido.cpf);
     }
   }
 
   onRejeitar(): void {
     if (this.pedido) {
-      this.rejeitar.emit(this.pedido.id);
+      this.rejeitar.emit(this.pedido.cpf);
     }
   }
 

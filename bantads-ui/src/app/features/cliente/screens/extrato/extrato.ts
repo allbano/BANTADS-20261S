@@ -2,40 +2,34 @@ import { CurrencyPipe, DatePipe, DecimalPipe } from '@angular/common';
 import { Component, inject, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 
-import { SessaoClienteService } from '../../../../core/auth/services/sessao-cliente.service';
 import { ExtratoFacade } from '../../application/facades/extrato.facade';
 import { ClienteTopNav } from '../../components/cliente-top-nav/cliente-top-nav';
 import type { Movimentacao } from '../../domain/models/movimentacao.model';
 import type { TipoMovimentacao } from '../../domain/models/tipo-movimentacao';
+import { ClienteContaRepository } from '../../domain/repositories/cliente-conta.repository';
+import { ClienteContaHttpService } from '../../infrastructure/services/cliente-conta-http.service';
+
+function isoHoje(): string {
+  return new Date().toISOString().slice(0, 10);
+}
 
 @Component({
   selector: 'app-extrato',
   imports: [FormsModule, CurrencyPipe, DatePipe, DecimalPipe, ClienteTopNav],
   templateUrl: './extrato.html',
-  providers: [ExtratoFacade],
+  providers: [
+    ExtratoFacade,
+    { provide: ClienteContaRepository, useExisting: ClienteContaHttpService },
+  ],
 })
 export class Extrato implements OnInit {
   readonly facade = inject(ExtratoFacade);
-  private readonly sessao = inject(SessaoClienteService);
 
-  protected dataInicio = '2020-01-01';
-  protected dataFim = '2020-01-31';
+  // Período padrão amplo, cobrindo o histórico completo da conta.
+  protected dataInicio = '2000-01-01';
+  protected dataFim = isoHoje();
 
   ngOnInit(): void {
-    const id = this.sessao.clienteId();
-    if (id === 2) {
-      this.dataInicio = '2025-01-01';
-      this.dataFim = '2025-12-31';
-    } else if (id === 3) {
-      this.dataInicio = '2025-05-01';
-      this.dataFim = '2025-05-31';
-    } else if (id === 4) {
-      this.dataInicio = '2025-06-01';
-      this.dataFim = '2025-06-30';
-    } else if (id === 5) {
-      this.dataInicio = '2025-07-01';
-      this.dataFim = '2025-07-31';
-    }
     this.facade.atualizarResumo();
     this.facade.aplicarFiltro(this.dataInicio, this.dataFim);
   }

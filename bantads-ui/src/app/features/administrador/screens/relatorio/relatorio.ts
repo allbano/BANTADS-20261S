@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 
 import { RelatorioAdminFacade } from '../../application/facades/relatorio-admin.facade';
 import { RelatorioAdminRepository } from '../../domain/repositories/relatorio-admin.repository';
-import { RelatorioAdminMockService } from '../../infrastructure/services/relatorio-admin-mock.service';
+import { RelatorioAdminHttpService } from '../../infrastructure/services/relatorio-admin-http.service';
 import { AdminTopNav } from '../../components/admin-top-nav/admin-top-nav';
 
 /**
@@ -20,7 +20,7 @@ import { AdminTopNav } from '../../components/admin-top-nav/admin-top-nav';
   templateUrl: './relatorio.html',
   providers: [
     RelatorioAdminFacade,
-    { provide: RelatorioAdminRepository, useExisting: RelatorioAdminMockService },
+    { provide: RelatorioAdminRepository, useExisting: RelatorioAdminHttpService },
   ],
 })
 export class RelatorioComponent implements OnInit {

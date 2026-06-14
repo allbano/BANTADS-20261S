@@ -81,8 +81,9 @@
           <div class="mt-8 flex flex-col space-y-4">
             <button
               type="submit"
-              class="cursor-pointer w-full bg-[#6ecf7a] hover:bg-[#5fa268] text-[#0d1610] font-bold text-lg py-3 rounded-xl transition-all duration-300 shadow-md hover:shadow-lg transform active:scale-[0.98]">
-              Entrar
+              [disabled]="carregando()"
+              class="cursor-pointer w-full bg-[#6ecf7a] hover:bg-[#5fa268] text-[#0d1610] font-bold text-lg py-3 rounded-xl transition-all duration-300 shadow-md hover:shadow-lg transform active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed">
+              {{ carregando() ? 'Entrando…' : 'Entrar' }}
             </button>
 
             <!-- Divider -->

@@ -281,124 +281,6 @@
             Salvar alterações
           </button>
 
-          <!-- ── Alterar Senha (colapsável) ── -->
-          <section
-            class="overflow-hidden rounded-2xl border border-white/[0.07] bg-[#222222] shadow-lg"
-            aria-labelledby="sec-senha-titulo"
-          >
-            <button
-              type="button"
-              id="btn-toggle-senha"
-              class="flex w-full cursor-pointer items-center justify-between border-none bg-transparent px-6 py-5 text-left text-neutral-100 transition-colors hover:bg-white/3"
-              (click)="toggleSenha()"
-              [attr.aria-expanded]="senhaAberta"
-            >
-              <span class="text-[1.1rem] font-semibold">Alterar senha</span>
-              <span
-                class="text-neutral-400 transition-transform duration-300"
-                [class.rotate-180]="senhaAberta"
-                aria-hidden="true"
-              >▼</span>
-            </button>
-
-            @if (senhaAberta) {
-              <div class="border-t border-white/6 px-6 pb-6 pt-5">
-                <form
-                  [formGroup]="facade.formSenha"
-                  (ngSubmit)="facade.alterarSenha()"
-                  novalidate
-                  id="form-alterar-senha"
-                >
-                  <div class="grid gap-5 sm:grid-cols-2">
-
-                    <!-- Senha atual (ocupa linha inteira) -->
-                    <div class="flex flex-col gap-1.5 sm:col-span-2">
-                      <label for="pf-senha-atual" class="text-sm font-medium text-neutral-300">
-                        Senha atual <span class="text-red-400">*</span>
-                      </label>
-                      <input
-                        id="pf-senha-atual"
-                        type="password"
-                        formControlName="senhaAtual"
-                        autocomplete="current-password"
-                        placeholder="••••••••"
-                        class="rounded-xl border border-neutral-700 bg-[#161616] px-4 py-3 text-neutral-100 outline-none transition-colors focus:border-[#6ecf7a] focus:ring-1 focus:ring-[#6ecf7a]"
-                        [class.border-red-500]="facade.formSenha.get('senhaAtual')?.invalid && facade.formSenha.get('senhaAtual')?.touched"
-                      />
-                      @if (facade.formSenha.get('senhaAtual')?.invalid && facade.formSenha.get('senhaAtual')?.touched) {
-                        <p class="text-xs text-red-400" role="alert">Informe a senha atual.</p>
-                      }
-                    </div>
-
-                    <!-- Nova senha -->
-                    <div class="flex flex-col gap-1.5">
-                      <label for="pf-nova-senha" class="text-sm font-medium text-neutral-300">
-                        Nova senha <span class="text-red-400">*</span>
-                      </label>
-                      <input
-                        id="pf-nova-senha"
-                        type="password"
-                        formControlName="novaSenha"
-                        autocomplete="new-password"
-                        placeholder="Mínimo 4 caracteres"
-                        class="rounded-xl border border-neutral-700 bg-[#161616] px-4 py-3 text-neutral-100 outline-none transition-colors focus:border-[#6ecf7a] focus:ring-1 focus:ring-[#6ecf7a]"
-                        [class.border-red-500]="facade.formSenha.get('novaSenha')?.invalid && facade.formSenha.get('novaSenha')?.touched"
-                      />
-                      @if (facade.formSenha.get('novaSenha')?.invalid && facade.formSenha.get('novaSenha')?.touched) {
-                        <p class="text-xs text-red-400" role="alert">Mínimo de 4 caracteres.</p>
-                      }
-                    </div>
-
-                    <!-- Confirmar nova senha -->
-                    <div class="flex flex-col gap-1.5">
-                      <label for="pf-confirmar-senha" class="text-sm font-medium text-neutral-300">
-                        Confirmar nova senha <span class="text-red-400">*</span>
-                      </label>
-                      <input
-                        id="pf-confirmar-senha"
-                        type="password"
-                        formControlName="confirmarSenha"
-                        autocomplete="new-password"
-                        placeholder="Repita a nova senha"
-                        class="rounded-xl border border-neutral-700 bg-[#161616] px-4 py-3 text-neutral-100 outline-none transition-colors focus:border-[#6ecf7a] focus:ring-1 focus:ring-[#6ecf7a]"
-                        [class.border-red-500]="facade.formSenha.get('confirmarSenha')?.invalid && facade.formSenha.get('confirmarSenha')?.touched"
-                      />
-                      @if (facade.formSenha.get('confirmarSenha')?.invalid && facade.formSenha.get('confirmarSenha')?.touched) {
-                        <p class="text-xs text-red-400" role="alert">Confirme a nova senha.</p>
-                      }
-                    </div>
-
-                  </div><!-- /grid senha -->
-
-                  <!-- Feedback senha -->
-                  @if (facade.feedbackSenha(); as fb) {
-                    <p
-                      class="mt-5 rounded-xl border px-4 py-3 text-sm"
-                      [class.border-green-600/50]="!fb.erro"
-                      [class.bg-green-950/30]="!fb.erro"
-                      [class.text-green-300]="!fb.erro"
-                      [class.border-red-500/50]="fb.erro"
-                      [class.bg-red-950/30]="fb.erro"
-                      [class.text-red-300]="fb.erro"
-                      role="status"
-                    >
-                      {{ fb.texto }}
-                    </p>
-                  }
-
-                  <button
-                    type="submit"
-                    id="btn-alterar-senha"
-                    class="mt-5 cursor-pointer rounded-xl border border-neutral-600 bg-transparent px-6 py-3 text-sm font-semibold text-neutral-200 transition-colors hover:border-neutral-400 hover:bg-white/5"
-                  >
-                    Confirmar nova senha
-                  </button>
-
-                </form>
-              </div>
-            }
-          </section>
-
         </div><!-- /coluna principal -->
 
         <!-- ══════════════════════════════════════════════════════════
@@ -476,8 +358,8 @@
           <!-- Dica -->
           <div class="rounded-2xl border border-blue-500/20 bg-blue-500/5 p-4">
             <p class="text-xs leading-relaxed text-blue-300/80">
-              💡 Campos marcados com <span class="text-red-400">*</span> são obrigatórios. Seus
-              dados são salvos localmente neste navegador.
+              💡 Campos marcados com <span class="text-red-400">*</span> são obrigatórios.
+              Alterações no salário podem ajustar seu limite de crédito.
             </p>
           </div>
         </aside>

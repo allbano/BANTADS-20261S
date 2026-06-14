@@ -6,7 +6,7 @@ import { DashboardClienteFacade } from '../../application/facades/dashboard-clie
 import { ClienteTopNav } from '../../components/cliente-top-nav/cliente-top-nav';
 import { UltimasMovimentacoes } from '../../components/ultimas-movimentacoes/ultimas-movimentacoes';
 import { DashboardClienteRepository } from '../../domain/repositories/dashboard-cliente.repository';
-import { ClienteContaMockService } from '../../infrastructure/services/cliente-conta-mock.service';
+import { ClienteContaHttpService } from '../../infrastructure/services/cliente-conta-http.service';
 
 @Component({
   selector: 'app-dashboard',
@@ -20,7 +20,7 @@ import { ClienteContaMockService } from '../../infrastructure/services/cliente-c
   templateUrl: './dashboard.html',
   providers: [
     DashboardClienteFacade,
-    { provide: DashboardClienteRepository, useExisting: ClienteContaMockService },
+    { provide: DashboardClienteRepository, useExisting: ClienteContaHttpService },
   ],
 })
 export class Dashboard implements OnInit {

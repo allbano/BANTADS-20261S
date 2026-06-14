@@ -32,20 +32,17 @@
             </tr>
           </thead>
           <tbody class="text-sm">
-            @for (gerente of facade.gerentesOrdenados(); track gerente.id) {
+            @for (gerente of facade.gerentesOrdenados(); track gerente.cpf) {
               <tr class="border-b border-neutral-700/50 hover:bg-[#252528] transition-colors">
                 <td class="py-4 px-6 text-neutral-200 font-medium">
                   {{ gerente.nome }}
-                  <span class="ml-2 text-[10px] bg-[#112a14] text-[#6ecf7a] border border-[#2d6635] px-2 py-0.5 rounded-full">
-                    {{ facade.contasDe(gerente.id) }} contas
-                  </span>
                 </td>
                 <td class="py-4 px-6 text-neutral-400">{{ gerente.cpf }}</td>
                 <td class="py-4 px-6 text-neutral-400">{{ gerente.email }}</td>
                 <td class="py-4 px-6 text-neutral-400">{{ gerente.telefone }}</td>
                 <td class="py-4 px-6 text-right space-x-4">
                   <button (click)="abrirModalEdicao(gerente)" class="cursor-pointer text-[#6ecf7a] hover:text-white transition-colors bg-transparent border-none text-sm">Editar</button>
-                  <button (click)="excluirGerente(gerente.id)" class="cursor-pointer text-red-400 hover:text-red-300 transition-colors bg-transparent border-none text-sm">Excluir</button>
+                  <button (click)="excluirGerente(gerente.cpf)" class="cursor-pointer text-red-400 hover:text-red-300 transition-colors bg-transparent border-none text-sm">Excluir</button>
                 </td>
               </tr>
             } @empty {

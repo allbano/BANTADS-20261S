@@ -5,7 +5,6 @@ import type { Endereco } from '../../../cliente/domain/models/autocadastro.model
  * para o gerente (R12 — tabela e R13 — consulta por CPF).
  */
 export interface ClienteGerente {
-  id: number;
   nome: string;
   cpf: string;
   email: string;
