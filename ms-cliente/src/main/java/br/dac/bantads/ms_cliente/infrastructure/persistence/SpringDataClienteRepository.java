@@ -10,4 +10,5 @@ import java.util.UUID;
 @Repository
 public interface SpringDataClienteRepository extends JpaRepository<ClienteModel, UUID> {
     Optional<ClienteModel> findByCpf(String cpf);
+    Optional<ClienteModel> findByEmailIgnoreCase(String email);
 }

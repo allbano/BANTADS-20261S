@@ -55,22 +55,57 @@ router.post('/login', async (req, res) => {
   res.status(200).json(data);
 });
 
-router.post('/logout', (req, res) => forward(req, res, services.auth, '/auth/logout'));
+// R2 — Logout (API Composition): JWT stateless. O gateway monta o LogoutResponse
+// {cpf, nome, email, tipo} a partir do token (email/tipo) + busca por e-mail
+// (cpf/nome) em ms-cliente ou ms-funcionario. Não chama o ms-auth (nada a fazer
+// num JWT stateless) — evita o 415 e o descarte do token é responsabilidade do cliente.
+router.post('/logout', verifyJWT, async (req, res) => {
+  const email = req.user!.login;
+  const tipo = req.user!.tipo;
+  let nome: string | null = null, cpf: string | null = null;
+  try {
+    if (tipo === 'CLIENTE') {
+      const c = await get(`${services.cliente}/clientes/por-email/${email}`, H(req));
+      if (c.status < 400) { nome = c.data.nome; cpf = c.data.cpf; }
+    } else {
+      const g = await get(`${services.funcionario}/funcionarios/por-email/${email}`, H(req));
+      if (g.status < 400) { nome = g.data.nome; cpf = g.data.cpf; }
+    }
+  } catch { /* enriquecimento é best-effort */ }
+  res.status(200).json({ cpf, nome, email, tipo });
+});
 
 // ════════════════════ REBOOT (fan-out) ════════════════════
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
+/**
+ * POST resiliente: tenta até `tentativas` vezes com `intervaloMs` entre elas.
+ * Cobre a corrida de cold-start (o /reboot pode ser chamado logo após o
+ * `docker compose up`, antes de um MS aceitar HTTP) — sem isso, o seed de um
+ * serviço lento falharia silenciosamente e a base ficaria vazia.
+ */
+async function postComRetry(url: string, tentativas = 10, intervaloMs = 2000): Promise<boolean> {
+  for (let i = 0; i < tentativas; i++) {
+    try {
+      const r = await httpClient.post(url);
+      if (r.status < 400) return true;
+    } catch { /* serviço ainda subindo — tenta de novo */ }
+    if (i < tentativas - 1) await sleep(intervaloMs);
+  }
+  return false;
+}
+
 async function reboot(_req: Request, res: Response): Promise<void> {
-  const alvos: Array<[string, string, string]> = [
-    ['auth', services.auth, '/auth/reboot'],
-    ['cliente', services.cliente, '/reboot'],
-    ['conta', services.conta, '/reboot'],
-    ['funcionario', services.funcionario, '/reboot'],
+  const alvos: Array<[string, string]> = [
+    ['auth', services.auth + '/auth/reboot'],
+    ['cliente', services.cliente + '/reboot'],
+    ['conta', services.conta + '/reboot'],
+    ['funcionario', services.funcionario + '/reboot'],
   ];
-  const resultados = await Promise.allSettled(alvos.map(([, base, path]) => httpClient.post(base + path)));
-  const resumo = alvos.map(([nome], i) => {
-    const r = resultados[i];
-    return { servico: nome, ok: r.status === 'fulfilled' && r.value.status < 400 };
-  });
-  res.json({ status: 'reboot', servicos: resumo });
+  const oks = await Promise.all(alvos.map(([, url]) => postComRetry(url)));
+  const resumo = alvos.map(([nome], i) => ({ servico: nome, ok: oks[i] }));
+  const todosOk = resumo.every((s) => s.ok);
+  res.status(todosOk ? 200 : 503).json({ status: 'reboot', servicos: resumo });
 }
 router.get('/reboot', reboot);
 
@@ -152,7 +187,42 @@ async function relatorioClientes(req: Request, res: Response): Promise<void> {
   res.json(result);
 }
 
-// ════════════════════ CONTAS (passthrough — ms-conta serve o contrato por número) ════════════════════
+// ════════════════════ CONTAS ════════════════════
+// R8 — Extrato (API Composition): ms-conta entrega data(timestamp)/tipo/origem/destino/valor;
+// o gateway enriquece cada movimentação com o NOME do titular das contas origem/destino
+// (origemNome/destinoNome) para a UI exibir "Nome (número)". Rota específica ANTES do
+// passthrough genérico de /contas (Express casa por ordem).
+router.get('/contas/:numero/extrato', verifyJWT, async (req, res) => {
+  const headers = H(req);
+  const ext = await get(`${services.conta}/contas/${req.params.numero}/extrato`, headers);
+  if (ext.status >= 400) { res.status(ext.status).json(ext.data); return; }
+  const data = ext.data;
+
+  // mapa número-da-conta → cpf (uma chamada) + resolução de nome por cpf (com cache)
+  const contasRes = await get(`${services.conta}/contas`, headers);
+  const numToCpf = new Map<string, string>();
+  if (contasRes.status < 400) for (const c of contasRes.data as any[]) numToCpf.set(c.numero, c.clienteCpf);
+  const nomeCache = new Map<string, string | null>();
+  async function nomeDaConta(numero: string | null): Promise<string | null> {
+    if (!numero) return null;
+    const cpf = numToCpf.get(numero);
+    if (!cpf) return null;
+    if (!nomeCache.has(cpf)) {
+      const cli = await get(`${services.cliente}/clientes/por-cpf/${cpf}`, headers);
+      nomeCache.set(cpf, cli.status < 400 ? (cli.data?.nome ?? null) : null);
+    }
+    return nomeCache.get(cpf) ?? null;
+  }
+
+  data.movimentacoes = await Promise.all((data.movimentacoes as any[]).map(async (m) => ({
+    ...m,
+    origemNome: await nomeDaConta(m.origem),
+    destinoNome: await nomeDaConta(m.destino),
+  })));
+  res.json(data);
+});
+
+// Demais operações de conta (saldo/depositar/sacar/transferir) — passthrough por número
 router.use('/contas', verifyJWT, (req, res) => forward(req, res, services.conta, '/contas' + req.url));
 
 // ════════════════════ GERENTES ════════════════════

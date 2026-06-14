@@ -51,17 +51,13 @@ public class ClienteService {
     // --- Métodos Existentes mantidos intactos ---
 
     public List<ClienteParaAprovarResponse> getClientesParaAprovar() {
-        List<ContaResponseDTO> contas = restClient.get()
-                .uri("/contas")
-                .retrieve()
-                .body(new ParameterizedTypeReference<List<ContaResponseDTO>>() {});
-
-        Set<UUID> approvedClientUuids = contas != null ?
-                contas.stream().map(ContaResponseDTO::uuidCliente).collect(Collectors.toSet()) :
-                Collections.emptySet();
-
+        // "Aguardando aprovação" (R9) = status PENDENTE. O autocadastro cria o
+        // cliente como PENDENTE (e já cria a conta); aprovar (R10) → APROVADO e
+        // rejeitar (R11) → REJEITADO. O critério é o 'status', não a existência de
+        // conta (toda conta nasce junto) nem o flag 'ativo' (pendente e rejeitado
+        // são ambos inativos).
         return clienteRepository.findAll().stream()
-                .filter(c -> !approvedClientUuids.contains(c.getUuid()))
+                .filter(c -> "PENDENTE".equals(c.getStatus()))
                 .map(c -> new ClienteParaAprovarResponse(
                         c.getCpf(),
                         c.getNome(),
@@ -151,12 +147,8 @@ public class ClienteService {
     }
 
     public Optional<ClienteResponseDTO> getByEmail(String email) {
-        // Como o repositório de domínio do destino não tem findByEmail, vamos filtrar da lista ou adicionar ao repository.
-        // Vamos buscar da lista de findAll() para manter a interface de repositório de domínio limpa, ou podemos usar findAll().
-        return clienteRepository.findAll().stream()
-                .filter(c -> c.getEmail().equalsIgnoreCase(email))
-                .findFirst()
-                .map(this::toResponseDTO);
+        // Busca direta no repositório (usada na API Composition do /login pelo gateway).
+        return clienteRepository.findByEmail(email).map(this::toResponseDTO);
     }
 
     public ClienteResponseDTO cadastro(ClienteRequestDTO request) {
@@ -180,6 +172,7 @@ public class ClienteService {
                 .cidade(request.cidade())
                 .estado(request.estado())
                 .ativo(false) // Desativado até aprovação
+                .status("PENDENTE") // Aguardando aprovação (R9)
                 .cargo("CLIENTE")
                 .build();
 
@@ -236,6 +229,7 @@ public class ClienteService {
         ClienteModel c = clienteRepository.findByCpf(cpf)
                 .orElseThrow(() -> new IllegalArgumentException("Cliente não encontrado!"));
         c.setAtivo(false);
+        c.setStatus("REJEITADO"); // R11 — sai da fila de "aguardando aprovação"
         clienteRepository.save(c);
         try {
             Map<String, Object> notif = new HashMap<>();
@@ -419,6 +413,7 @@ public class ClienteService {
                 .estado(dto.getEstadoAsString())
                 .senha(dto.getSenha())
                 .ativo(dto.isAtivo())
+                .status(dto.isAtivo() ? "APROVADO" : "PENDENTE")
                 .cargo(dto.getCargo() != null ? dto.getCargo() : "CLIENTE")
                 .build();
     }

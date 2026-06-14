@@ -33,6 +33,11 @@ public class ClienteRepositoryImpl implements ClienteRepository {
     }
 
     @Override
+    public Optional<ClienteModel> findByEmail(String email) {
+        return springDataClienteRepository.findByEmailIgnoreCase(email);
+    }
+
+    @Override
     public List<ClienteModel> findAll() {
         return springDataClienteRepository.findAll();
     }

@@ -52,6 +52,7 @@ public class SagaCommandConsumer {
 
             ClienteModel c = opt.get();
             c.setAtivo(true);
+            c.setStatus("APROVADO"); // R10 — sai da fila de "aguardando aprovação"
             repository.save(c);
 
             Map<String, Object> dados = new HashMap<>();
@@ -76,8 +77,9 @@ public class SagaCommandConsumer {
             JsonNode n = objectMapper.readTree(msg);
             repository.findByCpf(n.path("cpf").asText()).ifPresent(c -> {
                 c.setAtivo(false);
+                c.setStatus("PENDENTE"); // compensação: volta para "aguardando aprovação"
                 repository.save(c);
-                log.info("Compensação: cliente {} reprovado (ativo=false)", c.getCpf());
+                log.info("Compensação: cliente {} reprovado (status=PENDENTE)", c.getCpf());
             });
             replyOk(n.path("sagaId").asText(), Map.of());
         } catch (Exception e) {
