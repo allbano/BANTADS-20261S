@@ -34,6 +34,9 @@ public class RabbitMQConfig {
     public static final String FILA_ERRO_NOVO_CLIENTE       = "FILA_ERRO_NOVO_CLIENTE";
     public static final String SAGA_CMD_EXCLUIR_CLIENTE     = "SAGA_CMD_EXCLUIR_CLIENTE";
 
+    // Canal único de resposta das SAGAs genéricas (Eixo 3)
+    public static final String SAGA_REPLY = "saga.reply";
+
     // Eventos de resposta consumidos pelo orquestrador (declarados/bound aqui)
     public static final String SAGA_EVT_CLIENTE_CRIADO = "SAGA_EVT_CLIENTE_CRIADO";
     public static final String SAGA_EVT_CONTA_CRIADA   = "SAGA_EVT_CONTA_CRIADA";
@@ -51,6 +54,11 @@ public class RabbitMQConfig {
     DirectExchange bantadsDlx() {
         return ExchangeBuilder.directExchange(DLX).durable(true).build();
     }
+
+    @Bean Queue sagaReplyQueue()    { return dlqEnabled(SAGA_REPLY); }
+    @Bean Queue sagaReplyDlq()      { return dlq(SAGA_REPLY); }
+    @Bean Binding bSagaReply()      { return bind(sagaReplyQueue(), SAGA_REPLY); }
+    @Bean Binding bDlqSagaReply()   { return bindDlq(sagaReplyDlq(), SAGA_REPLY); }
 
     @Bean Queue sagaEvtClienteCriadoQueue() { return dlqEnabled(SAGA_EVT_CLIENTE_CRIADO); }
     @Bean Queue sagaEvtContaCriadaQueue()   { return dlqEnabled(SAGA_EVT_CONTA_CRIADA); }

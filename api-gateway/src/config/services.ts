@@ -9,6 +9,7 @@ const services = {
   cliente:      SERVICES.CLIENTE,
   conta:        SERVICES.CONTA,
   funcionario:  SERVICES.FUNCIONARIO,
+  saga:         SERVICES.SAGA,
 } as const;
 
 export default services;

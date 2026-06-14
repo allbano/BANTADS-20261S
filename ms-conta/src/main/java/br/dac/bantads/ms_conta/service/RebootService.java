@@ -59,9 +59,11 @@ public class RebootService {
     @Transactional
     public List<ContaModel> reboot() {
         // Limpa o banco de Comando (filho antes do pai) e a projeção de Consulta.
-        movimentacaoRepository.deleteAll();
-        contaRepository.deleteAll();
-        contaViewRepository.deleteAll();
+        // deleteAllInBatch: bulk DELETE sem carregar entidades no contexto — evita
+        // conflito de merge com os UUIDs fixos ao re-semear (ObjectNotFoundException).
+        movimentacaoRepository.deleteAllInBatch();
+        contaRepository.deleteAllInBatch();
+        contaViewRepository.deleteAllInBatch();
 
         ContaModel c1291 = salvarConta(CT_1291, CLI1, GER1, "1291", LocalDate.of(2000, 1, 1),  "800.00",    "5000.00");
         ContaModel c0950 = salvarConta(CT_0950, CLI2, GER2, "0950", LocalDate.of(1990, 10, 10), "-10000.00", "10000.00");

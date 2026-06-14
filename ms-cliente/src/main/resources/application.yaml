@@ -1,6 +1,8 @@
 spring:
   application:
     name: ms-cliente
+  config:
+    import: optional:file:.env[.properties]
   datasource:
     url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/cliente}
     username: ${SPRING_DATASOURCE_USERNAME:postgres}
@@ -29,10 +31,10 @@ spring:
           multiplier: 2.0
           max-interval: 16000ms
   mail:
-    host: smtp.gmail.com
-    port: 587
-    username: bantads.dac777@gmail.com
-    password: yryoupkptmuppphw
+    host: ${MAIL_HOST:smtp.gmail.com}
+    port: ${MAIL_PORT:587}
+    username: ${MAIL_ADDRESS:albanoaws2024@gmail.com}
+    password: ${MAIL_PASSWORD}
     properties:
       mail:
         smtp:

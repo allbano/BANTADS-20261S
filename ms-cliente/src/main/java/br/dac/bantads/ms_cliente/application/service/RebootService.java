@@ -36,7 +36,7 @@ public class RebootService {
 
     @Transactional
     public List<ClienteModel> reboot() {
-        repository.deleteAll();
+        repository.deleteAllInBatch();
         String senha = SecurityUtils.hash("tads");
 
         List<ClienteModel> clientes = List.of(

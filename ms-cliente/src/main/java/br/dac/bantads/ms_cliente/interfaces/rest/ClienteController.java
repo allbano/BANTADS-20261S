@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @CrossOrigin
@@ -92,6 +93,21 @@ public class ClienteController {
             return ResponseEntity.status(HttpStatus.CREATED).body(created);
         } catch (IllegalStateException e) {
             return ResponseEntity.status(HttpStatus.CONFLICT).build();
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    /** R11 — Rejeitar cliente (direto, não-SAGA): marca inativo e publica notificação. */
+    @PostMapping("/{cpf}/rejeitar")
+    public ResponseEntity<Map<String, Object>> rejeitar(@PathVariable String cpf,
+                                                        @RequestBody(required = false) Map<String, Object> body) {
+        String motivo = body != null && body.get("motivo") != null ? String.valueOf(body.get("motivo")) : "";
+        try {
+            clienteService.rejeitar(cpf, motivo);
+            return ResponseEntity.ok(Map.of("status", "rejeitado", "cpf", cpf));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.notFound().build();
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }

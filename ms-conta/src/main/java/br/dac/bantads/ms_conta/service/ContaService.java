@@ -84,6 +84,48 @@ public class ContaService {
         return saved;
     }
 
+    /** R10 — ativa a conta (aprovação) garantindo o limite pela regra do salário. */
+    @Transactional
+    public String ativarConta(UUID uuidCliente, BigDecimal salario) {
+        ContaModel conta = contaRepository.findByUuidCliente(uuidCliente)
+                .orElseThrow(() -> new NoSuchElementException("Conta não encontrada para o cliente: " + uuidCliente));
+        conta.setAtivo(true);
+        if (salario != null) {
+            conta.setLimite(calculateLimit(salario));
+        }
+        ContaModel saved = contaRepository.save(conta);
+        cqrsPublisher.publicarConta(saved);
+        return saved.getNumero();
+    }
+
+    /** Compensação de R10 — desativa a conta. */
+    @Transactional
+    public void desativarConta(UUID uuidCliente) {
+        contaRepository.findByUuidCliente(uuidCliente).ifPresent(conta -> {
+            conta.setAtivo(false);
+            cqrsPublisher.publicarConta(contaRepository.save(conta));
+        });
+    }
+
+    /**
+     * R4 — recalcula o limite a partir do novo salário. Regra: se o novo limite
+     * ficar abaixo do saldo negativo da conta, o limite passa a ser |saldo negativo|.
+     */
+    @Transactional
+    public void recalcularLimite(UUID uuidCliente, BigDecimal salario) {
+        ContaModel conta = contaRepository.findByUuidCliente(uuidCliente)
+                .orElseThrow(() -> new NoSuchElementException("Conta não encontrada para o cliente: " + uuidCliente));
+        BigDecimal novoLimite = calculateLimit(salario);
+        if (conta.getSaldo() != null && conta.getSaldo().signum() < 0) {
+            BigDecimal saldoAbs = conta.getSaldo().abs();
+            if (novoLimite.compareTo(saldoAbs) < 0) {
+                novoLimite = saldoAbs;
+            }
+        }
+        conta.setLimite(novoLimite);
+        cqrsPublisher.publicarConta(contaRepository.save(conta));
+    }
+
     @Transactional
     public void excluirContaPorCliente(UUID clientUuid) {
         contaRepository.findByUuidCliente(clientUuid).ifPresent(conta -> {

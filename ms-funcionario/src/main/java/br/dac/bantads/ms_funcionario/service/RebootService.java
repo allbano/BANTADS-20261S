@@ -32,7 +32,7 @@ public class RebootService {
 
     public List<FuncionarioModel> reboot() {
 
-        funcionarioRepository.deleteAll();
+        funcionarioRepository.deleteAllInBatch();
         String defaultHashedPassword = Security.hash("tads");
 
         List<FuncionarioModel> funcionarios = List.of(

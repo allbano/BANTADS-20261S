@@ -28,6 +28,15 @@ public class EmailService {
     }
 
     /**
+     * Envio genérico {destino, assunto, mensagem}: é o ponto único pelo qual os
+     * demais microsserviços solicitam e-mails (publicando na fila), de modo que
+     * SOMENTE o ms_notificacao fale com o SMTP. O corpo já vem pronto do produtor.
+     */
+    public void enviarSimples(String destino, String assunto, String mensagem) {
+        enviarEmail(destino, assunto, mensagem);
+    }
+
+    /**
      * Ponto de entrada: recebe a notificacao ja desserializada, monta o
      * assunto/corpo conforme o {@code tipo} e envia o e-mail.
      *

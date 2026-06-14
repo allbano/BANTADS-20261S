@@ -228,6 +228,28 @@ public class ClienteService {
         return toResponseDTO(saved);
     }
 
+    /**
+     * R11 — Rejeitar cliente. NÃO é SAGA: escrita local (marca inativo) + publica
+     * o evento de notificação de rejeição. Idempotente o suficiente para o contexto.
+     */
+    public void rejeitar(String cpf, String motivo) {
+        ClienteModel c = clienteRepository.findByCpf(cpf)
+                .orElseThrow(() -> new IllegalArgumentException("Cliente não encontrado!"));
+        c.setAtivo(false);
+        clienteRepository.save(c);
+        try {
+            Map<String, Object> notif = new HashMap<>();
+            notif.put("email", c.getEmail());
+            notif.put("nome", c.getNome());
+            notif.put("tipo", "REJEICAO");
+            notif.put("motivo", motivo != null ? motivo : "");
+            rabbitTemplate.convertAndSend(RabbitMQConfig.EXCHANGE, "saga.cmd.notificar.cliente",
+                    objectMapper.writeValueAsString(notif));
+        } catch (Exception e) {
+            System.err.println("Falha ao publicar notificação de rejeição: " + e.getMessage());
+        }
+    }
+
     // --- Métodos de processamento para consumidores RabbitMQ ---
 
     public void processaNovoClienteEvent(ClienteDTO dto) {

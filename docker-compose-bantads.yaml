@@ -200,6 +200,8 @@ services:
       SPRING_RABBITMQ_PORT: 5672
       SPRING_RABBITMQ_USERNAME: ${RABBITMQ_DEFAULT_USER:-guest}
       SPRING_RABBITMQ_PASSWORD: ${RABBITMQ_DEFAULT_PASS:-guest}
+      MAIL_ADDRESS: ${MAIL_ADDRESS:-albanoaws2024@gmail.com}
+      MAIL_PASSWORD: ${MAIL_PASSWORD:-change-me}
     depends_on:
       bantads-pg-cliente:
         condition: service_healthy
@@ -311,9 +313,9 @@ services:
       dockerfile: Dockerfile
     restart: unless-stopped
     ports:
-      - "40004:40004"
+      - "3000:3000"
     environment:
-      PORT: 40004
+      PORT: 3000
       JWT_SECRET: ${JWT_SECRET:-change-me-in-production}
       MS_AUTH_URL: http://bantads-ms-auth:40009
       MS_CLIENTE_URL: http://bantads-ms-cliente:40007

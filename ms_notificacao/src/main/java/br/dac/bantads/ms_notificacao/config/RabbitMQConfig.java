@@ -27,8 +27,15 @@ public class RabbitMQConfig {
     public static final String EXCHANGE = "bantads.topic";
     public static final String DLX = "bantads.dlx";
 
-    /** Nome da fila de notificacoes. Publicadores usam esta routing key no exchange. */
+    /** Nome da fila de notificacoes (DTO tipado: APROVACAO/REJEICAO/...). */
     public static final String FILA_NOTIFICACAO = "FILA_NOTIFICACAO";
+
+    /**
+     * Fila de e-mail GENÉRICA {destino, assunto, mensagem}. É o ponto único pelo
+     * qual qualquer microsserviço solicita o envio de um e-mail: o produtor monta
+     * o conteúdo e publica aqui; SOMENTE o ms_notificacao fala com o SMTP.
+     */
+    public static final String FILA_EMAIL = "FILA_EMAIL";
 
     @Bean
     TopicExchange bantadsTopic() {
@@ -61,6 +68,30 @@ public class RabbitMQConfig {
     @Bean
     Binding notificacaoDlqBinding() {
         return BindingBuilder.bind(notificacaoDlq()).to(bantadsDlx()).with(FILA_NOTIFICACAO + ".dlq");
+    }
+
+    // ── Fila de e-mail genérica {destino, assunto, mensagem} ──
+    @Bean
+    Queue emailQueue() {
+        return QueueBuilder.durable(FILA_EMAIL)
+                .withArgument("x-dead-letter-exchange", DLX)
+                .withArgument("x-dead-letter-routing-key", FILA_EMAIL + ".dlq")
+                .build();
+    }
+
+    @Bean
+    Queue emailDlq() {
+        return QueueBuilder.durable(FILA_EMAIL + ".dlq").build();
+    }
+
+    @Bean
+    Binding emailBinding() {
+        return BindingBuilder.bind(emailQueue()).to(bantadsTopic()).with(FILA_EMAIL);
+    }
+
+    @Bean
+    Binding emailDlqBinding() {
+        return BindingBuilder.bind(emailDlq()).to(bantadsDlx()).with(FILA_EMAIL + ".dlq");
     }
 
     @Bean

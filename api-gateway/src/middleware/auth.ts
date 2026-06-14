@@ -1,18 +1,29 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import { JWT_SECRET } from '../config/env.js';
-import { AuthenticationError } from '../types/errors.js';
 import type { AuthenticatedUser } from '../types/express.js';
 
 /**
- * Payload esperado dentro do token JWT gerado pelo ms-auth.
+ * Claims do token JWT gerado pelo ms-auth (auth0-jwt):
+ * subject = e-mail; claim "email"; claim "role" em minúsculo
+ * (cliente | gerente | administrador).
  */
 interface JwtPayload {
-  id: string;
-  tipo: AuthenticatedUser['tipo'];
-  login: string;
+  sub?: string;
+  email?: string;
+  role?: string;
   iat?: number;
   exp?: number;
+}
+
+/** Mapeia o "role" do ms-auth (minúsculo) para o tipo usado no gateway. */
+function mapTipo(role?: string): AuthenticatedUser['tipo'] {
+  switch ((role ?? '').toLowerCase()) {
+    case 'gerente': return 'GERENTE';
+    case 'administrador':
+    case 'admin': return 'ADMIN';
+    default: return 'CLIENTE';
+  }
 }
 
 /**
@@ -46,10 +57,11 @@ const verifyJWT = (req: Request, res: Response, next: NextFunction): void => {
   try {
     const decoded = jwt.verify(token, JWT_SECRET) as JwtPayload;
 
+    const login = decoded.email ?? decoded.sub ?? '';
     req.user = {
-      id: decoded.id,
-      tipo: decoded.tipo,
-      login: decoded.login,
+      id: login,
+      tipo: mapTipo(decoded.role),
+      login,
     };
 
     next();

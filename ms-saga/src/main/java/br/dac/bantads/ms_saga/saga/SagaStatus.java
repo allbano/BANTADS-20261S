@@ -7,6 +7,7 @@ public enum SagaStatus {
     AGUARDANDO_CONTA,
     CONTA_CRIADA,
     AGUARDANDO_AUTH,
+    EM_ANDAMENTO,
     CONCLUIDA,
     COMPENSANDO,
     FALHOU

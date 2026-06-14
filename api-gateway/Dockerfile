@@ -21,6 +21,6 @@ RUN npm ci --omit=dev
 # Copia apenas o código compilado do estágio anterior
 COPY --from=builder /app/dist ./dist
 
-EXPOSE 40004
+EXPOSE 3000
 
 CMD ["node", "dist/server.js"]
