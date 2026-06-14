@@ -23,8 +23,8 @@ export const swaggerSpec = {
   },
   servers: [{ url: 'http://localhost:3000', description: 'Local' }],
   tags: [
-    { name: 'Auth', description: 'Autenticação e sessão (R2)' },
-    { name: 'Sistema', description: 'Operações administrativas (reboot/seed)' },
+    { name: 'Inicialização', description: 'Inicialização da base de dados (reboot — fan-out a todos os MS)' },
+    { name: 'Login', description: 'Autenticação e sessão (R2)' },
     { name: 'Clientes', description: 'Clientes, aprovação/rejeição e perfil (R1/R4/R9-R14)' },
     { name: 'Contas', description: 'Contas, saldo, extrato e operações (R3/R5-R8)' },
     { name: 'Gerentes', description: 'Gerentes e dashboard (R15/R17-R20)' },
@@ -73,21 +73,20 @@ export const swaggerSpec = {
     },
   },
   paths: {
-    // ── Auth ──
+    // ── Inicialização ──
+    '/reboot': {
+      get: { tags: ['Inicialização'], summary: 'Inicia o banco de dados de todos os MS (fan-out)', security: [], responses: { 200: r('Banco de dados reinicializado em todos os microsserviços') } },
+    },
+    // ── Login ──
     '/login': {
       post: {
-        tags: ['Auth'], summary: 'Login (R2) — retorna JWT', security: [],
+        tags: ['Login'], summary: 'Login (R2) — retorna JWT', security: [],
         requestBody: { required: true, content: { 'application/json': { schema: { $ref: '#/components/schemas/LoginRequest' } } } },
         responses: { 200: { description: 'OK', content: { 'application/json': { schema: { $ref: '#/components/schemas/LoginResponse' } } } }, 401: r('Credenciais inválidas') },
       },
     },
     '/logout': {
-      post: { tags: ['Auth'], summary: 'Logout (R2)', security: [], responses: { 200: r('OK') } },
-    },
-    // ── Sistema ──
-    '/reboot': {
-      get: { tags: ['Sistema'], summary: 'Recarrega a base de todos os MS (fan-out)', security: [], responses: { 200: r('Resumo do reboot por serviço') } },
-      post: { tags: ['Sistema'], summary: 'Recarrega a base de todos os MS (fan-out)', security: [], responses: { 200: r('Resumo do reboot por serviço') } },
+      post: { tags: ['Login'], summary: 'Logout (R2)', security: [], responses: { 200: r('OK') } },
     },
     // ── Clientes ──
     '/clientes': {

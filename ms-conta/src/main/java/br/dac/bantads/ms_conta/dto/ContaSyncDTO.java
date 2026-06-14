@@ -13,6 +13,7 @@ import java.util.UUID;
 public record ContaSyncDTO(
         UUID uuidConta,
         UUID uuidCliente,
+        String clienteCpf,
         String numero,
         LocalDate dataCriacao,
         BigDecimal saldo,

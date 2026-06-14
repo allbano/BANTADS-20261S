@@ -38,6 +38,13 @@ public class ContaModel implements Serializable {
     @Column(name = "conta_cliente_uuid", nullable = false, unique = true)
     private UUID uuidCliente;
 
+    /**
+     * CPF do cliente (denormalizado do ms-cliente). Imutável; usado para montar
+     * o contrato externo (SaldoResponse.cliente) sem chamar o ms-cliente.
+     */
+    @Column(name = "conta_cliente_cpf", length = 20)
+    private String clienteCpf;
+
     @Column(name = "conta_numero", nullable = false, unique = true, length = 4)
     private String numero;
 

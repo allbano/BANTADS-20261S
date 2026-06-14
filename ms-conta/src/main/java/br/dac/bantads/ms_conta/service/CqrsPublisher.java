@@ -32,6 +32,7 @@ public class CqrsPublisher {
         ContaSyncDTO dto = new ContaSyncDTO(
                 conta.getUuidConta(),
                 conta.getUuidCliente(),
+                conta.getClienteCpf(),
                 conta.getNumero(),
                 conta.getDataCriacao(),
                 conta.getSaldo(),

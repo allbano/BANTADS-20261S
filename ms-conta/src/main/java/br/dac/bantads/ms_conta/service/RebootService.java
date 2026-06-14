@@ -65,11 +65,11 @@ public class RebootService {
         contaRepository.deleteAllInBatch();
         contaViewRepository.deleteAllInBatch();
 
-        ContaModel c1291 = salvarConta(CT_1291, CLI1, GER1, "1291", LocalDate.of(2000, 1, 1),  "800.00",    "5000.00");
-        ContaModel c0950 = salvarConta(CT_0950, CLI2, GER2, "0950", LocalDate.of(1990, 10, 10), "-10000.00", "10000.00");
-        ContaModel c8573 = salvarConta(CT_8573, CLI3, GER3, "8573", LocalDate.of(2012, 12, 12), "-1000.00",  "1500.00");
-        ContaModel c5887 = salvarConta(CT_5887, CLI4, GER1, "5887", LocalDate.of(2022, 2, 22),  "150000.00", "0.00");
-        ContaModel c7617 = salvarConta(CT_7617, CLI5, GER2, "7617", LocalDate.of(2025, 1, 1),   "1500.00",   "0.00");
+        ContaModel c1291 = salvarConta(CT_1291, CLI1, "12912861012", GER1, "1291", LocalDate.of(2000, 1, 1),  "800.00",    "5000.00");
+        ContaModel c0950 = salvarConta(CT_0950, CLI2, "09506382000", GER2, "0950", LocalDate.of(1990, 10, 10), "-10000.00", "10000.00");
+        ContaModel c8573 = salvarConta(CT_8573, CLI3, "85733854057", GER3, "8573", LocalDate.of(2012, 12, 12), "-1000.00",  "1500.00");
+        ContaModel c5887 = salvarConta(CT_5887, CLI4, "58872160006", GER1, "5887", LocalDate.of(2022, 2, 22),  "150000.00", "0.00");
+        ContaModel c7617 = salvarConta(CT_7617, CLI5, "76179646090", GER2, "7617", LocalDate.of(2025, 1, 1),   "1500.00",   "0.00");
 
         // ── 15 movimentações pré-cadastradas ──
         // Catharyna (1291)
@@ -101,11 +101,12 @@ public class RebootService {
         return contas;
     }
 
-    private ContaModel salvarConta(UUID contaUuid, UUID clienteUuid, UUID gerenteUuid,
+    private ContaModel salvarConta(UUID contaUuid, UUID clienteUuid, String clienteCpf, UUID gerenteUuid,
                                    String numero, LocalDate criacao, String saldo, String limite) {
         ContaModel conta = ContaModel.builder()
                 .uuidConta(contaUuid)
                 .uuidCliente(clienteUuid)
+                .clienteCpf(clienteCpf)
                 .uuidGerente(gerenteUuid)
                 .numero(numero)
                 .dataCriacao(criacao)

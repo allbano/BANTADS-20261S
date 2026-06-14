@@ -253,6 +253,15 @@ public class ClienteService {
     // --- Métodos de processamento para consumidores RabbitMQ ---
 
     public void processaNovoClienteEvent(ClienteDTO dto) {
+        // Falha rápida em CPF duplicado: a violação de unicidade só apareceria no
+        // commit (fora deste try/catch), causando retry/DLQ e timeout da SAGA.
+        if (dto.getCpf() != null && clienteRepository.findByCpf(dto.getCpf()).isPresent()) {
+            System.err.println("CPF já cadastrado no autocadastro: " + dto.getCpf());
+            if (dto.getSagaId() != null && !dto.getSagaId().isBlank()) {
+                publicarEventoSagaClienteErro(dto.getSagaId(), "CPF já cadastrado");
+            }
+            return;
+        }
         try {
             ClienteModel model = toModel(dto);
             model.setSenha(SecurityUtils.hash(dto.getSenha()));
@@ -420,6 +429,7 @@ public class ClienteService {
                 model.getNome(),
                 model.getEmail(),
                 model.getCpf(),
+                model.getTelefone(),
                 model.getSalario(),
                 model.getEndereco(),
                 model.getCep(),

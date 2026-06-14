@@ -22,4 +22,7 @@ public interface MovimentacaoRepository extends JpaRepository<MovimentacaoModel,
             LocalDateTime dataInicio,
             LocalDateTime dataFim
     );
+
+    /** Extrato completo da conta, em ordem cronológica (contrato test_dac). */
+    List<MovimentacaoModel> findByConta_UuidContaOrderByDataHoraAsc(UUID uuidConta);
 }

@@ -27,6 +27,9 @@ public class ContaView {
     @Column(name = "cv_cliente_uuid", nullable = false, unique = true)
     private UUID uuidCliente;
 
+    @Column(name = "cv_cliente_cpf", length = 20)
+    private String clienteCpf;
+
     @Column(name = "cv_numero", nullable = false, length = 4)
     private String numero;
 

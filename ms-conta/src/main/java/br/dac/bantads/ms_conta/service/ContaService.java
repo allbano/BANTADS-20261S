@@ -70,6 +70,7 @@ public class ContaService {
 
         ContaModel conta = ContaModel.builder()
                 .uuidCliente(clientUuid)
+                .clienteCpf(dto.getCpf())
                 .numero(generateUniqueAccountNumber())
                 .dataCriacao(LocalDate.now())
                 .saldo(dto.getSaldo() != null ? dto.getSaldo() : BigDecimal.ZERO)

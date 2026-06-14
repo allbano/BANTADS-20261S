@@ -14,7 +14,9 @@ import org.springframework.stereotype.Service;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 
 @Service
 @RequiredArgsConstructor
@@ -26,6 +28,9 @@ public class AutocadastroSagaOrchestrator {
 
     // Estado em memória — suficiente para o contexto acadêmico
     private final Map<UUID, SagaInstance> sagaStore = new ConcurrentHashMap<>();
+    // Futuros para o modo bloqueante (resposta síncrona ao gateway).
+    private final Map<UUID, CompletableFuture<SagaInstance>> aguardando = new ConcurrentHashMap<>();
+    private static final long TIMEOUT_PADRAO_SEGUNDOS = 20;
 
     // ---------------------------------------------------------------
     // Entrada: API chama este método para iniciar o fluxo de autocadastro
@@ -38,9 +43,29 @@ public class AutocadastroSagaOrchestrator {
                 req.cidade(), req.estado()
         );
         sagaStore.put(sagaId, saga);
+        aguardando.put(sagaId, new CompletableFuture<>());
         log.info("SAGA {} iniciada para o cliente '{}'", sagaId, req.email());
         enviarPassoRegistrarCliente(saga);
         return sagaId;
+    }
+
+    /** Modo SÍNCRONO: inicia e bloqueia até CONCLUÍDA/FALHOU (ou timeout). */
+    public SagaInstance iniciarEAguardar(AutocadastroRequestDTO req) {
+        UUID sagaId = iniciarSaga(req);
+        CompletableFuture<SagaInstance> f = aguardando.get(sagaId);
+        try {
+            return f.get(TIMEOUT_PADRAO_SEGUNDOS, TimeUnit.SECONDS);
+        } catch (Exception e) {
+            log.error("SAGA {}: timeout/erro ao aguardar autocadastro", sagaId, e);
+            return sagaStore.get(sagaId);
+        } finally {
+            aguardando.remove(sagaId);
+        }
+    }
+
+    private void completar(SagaInstance saga) {
+        CompletableFuture<SagaInstance> f = aguardando.get(saga.getSagaId());
+        if (f != null) f.complete(saga);
     }
 
     // ---------------------------------------------------------------
@@ -124,6 +149,7 @@ public class AutocadastroSagaOrchestrator {
         if (saga == null) { log.warn("SAGA {} não encontrada (onAuthCriado)", sagaId); return; }
         saga.setStatus(SagaStatus.CONCLUIDA);
         log.info("SAGA {}: CONCLUÍDA com sucesso para '{}'", sagaId, saga.getEmail());
+        completar(saga);
         sagaStore.remove(sagaId);
     }
 
@@ -151,6 +177,7 @@ public class AutocadastroSagaOrchestrator {
 
         saga.setStatus(SagaStatus.FALHOU);
         log.error("SAGA {}: FALHOU. Cliente: '{}'", sagaId, saga.getEmail());
+        completar(saga);
     }
 
     private void enviarCompensacaoConta(SagaInstance saga) {

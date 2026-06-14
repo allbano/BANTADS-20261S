@@ -34,6 +34,7 @@ public class ContaCqrsConsumer {
         ContaView view = ContaView.builder()
                 .uuidConta(dto.uuidConta())
                 .uuidCliente(dto.uuidCliente())
+                .clienteCpf(dto.clienteCpf())
                 .numero(dto.numero())
                 .dataCriacao(dto.dataCriacao())
                 .saldo(dto.saldo())

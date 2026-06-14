@@ -15,7 +15,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Orquestrador genérico das 5 SAGAs do Eixo 3 (Aprovar R10, Perfil R4, Inserir
@@ -35,6 +37,10 @@ public class GenericSagaOrchestrator {
     private final ObjectMapper objectMapper;
 
     private final Map<UUID, GenericSagaContext> store = new ConcurrentHashMap<>();
+    // Futuros completados quando a saga atinge estado terminal (modo bloqueante).
+    private final Map<UUID, CompletableFuture<GenericSagaContext>> aguardando = new ConcurrentHashMap<>();
+
+    private static final long TIMEOUT_PADRAO_SEGUNDOS = 20;
 
     private static final Map<SagaTipo, List<SagaStep>> DEFINICOES = Map.of(
             SagaTipo.APROVAR_CLIENTE, List.of(
@@ -68,9 +74,35 @@ public class GenericSagaOrchestrator {
         UUID sagaId = UUID.randomUUID();
         GenericSagaContext ctx = new GenericSagaContext(sagaId, tipo, DEFINICOES.get(tipo), dadosIniciais);
         store.put(sagaId, ctx);
+        aguardando.put(sagaId, new CompletableFuture<>()); // registrar ANTES de enviar (resposta pode ser rápida)
         log.info("SAGA {} ({}) iniciada", sagaId, tipo);
         enviarPassoCorrente(ctx);
         return sagaId;
+    }
+
+    /**
+     * Modo SÍNCRONO: inicia a saga e bloqueia até o estado terminal (CONCLUÍDA/
+     * FALHOU) ou timeout. Usado pelos endpoints REST para devolver o resultado
+     * final na própria resposta (contrato test_dac).
+     */
+    public GenericSagaContext iniciarEAguardar(SagaTipo tipo, Map<String, Object> dadosIniciais) {
+        UUID sagaId = iniciar(tipo, dadosIniciais);
+        CompletableFuture<GenericSagaContext> f = aguardando.get(sagaId);
+        try {
+            return f.get(TIMEOUT_PADRAO_SEGUNDOS, TimeUnit.SECONDS);
+        } catch (Exception e) {
+            log.error("SAGA {} ({}): falha/timeout ao aguardar conclusão", sagaId, tipo, e);
+            GenericSagaContext ctx = store.get(sagaId);
+            if (ctx != null) ctx.getDados().putIfAbsent("__erro", "timeout/erro ao aguardar a saga");
+            return ctx;
+        } finally {
+            aguardando.remove(sagaId);
+        }
+    }
+
+    private void completar(GenericSagaContext ctx) {
+        CompletableFuture<GenericSagaContext> f = aguardando.get(ctx.getSagaId());
+        if (f != null) f.complete(ctx);
     }
 
     public void onReply(UUID sagaId, boolean sucesso, String mensagem, Map<String, Object> dados) {
@@ -97,6 +129,7 @@ public class GenericSagaOrchestrator {
         if (ctx.concluido()) {
             ctx.setStatus(SagaStatus.CONCLUIDA);
             log.info("SAGA {} ({}): CONCLUÍDA", sagaId, ctx.getTipo());
+            completar(ctx);
         } else {
             enviarPassoCorrente(ctx);
         }
@@ -118,6 +151,7 @@ public class GenericSagaOrchestrator {
         }
         ctx.setStatus(SagaStatus.FALHOU);
         log.error("SAGA {} ({}): FALHOU", ctx.getSagaId(), ctx.getTipo());
+        completar(ctx);
     }
 
     private void enviarPassoCorrente(GenericSagaContext ctx) {
