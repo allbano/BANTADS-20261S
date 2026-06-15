@@ -17,6 +17,8 @@ public interface ContaViewRepository extends JpaRepository<ContaView, UUID> {
 
     Optional<ContaView> findByUuidCliente(UUID uuidCliente);
 
+    Optional<ContaView> findByNumero(String numero);
+
     List<ContaView> findByUuidGerenteOrderByNumeroAsc(UUID uuidGerente);
 
     List<ContaView> findByUuidGerenteAndAtivo(UUID uuidGerente, boolean ativo);

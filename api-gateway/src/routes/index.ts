@@ -48,7 +48,7 @@ async function forward(req: Request, res: Response, base: string, path: string):
 /** Mapeia GerenteDTO (ms-funcionario) → DadoGerente do contrato (cargo→tipo). */
 function dadoGerente(g: any): any {
   if (!g) return null;
-  return { cpf: g.cpf, nome: g.nome, email: g.email, tipo: g.tipo ?? g.cargo };
+  return { cpf: g.cpf, nome: g.nome, email: g.email, telefone: g.telefone, tipo: g.tipo ?? g.cargo };
 }
 async function gerenteCpf(uuid: string | null | undefined, headers: Record<string, string>): Promise<string | null> {
   if (!uuid) return null;

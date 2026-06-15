@@ -60,6 +60,7 @@ export class CrudGerentesComponent implements OnInit {
         cpf: (this.gerenteForm.cpf ?? '').replace(/\D/g, ''),
         nome: this.gerenteForm.nome ?? '',
         email: this.gerenteForm.email ?? '',
+        telefone: this.gerenteForm.telefone ?? '',
         tipo: 'GERENTE',
         senha: this.gerenteForm.senha ?? '',
       });

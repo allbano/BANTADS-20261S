@@ -40,6 +40,10 @@ public class RabbitMQConfig {
     public static final String QUEUE_CONTA_CQRS_ATUALIZADA = "conta.cqrs.atualizada.q";
     public static final String QUEUE_CONTA_CQRS_EXCLUIDA   = "conta.cqrs.excluida.q";
 
+    // CQRS interno do MS Conta: replica movimentacao (conta_cud) -> movimentacao_view (conta_r)
+    public static final String RK_MOVIMENTACAO_CRIADA = "movimentacao.cqrs.criada";
+    public static final String QUEUE_MOVIMENTACAO_CQRS_CRIADA = "movimentacao.cqrs.criada.q";
+
     @Bean
     public TopicExchange bantadsTopic() {
         return ExchangeBuilder.topicExchange(EXCHANGE).durable(true).build();
@@ -75,6 +79,12 @@ public class RabbitMQConfig {
     @Bean Binding bContaCqrsExcluida()   { return bind(contaCqrsExcluidaQueue(), RK_CONTA_EXCLUIDA); }
     @Bean Binding bDlqContaCqrsAtualizada() { return bindDlq(contaCqrsAtualizadaDlq(), QUEUE_CONTA_CQRS_ATUALIZADA); }
     @Bean Binding bDlqContaCqrsExcluida()   { return bindDlq(contaCqrsExcluidaDlq(), QUEUE_CONTA_CQRS_EXCLUIDA); }
+
+    // --- Eixo CQRS interno (replica movimentacao -> movimentacao_view em conta_r) ---
+    @Bean Queue movimentacaoCqrsCriadaQueue() { return dlqEnabled(QUEUE_MOVIMENTACAO_CQRS_CRIADA); }
+    @Bean Queue movimentacaoCqrsCriadaDlq()   { return dlq(QUEUE_MOVIMENTACAO_CQRS_CRIADA); }
+    @Bean Binding bMovimentacaoCqrsCriada()    { return bind(movimentacaoCqrsCriadaQueue(), RK_MOVIMENTACAO_CRIADA); }
+    @Bean Binding bDlqMovimentacaoCqrsCriada() { return bindDlq(movimentacaoCqrsCriadaDlq(), QUEUE_MOVIMENTACAO_CQRS_CRIADA); }
 
     private static Queue dlqEnabled(String name) {
         return QueueBuilder.durable(name)

@@ -3,6 +3,8 @@ package br.dac.bantads.ms_conta.controller;
 import br.dac.bantads.ms_conta.dto.MovimentacaoRequestDTO;
 import br.dac.bantads.ms_conta.dto.MovimentacaoResponseDTO;
 import br.dac.bantads.ms_conta.model.cud.MovimentacaoModel;
+import br.dac.bantads.ms_conta.model.read.MovimentacaoView;
+import br.dac.bantads.ms_conta.repository.read.MovimentacaoViewRepository;
 import br.dac.bantads.ms_conta.service.MovimentacaoService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -26,6 +28,7 @@ import java.util.stream.Collectors;
 public class MovimentacaoController {
 
     private final MovimentacaoService movimentacaoService;
+    private final MovimentacaoViewRepository movimentacaoViewRepository;
 
     @PostMapping("/{uuidConta}/movimentacoes")
     public ResponseEntity<MovimentacaoResponseDTO> realizarMovimentacao(
@@ -39,8 +42,10 @@ public class MovimentacaoController {
     @GetMapping("/{uuidConta}/movimentacoes")
     public ResponseEntity<List<MovimentacaoResponseDTO>> obterMovimentacoes(@PathVariable UUID uuidConta) {
         log.info("Recebida requisição para listar todas as movimentações da conta: {}", uuidConta);
-        List<MovimentacaoResponseDTO> dtos = movimentacaoService.obterMovimentacoes(uuidConta).stream()
-                .map(this::toDTO)
+        // Consulta servida pelo banco de leitura (conta_r), via projeção MovimentacaoView.
+        List<MovimentacaoResponseDTO> dtos = movimentacaoViewRepository
+                .findByUuidContaOrderByDataHoraAsc(uuidConta).stream()
+                .map(this::toDTOView)
                 .collect(Collectors.toList());
         return ResponseEntity.ok(dtos);
     }
@@ -56,6 +61,17 @@ public class MovimentacaoController {
                 model.getConta() != null ? model.getConta().getUuidConta() : null,
                 model.getUuidContaDestino(),
                 model.getValor()
+        );
+    }
+
+    private MovimentacaoResponseDTO toDTOView(MovimentacaoView v) {
+        return new MovimentacaoResponseDTO(
+                v.getUuidMovimentacao(),
+                v.getDataHora(),
+                v.getTipo(),
+                v.getUuidConta(),
+                v.getUuidContaDestino(),
+                v.getValor()
         );
     }
 }

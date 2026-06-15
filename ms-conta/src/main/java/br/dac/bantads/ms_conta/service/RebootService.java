@@ -6,6 +6,7 @@ import br.dac.bantads.ms_conta.model.enums.TipoMovimentacao;
 import br.dac.bantads.ms_conta.repository.cud.ContaRepository;
 import br.dac.bantads.ms_conta.repository.cud.MovimentacaoRepository;
 import br.dac.bantads.ms_conta.repository.read.ContaViewRepository;
+import br.dac.bantads.ms_conta.repository.read.MovimentacaoViewRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -54,6 +55,7 @@ public class RebootService {
     private final ContaRepository contaRepository;
     private final MovimentacaoRepository movimentacaoRepository;
     private final ContaViewRepository contaViewRepository;
+    private final MovimentacaoViewRepository movimentacaoViewRepository;
     private final CqrsPublisher cqrsPublisher;
 
     @Transactional
@@ -64,6 +66,7 @@ public class RebootService {
         movimentacaoRepository.deleteAllInBatch();
         contaRepository.deleteAllInBatch();
         contaViewRepository.deleteAllInBatch();
+        movimentacaoViewRepository.deleteAllInBatch();
 
         ContaModel c1291 = salvarConta(CT_1291, CLI1, "12912861012", GER1, "1291", LocalDate.of(2000, 1, 1),  "800.00",    "5000.00");
         ContaModel c0950 = salvarConta(CT_0950, CLI2, "09506382000", GER2, "0950", LocalDate.of(1990, 10, 10), "-10000.00", "10000.00");
@@ -79,7 +82,7 @@ public class RebootService {
         mov(c1291, TipoMovimentacao.SAQUE,    "350.00",  LocalDateTime.of(2020, 1, 1, 13, 0), null);
         mov(c1291, TipoMovimentacao.DEPOSITO, "2000.00", LocalDateTime.of(2020, 1, 10, 10, 0), null);
         mov(c1291, TipoMovimentacao.SAQUE,    "500.00",  LocalDateTime.of(2020, 1, 15, 10, 0), null);
-        mov(c1291, TipoMovimentacao.TRANSFERENCIA, "1700.00", LocalDateTime.of(2020, 1, 20, 10, 0), CT_0950); // → Cleuddônio
+        mov(c1291, TipoMovimentacao.TRANSFERENCIA, "1700.00", LocalDateTime.of(2020, 1, 20, 10, 0), c0950); // → Cleuddônio
         // Cleuddônio (0950)
         mov(c0950, TipoMovimentacao.DEPOSITO, "1000.00", LocalDateTime.of(2025, 1, 1, 10, 0), null);
         mov(c0950, TipoMovimentacao.DEPOSITO, "5000.00", LocalDateTime.of(2025, 1, 2, 10, 0), null);
@@ -119,14 +122,16 @@ public class RebootService {
     }
 
     private void mov(ContaModel conta, TipoMovimentacao tipo, String valor,
-                     LocalDateTime dataHora, UUID contaDestinoUuid) {
+                     LocalDateTime dataHora, ContaModel contaDestino) {
         MovimentacaoModel m = MovimentacaoModel.builder()
                 .conta(conta)
                 .tipo(tipo)
                 .valor(new BigDecimal(valor))
                 .dataHora(dataHora)
-                .uuidContaDestino(contaDestinoUuid)
+                .uuidContaDestino(contaDestino != null ? contaDestino.getUuidConta() : null)
                 .build();
-        movimentacaoRepository.save(m);
+        MovimentacaoModel saved = movimentacaoRepository.save(m);
+        // Replica a movimentação de seed para o banco de leitura (conta_r).
+        cqrsPublisher.publicarMovimentacao(saved, contaDestino != null ? contaDestino.getNumero() : null);
     }
 }

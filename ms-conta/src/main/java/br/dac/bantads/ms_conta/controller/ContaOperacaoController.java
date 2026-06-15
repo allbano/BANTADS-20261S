@@ -9,8 +9,11 @@ import br.dac.bantads.ms_conta.dto.contrato.TransferenciaResponse;
 import br.dac.bantads.ms_conta.model.cud.ContaModel;
 import br.dac.bantads.ms_conta.model.cud.MovimentacaoModel;
 import br.dac.bantads.ms_conta.model.enums.TipoMovimentacao;
+import br.dac.bantads.ms_conta.model.read.ContaView;
+import br.dac.bantads.ms_conta.model.read.MovimentacaoView;
 import br.dac.bantads.ms_conta.repository.cud.ContaRepository;
-import br.dac.bantads.ms_conta.repository.cud.MovimentacaoRepository;
+import br.dac.bantads.ms_conta.repository.read.ContaViewRepository;
+import br.dac.bantads.ms_conta.repository.read.MovimentacaoViewRepository;
 import br.dac.bantads.ms_conta.service.MovimentacaoService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -24,7 +27,6 @@ import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
-import java.util.UUID;
 
 /**
  * Operações de conta POR NÚMERO no formato do contrato test_dac
@@ -42,7 +44,8 @@ public class ContaOperacaoController {
     private static final ZoneId ZONE = ZoneId.of("America/Sao_Paulo");
 
     private final ContaRepository contaRepository;
-    private final MovimentacaoRepository movimentacaoRepository;
+    private final ContaViewRepository contaViewRepository;
+    private final MovimentacaoViewRepository movimentacaoViewRepository;
     private final MovimentacaoService movimentacaoService;
 
     public record ValorRequest(BigDecimal valor) {}
@@ -50,8 +53,8 @@ public class ContaOperacaoController {
 
     @GetMapping("/{numero}/saldo")
     public SaldoResponse saldo(@PathVariable String numero) {
-        ContaModel c = conta(numero);
-        return new SaldoResponse(c.getClienteCpf(), c.getNumero(), c.getSaldo());
+        ContaView v = contaView(numero);
+        return new SaldoResponse(v.getClienteCpf(), v.getNumero(), v.getSaldo());
     }
 
     @PostMapping("/{numero}/depositar")
@@ -82,16 +85,23 @@ public class ContaOperacaoController {
 
     @GetMapping("/{numero}/extrato")
     public ExtratoResponse extrato(@PathVariable String numero) {
-        ContaModel c = conta(numero);
-        List<ItemExtratoResponse> itens = movimentacaoRepository
-                .findByConta_UuidContaOrderByDataHoraAsc(c.getUuidConta())
-                .stream().map(m -> toItem(c, m)).toList();
-        return new ExtratoResponse(numero, c.getSaldo(), itens);
+        ContaView v = contaView(numero);
+        List<ItemExtratoResponse> itens = movimentacaoViewRepository
+                .findByUuidContaOrderByDataHoraAsc(v.getUuidConta())
+                .stream().map(this::toItem).toList();
+        return new ExtratoResponse(numero, v.getSaldo(), itens);
     }
 
     // ── helpers ──
+    /** Resolve a conta (lado de escrita) — usado apenas pelas operações de movimentação. */
     private ContaModel conta(String numero) {
         return contaRepository.findByNumero(numero)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Conta não encontrada: " + numero));
+    }
+
+    /** Resolve a projeção de leitura (conta_r) — usado pelas consultas. */
+    private ContaView contaView(String numero) {
+        return contaViewRepository.findByNumero(numero)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Conta não encontrada: " + numero));
     }
 
@@ -100,12 +110,7 @@ public class ContaOperacaoController {
                 : dt.atZone(ZONE).truncatedTo(ChronoUnit.SECONDS).format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
     }
 
-    private String numeroDe(UUID uuidConta) {
-        return uuidConta == null ? null
-                : contaRepository.findById(uuidConta).map(ContaModel::getNumero).orElse(null);
-    }
-
-    private ItemExtratoResponse toItem(ContaModel propria, MovimentacaoModel m) {
+    private ItemExtratoResponse toItem(MovimentacaoView m) {
         String tipo = switch (m.getTipo()) {
             case DEPOSITO -> "depósito";
             case SAQUE -> "saque";
@@ -114,11 +119,11 @@ public class ContaOperacaoController {
         String origem = null, destino = null;
         switch (m.getTipo()) {
             // Contrato test_dac (R8): origem = a própria conta também no depósito.
-            case DEPOSITO -> origem = propria.getNumero();
-            case SAQUE -> origem = propria.getNumero();
+            case DEPOSITO -> origem = m.getNumeroConta();
+            case SAQUE -> origem = m.getNumeroConta();
             case TRANSFERENCIA -> {
-                origem = propria.getNumero();
-                destino = numeroDe(m.getUuidContaDestino());
+                origem = m.getNumeroConta();
+                destino = m.getNumeroContaDestino();
             }
         }
         return new ItemExtratoResponse(fmt(m.getDataHora()), tipo, origem, destino, m.getValor());

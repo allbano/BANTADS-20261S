@@ -8,12 +8,25 @@ import { SessaoService, SessaoUsuario, TipoUsuario } from './sessao.service';
 interface LoginResponse {
   access_token: string;
   token_type: string;
-  tipo: TipoUsuario;
+  /** A Gateway devolve "ADMINISTRADOR" (contrato do testador DAC); aqui normalizamos para "ADMIN". */
+  tipo: string;
   usuario: {
     nome: string | null;
     cpf: string | null;
     email: string;
   };
+}
+
+/** Mapeia o tipo cru da Gateway para o TipoUsuario do frontend (ADMINISTRADOR → ADMIN, FUNCIONARIO → GERENTE). */
+function normalizarTipo(tipo: string): TipoUsuario {
+  switch (tipo) {
+    case 'ADMINISTRADOR':
+      return 'ADMIN';
+    case 'FUNCIONARIO':
+      return 'GERENTE';
+    default:
+      return tipo as TipoUsuario;
+  }
 }
 
 /** Resposta de GET /clientes/{cpf} — usada só para descobrir o numeroConta no login do cliente. */
@@ -38,9 +51,10 @@ export class AutenticacaoService {
   login(login: string, senha: string): Observable<SessaoUsuario> {
     return this.http.post<LoginResponse>(`${this.base}/login`, { login, senha }).pipe(
       switchMap((resp) => {
+        const tipo = normalizarTipo(resp.tipo);
         const sessao: SessaoUsuario = {
           token: resp.access_token,
-          tipo: resp.tipo,
+          tipo,
           cpf: resp.usuario?.cpf ?? null,
           nome: resp.usuario?.nome ?? null,
           email: resp.usuario?.email,
@@ -49,7 +63,7 @@ export class AutenticacaoService {
         this.sessao.iniciar(sessao);
 
         // Cliente: descobrir o número da conta para habilitar as operações de conta.
-        if (resp.tipo === 'CLIENTE' && sessao.cpf) {
+        if (tipo === 'CLIENTE' && sessao.cpf) {
           return this.http.get<DadosClienteResponse>(`${this.base}/clientes/${sessao.cpf}`).pipe(
             tap((dados) => this.sessao.atualizar({ numeroConta: dados?.conta ?? null })),
             map(() => this.sessao.sessao() ?? sessao),

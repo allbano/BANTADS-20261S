@@ -48,6 +48,9 @@ public class MovimentacaoService {
                 .valor(request.valor())
                 .dataHora(LocalDateTime.now());
 
+        // Número da conta destino exibido no extrato (somente transferência enviada).
+        String numeroContaDestino = null;
+
         switch (request.tipo()) {
             case DEPOSITO -> {
                 contaOrigem.setSaldo(contaOrigem.getSaldo().add(request.valor()));
@@ -101,8 +104,12 @@ public class MovimentacaoService {
                         .dataHora(LocalDateTime.now())
                         .build();
                 movimentacaoRepository.save(movimentacaoDestino);
+                // Replica a movimentacao de recebimento (destino) para conta_r; o "destino"
+                // exibido no extrato do recebedor e a conta de origem (quem enviou).
+                cqrsPublisher.publicarMovimentacao(movimentacaoDestino, contaOrigem.getNumero());
 
                 movimentacaoBuilder.uuidContaDestino(request.uuidContaDestino()); // Referência à conta de destino (quem recebeu)
+                numeroContaDestino = contaDestino.getNumero();
             }
             default -> throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Tipo de movimentação desconhecido");
         }
@@ -110,6 +117,8 @@ public class MovimentacaoService {
         MovimentacaoModel movimentacaoOrigem = movimentacaoBuilder.build();
         MovimentacaoModel savedMovimentacao = movimentacaoRepository.save(movimentacaoOrigem);
         cqrsPublisher.publicarConta(contaOrigem);
+        // Replica a movimentacao (deposito/saque/transferencia enviada) para conta_r.
+        cqrsPublisher.publicarMovimentacao(savedMovimentacao, numeroContaDestino);
         return savedMovimentacao;
     }
 

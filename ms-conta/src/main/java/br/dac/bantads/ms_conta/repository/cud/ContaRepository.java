@@ -36,6 +36,13 @@ public interface ContaRepository extends JpaRepository<ContaModel, UUID> {
     @Query("SELECT c.uuidGerente FROM ContaModel c GROUP BY c.uuidGerente ORDER BY COUNT(c) DESC")
     List<UUID> findGerentesOrdenadosPorMaisContas(org.springframework.data.domain.Pageable pageable);
 
+    /** R17: a carteira do gerente é composta só por contas ATIVAS (clientes aprovados);
+     *  contas pendentes/rejeitadas não entram na contagem de redistribuição. */
+    @Query("SELECT c.uuidGerente FROM ContaModel c WHERE c.ativo = true GROUP BY c.uuidGerente ORDER BY COUNT(c) DESC")
+    List<UUID> findGerentesOrdenadosPorMaisContasAtivas(org.springframework.data.domain.Pageable pageable);
+
+    long countByUuidGerenteAndAtivo(UUID uuidGerente, boolean ativo);
+
     @Query("SELECT c.uuidGerente FROM ContaModel c WHERE c.uuidGerente != :currentGerente GROUP BY c.uuidGerente ORDER BY COUNT(c) ASC")
     List<UUID> findGerentesOrdenadosPorMenosContasExcluindo(@Param("currentGerente") UUID currentGerente, org.springframework.data.domain.Pageable pageable);
 
@@ -56,6 +63,11 @@ public interface ContaRepository extends JpaRepository<ContaModel, UUID> {
     @Query("SELECT COALESCE(SUM(c.saldo), 0) FROM ContaModel c "
          + "WHERE c.uuidGerente = :uuidGerente AND c.saldo >= 0")
     java.math.BigDecimal somarSaldosPositivosPorGerente(@Param("uuidGerente") UUID uuidGerente);
+
+    /** R17: desempate por saldo positivo considera apenas contas ATIVAS. */
+    @Query("SELECT COALESCE(SUM(c.saldo), 0) FROM ContaModel c "
+         + "WHERE c.uuidGerente = :uuidGerente AND c.saldo >= 0 AND c.ativo = true")
+    java.math.BigDecimal somarSaldosPositivosAtivosPorGerente(@Param("uuidGerente") UUID uuidGerente);
 
     @Query("SELECT COALESCE(SUM(c.saldo), 0) FROM ContaModel c "
          + "WHERE c.uuidGerente = :uuidGerente AND c.saldo < 0")
