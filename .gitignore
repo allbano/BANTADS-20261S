@@ -60,6 +60,10 @@ dependency-reduced-pom.xml
 dump.rdb
 interpolated*.xml
 lib/
+# Exceção: os fontes do API Gateway ficam em api-gateway/src/lib (TypeScript),
+# que NÃO devem ser ignorados pela regra geral lib/ (artefatos Java).
+!api-gateway/src/lib/
+!api-gateway/src/lib/**
 manifest.yml
 out
 overridedb.*
