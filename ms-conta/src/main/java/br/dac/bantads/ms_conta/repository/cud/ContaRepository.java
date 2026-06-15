@@ -41,6 +41,13 @@ public interface ContaRepository extends JpaRepository<ContaModel, UUID> {
 
     List<ContaModel> findByUuidGerenteAndAtivo(UUID uuidGerente, boolean ativo);
 
+    /**
+     * Conta ativa mais recente do banco. UUIDv7 é temporal, então o maior UUID é a
+     * conta criada por último (o cliente recém-aprovado) — usada na reatribuição ao
+     * inserir um gerente (R17), de forma determinística.
+     */
+    Optional<ContaModel> findFirstByAtivoTrueOrderByUuidContaDesc();
+
     List<ContaModel> findByUuidGerenteOrderBySaldoDesc(UUID uuidGerente);
 
     @Query("SELECT c FROM ContaModel c ORDER BY c.saldo DESC LIMIT 3")

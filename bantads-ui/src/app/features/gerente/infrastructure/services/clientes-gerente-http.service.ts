@@ -18,6 +18,7 @@ interface ClienteContaResponse {
   conta: string | null;
   saldo: number | null;
   limite: number | null;
+  criacao?: string | null;
 }
 
 @Injectable({
@@ -60,7 +61,7 @@ export class ClientesGerenteHttpService extends ClientesGerenteRepository {
       numeroConta: c.conta ?? '',
       saldo: c.saldo ?? 0,
       limite: c.limite ?? 0,
-      dataAberturaConta: '',
+      dataAberturaConta: c.criacao ?? '',
     };
   }
 }

@@ -113,7 +113,8 @@ public class ContaOperacaoController {
         };
         String origem = null, destino = null;
         switch (m.getTipo()) {
-            case DEPOSITO -> destino = propria.getNumero();
+            // Contrato test_dac (R8): origem = a própria conta também no depósito.
+            case DEPOSITO -> origem = propria.getNumero();
             case SAQUE -> origem = propria.getNumero();
             case TRANSFERENCIA -> {
                 origem = propria.getNumero();

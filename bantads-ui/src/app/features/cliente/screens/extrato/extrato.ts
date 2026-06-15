@@ -1,6 +1,5 @@
 import { CurrencyPipe, DatePipe, DecimalPipe } from '@angular/common';
 import { Component, inject, OnInit } from '@angular/core';
-import { FormsModule } from '@angular/forms';
 
 import { ExtratoFacade } from '../../application/facades/extrato.facade';
 import { ClienteTopNav } from '../../components/cliente-top-nav/cliente-top-nav';
@@ -15,7 +14,7 @@ function isoHoje(): string {
 
 @Component({
   selector: 'app-extrato',
-  imports: [FormsModule, CurrencyPipe, DatePipe, DecimalPipe, ClienteTopNav],
+  imports: [CurrencyPipe, DatePipe, DecimalPipe, ClienteTopNav],
   templateUrl: './extrato.html',
   providers: [
     ExtratoFacade,
@@ -34,7 +33,11 @@ export class Extrato implements OnInit {
     this.facade.aplicarFiltro(this.dataInicio, this.dataFim);
   }
 
-  protected filtrar(): void {
+  protected filtrar(dataInicio: string, dataFim: string): void {
+    // Lê o valor nativo dos inputs de data no clique (template refs), evitando
+    // depender do two-way binding de ngModel em <input type="date"> (zoneless).
+    this.dataInicio = dataInicio || '2000-01-01';
+    this.dataFim = dataFim || isoHoje();
     this.facade.aplicarFiltro(this.dataInicio, this.dataFim);
   }
 

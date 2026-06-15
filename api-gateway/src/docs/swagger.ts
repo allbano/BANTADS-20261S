@@ -33,7 +33,10 @@ export const swaggerSpec = {
       'autenticação (JWT), roteamento para os microsserviços, encaminhamento de ' +
       'SAGAs (ms-saga), API Composition e o fan-out de /reboot.',
   },
-  servers: [{ url: 'http://localhost:3000', description: 'Local' }],
+  servers: [
+    { url: 'http://localhost:8000', description: 'Local (porta exposta — testador)' },
+    { url: 'http://localhost:3000', description: 'Local (porta interna)' },
+  ],
   tags: [
     { name: 'Inicialização', description: 'Inicialização da base de dados (reboot — fan-out a todos os MS)' },
     { name: 'Login', description: 'Autenticação e sessão (R2)' },

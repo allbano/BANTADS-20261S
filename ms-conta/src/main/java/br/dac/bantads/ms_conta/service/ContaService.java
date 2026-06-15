@@ -170,27 +170,25 @@ public class ContaService {
 
     @Transactional
     public void atribuiContaGerente(UUID newGerenteUuid) {
-        log.info("Novo gerente registrado: {}. Iniciando reatribuição de conta para balanceamento.", newGerenteUuid);
-        List<UUID> mostAccountsManagers = contaRepository.findGerentesOrdenadosPorMaisContas(PageRequest.of(0, 1));
-        if (mostAccountsManagers.isEmpty()) {
-            log.info("Nenhum gerente com contas encontrado para balanceamento.");
+        log.info("Novo gerente registrado: {}. Reatribuindo a conta ativa mais recente para balanceamento.", newGerenteUuid);
+        // Move a conta ATIVA mais recente do banco (o cliente recém-aprovado) ao novo
+        // gerente. Determinístico (UUIDv7 temporal) e garante que o novo gerente receba
+        // um cliente ativo — não a conta inativa de um cliente rejeitado (R17).
+        Optional<ContaModel> recente = contaRepository.findFirstByAtivoTrueOrderByUuidContaDesc();
+        if (recente.isEmpty()) {
+            log.info("Nenhuma conta ativa encontrada para balanceamento.");
             return;
         }
-
-        UUID busiestManager = mostAccountsManagers.get(0);
-        if (busiestManager.equals(newGerenteUuid)) {
-            log.info("Gerente mais atarefado é o próprio gerente novo. Nenhuma reatribuição necessária.");
+        ContaModel conta = recente.get();
+        if (newGerenteUuid.equals(conta.getUuidGerente())) {
+            log.info("Conta mais recente já é do gerente novo. Nenhuma reatribuição necessária.");
             return;
         }
-
-        List<ContaModel> accounts = contaRepository.findByUuidGerenteOrderByNumeroAsc(busiestManager);
-        if (!accounts.isEmpty()) {
-            ContaModel accountToReassign = accounts.get(0);
-            accountToReassign.setUuidGerente(newGerenteUuid);
-            ContaModel saved = contaRepository.save(accountToReassign);
-            cqrsPublisher.publicarConta(saved);
-            log.info("Conta {} reatribuída do gerente {} para o gerente {}", accountToReassign.getUuidConta(), busiestManager, newGerenteUuid);
-        }
+        UUID anterior = conta.getUuidGerente();
+        conta.setUuidGerente(newGerenteUuid);
+        ContaModel saved = contaRepository.save(conta);
+        cqrsPublisher.publicarConta(saved);
+        log.info("Conta {} reatribuída do gerente {} para o gerente {}", conta.getUuidConta(), anterior, newGerenteUuid);
     }
 
     @Transactional

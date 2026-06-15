@@ -15,18 +15,23 @@ interface DadosClienteResponse {
   telefone: string | null;
   email: string;
   endereco: string;
+  cep: string | null;
   cidade: string;
   estado: string;
   salario: number;
 }
 
-/** DTO de PUT /clientes/{cpf} (R4 — SAGA de alteração de perfil). */
+/**
+ * DTO de PUT /clientes/{cpf} (R4 — SAGA de alteração de perfil).
+ * O ms-cliente consome o corpo como Map e lê a chave `cep` (minúsculo)
+ * — diferente do autocadastro, que aceita `CEP` via @JsonAlias.
+ */
 interface PerfilRequest {
   nome: string;
   email: string;
   salario: number;
   endereco: string;
-  CEP: string;
+  cep: string;
   cidade: string;
   estado: string;
 }
@@ -45,22 +50,26 @@ export class PerfilClienteHttpService extends PerfilClienteRepository {
       return throwError(() => new Error('Sessão sem CPF.'));
     }
     return this.http.get<DadosClienteResponse>(`${this.base}/clientes/${cpf}`).pipe(
-      map((dados) => ({
-        cpf: dados.cpf,
-        nome: dados.nome,
-        email: dados.email,
-        salario: dados.salario ?? 0,
-        telefone: dados.telefone ?? '',
-        endereco: {
-          // A Gateway entrega o endereço como string única; CEP/número ficam em branco para reedição.
-          cep: '',
-          logradouro: dados.endereco ?? '',
-          numero: '',
-          complemento: '',
-          cidade: dados.cidade ?? '',
-          uf: dados.estado ?? '',
-        },
-      })),
+      map((dados) => {
+        // A Gateway entrega o endereço como string única; separamos
+        // logradouro/número/complemento para os campos do formulário.
+        const { logradouro, numero, complemento } = this.parseEndereco(dados.endereco);
+        return {
+          cpf: dados.cpf,
+          nome: dados.nome,
+          email: dados.email,
+          salario: dados.salario ?? 0,
+          telefone: dados.telefone ?? '',
+          endereco: {
+            cep: dados.cep ?? '',
+            logradouro,
+            numero,
+            complemento,
+            cidade: dados.cidade ?? '',
+            uf: dados.estado ?? '',
+          },
+        };
+      }),
     );
   }
 
@@ -74,7 +83,7 @@ export class PerfilClienteHttpService extends PerfilClienteRepository {
       email: perfil.email,
       salario: perfil.salario,
       endereco: this.formatarLogradouro(perfil),
-      CEP: perfil.endereco.cep,
+      cep: perfil.endereco.cep,
       cidade: perfil.endereco.cidade,
       estado: perfil.endereco.uf,
     };
@@ -84,6 +93,49 @@ export class PerfilClienteHttpService extends PerfilClienteRepository {
         of({ sucesso: false, mensagem: mensagemDeErro(err, 'Não foi possível salvar o perfil.') }),
       ),
     );
+  }
+
+  /**
+   * Separa a string única de endereço em logradouro/número/complemento.
+   * Cobre os dois formatos que o sistema produz:
+   *   - seed/legado:  "Rua X, 123 - Apto 4"   (complemento após " - ")
+   *   - gravado aqui: "Rua X, 123, Apto 4"    (separador vírgula)
+   */
+  private parseEndereco(raw: string | null): {
+    logradouro: string;
+    numero: string;
+    complemento: string;
+  } {
+    let resto = (raw ?? '').trim();
+    let complemento = '';
+
+    // Complemento no formato legado: "... - complemento".
+    const traco = resto.indexOf(' - ');
+    if (traco >= 0) {
+      complemento = resto.slice(traco + 3).trim();
+      resto = resto.slice(0, traco).trim();
+    }
+
+    const partes = resto
+      .split(',')
+      .map((p) => p.trim())
+      .filter((p) => p.length > 0);
+
+    if (partes.length === 0) {
+      return { logradouro: '', numero: '', complemento };
+    }
+    if (partes.length === 1) {
+      return { logradouro: partes[0], numero: '', complemento };
+    }
+
+    const logradouro = partes[0];
+    const numero = partes[1];
+    // Partes extras (formato vírgula com complemento) só viram complemento
+    // se ainda não tivermos capturado um pelo " - ".
+    if (partes.length > 2 && !complemento) {
+      complemento = partes.slice(2).join(', ');
+    }
+    return { logradouro, numero, complemento };
   }
 
   private formatarLogradouro(perfil: PerfilCliente): string {

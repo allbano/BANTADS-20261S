@@ -24,6 +24,7 @@ interface DadosClienteResponse {
   conta: string | null;
   saldo: number | null;
   limite: number | null;
+  criacao: string | null;
   gerente: string | null;
   gerente_nome: string | null;
   gerente_email: string | null;
@@ -168,7 +169,7 @@ export class ClienteContaHttpService extends ClienteContaRepository {
         nome: cliente.gerente_nome ?? '—',
         email: cliente.gerente_email ?? '',
       },
-      dataAberturaConta: '',
+      dataAberturaConta: cliente.criacao ?? '',
       ultimasMovimentacoes: movimentacoes.slice(0, 5),
     };
   }

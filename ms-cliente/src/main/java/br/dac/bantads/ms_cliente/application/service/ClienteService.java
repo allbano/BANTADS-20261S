@@ -58,6 +58,8 @@ public class ClienteService {
         // são ambos inativos).
         return clienteRepository.findAll().stream()
                 .filter(c -> "PENDENTE".equals(c.getStatus()))
+                // UUIDv7 é temporal → ordena por ordem de criação (R9 espera autocad1 antes de autocad2).
+                .sorted(Comparator.comparing(ClienteModel::getUuid))
                 .map(c -> new ClienteParaAprovarResponse(
                         c.getCpf(),
                         c.getNome(),

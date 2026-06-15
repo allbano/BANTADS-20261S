@@ -109,6 +109,7 @@ public class AutocadastroSagaOrchestrator {
         saga.setStatus(SagaStatus.AGUARDANDO_CONTA);
         Map<String, Object> dto = new HashMap<>();
         dto.put("uuidCliente", saga.getUuidCliente().toString());
+        dto.put("cpf",         saga.getCpf()); // denormaliza o CPF na conta (saldo/relatórios)
         dto.put("salario",     saga.getSalario());
         dto.put("ativo",       false);
         dto.put("sagaId",      saga.getSagaId().toString());

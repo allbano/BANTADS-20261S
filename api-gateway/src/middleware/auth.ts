@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import { JWT_SECRET } from '../config/env.js';
 import type { AuthenticatedUser } from '../types/express.js';
+import { isRevoked } from '../lib/revokedTokens.js';
 
 /**
  * Claims do token JWT gerado pelo ms-auth (auth0-jwt):
@@ -53,6 +54,12 @@ const verifyJWT = (req: Request, res: Response, next: NextFunction): void => {
   }
 
   const token = parts[1];
+
+  // Token revogado por logout (R2) → tratado como inválido.
+  if (isRevoked(token)) {
+    res.status(401).json({ auth: false, message: 'Token inválido ou expirado.' });
+    return;
+  }
 
   try {
     const decoded = jwt.verify(token, JWT_SECRET) as JwtPayload;

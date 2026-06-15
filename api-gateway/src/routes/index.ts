@@ -3,6 +3,7 @@ import httpClient from '../lib/httpClient.js';
 import services from '../config/services.js';
 import verifyJWT from '../middleware/auth.js';
 import requireRole from '../middleware/roleGuard.js';
+import { revokeToken, unrevokeToken } from '../lib/revokedTokens.js';
 
 const router = Router();
 
@@ -40,6 +41,8 @@ router.post('/login', async (req, res) => {
   const r = await httpClient.post(`${services.auth}/auth/login`, req.body);
   if (r.status >= 400) { res.status(r.status).json(r.data); return; }
   const data = r.data;
+  // Reativa o token caso seja idêntico a um revogado num logout anterior do mesmo usuário.
+  if (data?.access_token) unrevokeToken(data.access_token);
   const email = data?.usuario?.email;
   let nome = null, cpf = null;
   try {
@@ -52,6 +55,8 @@ router.post('/login', async (req, res) => {
     }
   } catch { /* enriquecimento é best-effort */ }
   data.usuario = { nome, cpf, email };
+  // O contrato do testador usa "ADMINISTRADOR"; o ms-auth devolve "ADMIN".
+  if (data.tipo === 'ADMIN') data.tipo = 'ADMINISTRADOR';
   res.status(200).json(data);
 });
 
@@ -62,6 +67,9 @@ router.post('/login', async (req, res) => {
 router.post('/logout', verifyJWT, async (req, res) => {
   const email = req.user!.login;
   const tipo = req.user!.tipo;
+  // Revoga o token (JWT stateless): chamadas seguintes com ele retornam 401.
+  const parts = (req.headers.authorization ?? '').split(' ');
+  if (parts.length === 2) revokeToken(parts[1]);
   let nome: string | null = null, cpf: string | null = null;
   try {
     if (tipo === 'CLIENTE') {
@@ -110,14 +118,52 @@ async function reboot(_req: Request, res: Response): Promise<void> {
 router.get('/reboot', reboot);
 
 // ════════════════════ CLIENTES ════════════════════
-// R1 — Autocadastro (público) → SAGA bloqueante (201 / 409)
-router.post('/clientes', (req, res) => forward(req, res, services.saga, '/saga/autocadastro'));
+// R1 — Autocadastro (público) → SAGA bloqueante. A saga devolve SagaResultadoDTO
+// (201/409); o contrato test_dac espera {cpf, email} no topo — remontamos a partir
+// do corpo enviado, preservando o status.
+router.post('/clientes', async (req, res) => {
+  const r = await httpClient.post(`${services.saga}/saga/autocadastro`, req.body);
+  if (r.status >= 400) { res.status(r.status).json(r.data); return; }
+  res.status(r.status).json({ cpf: req.body?.cpf, email: req.body?.email });
+});
 
 // Listagens (R9/R12/R14/R16)
 router.get('/clientes', verifyJWT, async (req, res) => {
-  if (req.query.filtro === 'adm_relatorio_clientes') return relatorioClientes(req, res);
-  return forward(req, res, services.cliente, '/clientes');
+  const filtro = req.query.filtro;
+  if (filtro === 'adm_relatorio_clientes') {
+    // R16 — somente ADMIN
+    if (req.user!.tipo !== 'ADMIN') {
+      res.status(403).json({ error: 'AuthorizationError', message: 'Acesso restrito ao perfil ADMIN.' });
+      return;
+    }
+    return relatorioClientes(req, res);
+  }
+  // R9/R14 — filtros de gerente repassados ao ms-cliente
+  if (filtro === 'para_aprovar' || filtro === 'melhores_clientes') {
+    return forward(req, res, services.cliente, '/clientes');
+  }
+  // R12 — sem filtro (gerente): apenas a carteira do gerente logado, ordenada por nome
+  return carteiraGerente(req, res);
 });
+
+// R12 — Lista os clientes (ativos) do gerente autenticado, ordenada por nome.
+async function carteiraGerente(req: Request, res: Response): Promise<void> {
+  const headers = H(req);
+  const ger = await get(`${services.funcionario}/funcionarios/por-email/${req.user!.login}`, headers);
+  if (ger.status >= 400) { res.json([]); return; }
+  const contasRes = await get(`${services.conta}/contas/por-gerente/${ger.data.uuid ?? ger.data.id}`, headers);
+  const contas = (contasRes.status < 400 ? contasRes.data : []).filter((c: any) => c.ativo);
+  const result = await Promise.all((contas as any[]).map(async (c) => {
+    const cli = await get(`${services.cliente}/clientes/por-cpf/${c.clienteCpf}`, headers);
+    const d = cli.status < 400 ? cli.data : {};
+    return {
+      cpf: d.cpf ?? c.clienteCpf, nome: d.nome, email: d.email,
+      conta: c.numero, saldo: c.saldo, limite: c.limite, criacao: c.dataCriacao,
+    };
+  }));
+  result.sort((a, b) => (a.nome || '').localeCompare(b.nome || ''));
+  res.json(result);
+}
 
 // R10 — Aprovar → SAGA; resposta = ContaResponse
 router.post('/clientes/:cpf/aprovar', verifyJWT, requireRole('GERENTE', 'ADMIN'), async (req, res) => {
@@ -140,7 +186,10 @@ router.post('/clientes/:cpf/rejeitar', verifyJWT, requireRole('GERENTE', 'ADMIN'
 router.put('/clientes/:cpf', verifyJWT, async (req, res) => {
   const r = await httpClient.put(`${services.saga}/saga/clientes/${req.params.cpf}`, req.body);
   if (!r.data?.sucesso) { res.status(400).json({ error: 'alteracao_falhou', message: r.data?.erro }); return; }
-  res.status(200).json({ status: 'ok' });
+  // O contrato test_dac (R4) espera os dados alterados no corpo (cpf/nome/salario).
+  res.status(200).json({
+    cpf: req.params.cpf, nome: req.body?.nome, email: req.body?.email, salario: req.body?.salario,
+  });
 });
 
 // R13 — Detalhe do cliente (API Composition) → DadosClienteResponse (plano)
@@ -150,6 +199,8 @@ router.get('/clientes/:cpf', verifyJWT, async (req, res) => {
   const c = cli.data;
   const conta = await get(`${services.conta}/contas/cliente/${c.uuid}`, H(req));
   const ct = conta.status < 400 ? conta.data : null;
+  // R13 — só cliente aprovado (conta ativa) existe para consulta; rejeitado/pendente → 404.
+  if (!ct || !ct.ativo) { res.status(404).json({ message: 'Cliente não encontrado' }); return; }
   let gCpf = null, gNome = null, gEmail = null;
   if (ct?.uuidGerente) {
     const g = await get(`${services.funcionario}/gerentes/${ct.uuidGerente}`, H(req));
@@ -157,8 +208,9 @@ router.get('/clientes/:cpf', verifyJWT, async (req, res) => {
   }
   res.json({
     cpf: c.cpf, nome: c.nome, telefone: c.telefone ?? null, email: c.email,
-    endereco: c.endereco, cidade: c.cidade, estado: c.estado, salario: c.salario,
+    endereco: c.endereco, cep: c.cep ?? null, cidade: c.cidade, estado: c.estado, salario: c.salario,
     conta: ct?.numero ?? null, saldo: ct?.saldo ?? null, limite: ct?.limite ?? null,
+    criacao: ct?.dataCriacao ?? null, // "Conta desde" — data de abertura da conta
     gerente: gCpf, gerente_nome: gNome, gerente_email: gEmail,
   });
 });
@@ -167,7 +219,8 @@ router.get('/clientes/:cpf', verifyJWT, async (req, res) => {
 async function relatorioClientes(req: Request, res: Response): Promise<void> {
   const headers = H(req);
   const contasRes = await get(`${services.conta}/contas`, headers);
-  const contas = contasRes.status < 400 ? contasRes.data : [];
+  // R16 — só clientes aprovados (conta ativa); pendentes/rejeitados ficam de fora.
+  const contas = (contasRes.status < 400 ? contasRes.data : []).filter((c: any) => c.ativo);
   const result = await Promise.all((contas as any[]).map(async (c) => {
     const cliRes = await get(`${services.cliente}/clientes/por-cpf/${c.clienteCpf}`, headers);
     const cli = cliRes.status < 400 ? cliRes.data : {};
@@ -178,8 +231,8 @@ async function relatorioClientes(req: Request, res: Response): Promise<void> {
     }
     return {
       cpf: cli.cpf ?? c.clienteCpf, nome: cli.nome, telefone: cli.telefone ?? null, email: cli.email,
-      endereco: cli.endereco, cidade: cli.cidade, estado: cli.estado, salario: cli.salario,
-      conta: c.numero, saldo: c.saldo, limite: c.limite,
+      endereco: cli.endereco, cep: cli.cep ?? null, cidade: cli.cidade, estado: cli.estado, salario: cli.salario,
+      conta: c.numero, saldo: c.saldo, limite: c.limite, criacao: c.dataCriacao,
       gerente: gCpf, gerente_nome: gNome, gerente_email: gEmail,
     };
   }));
@@ -229,13 +282,19 @@ router.use('/contas', verifyJWT, (req, res) => forward(req, res, services.conta,
 // R17 — Inserir → SAGA; resposta = DadoGerente
 router.post('/gerentes', verifyJWT, requireRole('ADMIN'), async (req, res) => {
   const r = await httpClient.post(`${services.saga}/saga/gerentes`, req.body);
-  if (!r.data?.sucesso) { res.status(400).json({ error: 'insercao_falhou', message: r.data?.erro }); return; }
-  res.status(200).json({ cpf: req.body.cpf, nome: req.body.nome, email: req.body.email, tipo: req.body.tipo ?? 'GERENTE' });
+  if (!r.data?.sucesso) {
+    // CPF/e-mail já cadastrado → 409 (R17); demais falhas → 400.
+    const erro = String(r.data?.erro ?? '');
+    const status = /cadastrad|existe|conflito|duplicad/i.test(erro) ? 409 : 400;
+    res.status(status).json({ error: 'insercao_falhou', message: erro });
+    return;
+  }
+  res.status(201).json({ cpf: req.body.cpf, nome: req.body.nome, email: req.body.email, tipo: req.body.tipo ?? 'GERENTE' });
 });
 
 // R19 / R15 — Listar gerentes ou dashboard
 router.get('/gerentes', verifyJWT, requireRole('ADMIN', 'GERENTE'), async (req, res) => {
-  if (req.query.numero === 'dashboard') return dashboard(req, res);
+  if (req.query.filtro === 'dashboard') return dashboard(req, res);
   const g = await get(`${services.funcionario}/gerentes`, H(req));
   res.status(g.status).json(Array.isArray(g.data) ? g.data.map(dadoGerente) : g.data);
 });
@@ -270,7 +329,8 @@ async function dashboard(req: Request, res: Response): Promise<void> {
   const gerentes = gRes.status < 400 ? gRes.data : [];
   const items = await Promise.all((gerentes as any[]).map(async (g) => {
     const contasRes = await get(`${services.conta}/contas/por-gerente/${g.id}`, headers);
-    const contas = contasRes.status < 400 ? contasRes.data : [];
+    // Apenas contas ativas: clientes pendentes/rejeitados não entram na carteira (R15/R18).
+    const contas = (contasRes.status < 400 ? contasRes.data : []).filter((c: any) => c.ativo);
     let pos = 0, neg = 0;
     const clientes = (contas as any[]).map((c) => {
       const s = Number(c.saldo) || 0;
@@ -279,6 +339,8 @@ async function dashboard(req: Request, res: Response): Promise<void> {
     });
     return { gerente: dadoGerente(g), clientes, saldo_positivo: pos, saldo_negativo: neg };
   }));
+  // Ordena pelo maior saldo positivo (R15).
+  items.sort((a, b) => b.saldo_positivo - a.saldo_positivo);
   res.json(items);
 }
 
