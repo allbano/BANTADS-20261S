@@ -1,6 +1,5 @@
 package br.dac.bantads.ms_cliente.interfaces.rest;
 
-import br.dac.bantads.ms_cliente.application.dto.ClienteRequestDTO;
 import br.dac.bantads.ms_cliente.application.dto.ClienteResponseDTO;
 import br.dac.bantads.ms_cliente.application.service.ClienteService;
 import org.springframework.http.HttpStatus;
@@ -11,6 +10,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+/**
+ * MS Cliente (subdomínio de clientes). Consultas usadas pela API Composition do
+ * gateway: lista por filtro (R9 para_aprovar, R12/R16 com conta, R14 melhores)
+ * e busca por uuid/cpf/email; além de R11 (rejeitar — direto, não-SAGA).
+ * Autocadastro (R1) e alteração de perfil (R4) chegam via SAGA (mensageria),
+ * não por REST.
+ */
 @CrossOrigin
 @RestController
 @RequestMapping("/clientes")
@@ -86,18 +92,6 @@ public class ClienteController {
         }
     }
 
-    @PostMapping("/cadastro")
-    public ResponseEntity<ClienteResponseDTO> cadastro(@RequestBody ClienteRequestDTO request) {
-        try {
-            ClienteResponseDTO created = clienteService.cadastro(request);
-            return ResponseEntity.status(HttpStatus.CREATED).body(created);
-        } catch (IllegalStateException e) {
-            return ResponseEntity.status(HttpStatus.CONFLICT).build();
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
-    }
-
     /** R11 — Rejeitar cliente (direto, não-SAGA): marca inativo e publica notificação. */
     @PostMapping("/{cpf}/rejeitar")
     public ResponseEntity<Map<String, Object>> rejeitar(@PathVariable String cpf,
@@ -113,15 +107,4 @@ public class ClienteController {
         }
     }
 
-    @PutMapping("/{uuid}")
-    public ResponseEntity<ClienteResponseDTO> update(@PathVariable UUID uuid, @RequestBody ClienteRequestDTO request) {
-        try {
-            ClienteResponseDTO updated = clienteService.update(uuid, request);
-            return ResponseEntity.ok(updated);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.notFound().build();
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
-    }
 }

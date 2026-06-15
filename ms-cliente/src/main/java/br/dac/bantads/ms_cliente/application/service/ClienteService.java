@@ -24,7 +24,6 @@ public class ClienteService {
     private final ClienteRepository clienteRepository;
     private final RestClient restClient;
     private final RabbitTemplate rabbitTemplate;
-    private final MailService mailService;
     private final ObjectMapper objectMapper = JsonMapper.builder().findAndAddModules().build();
 
     public record ContaResponseDTO(
@@ -40,12 +39,30 @@ public class ClienteService {
     public ClienteService(
             ClienteRepository clienteRepository,
             RabbitTemplate rabbitTemplate,
-            MailService mailService,
             @Value("${services.conta:http://localhost:40006}") String contaServiceUrl) {
         this.clienteRepository = clienteRepository;
         this.rabbitTemplate = rabbitTemplate;
-        this.mailService = mailService;
         this.restClient = RestClient.builder().baseUrl(contaServiceUrl).build();
+    }
+
+    /**
+     * Centralizacao do e-mail (R1/R10/R11): publica uma notificacao TIPADA no canal
+     * unico {@code saga.cmd.notificar.cliente}. SOMENTE o ms_notificacao monta o
+     * texto e fala com o SMTP. Sem {@code sagaId} → e-mail "solto" (nao espera reply
+     * de SAGA). Publicacao nao-fatal: falha apenas loga, o fluxo continua.
+     */
+    private void publicarNotificacao(String tipo, String email, String nome, String motivo) {
+        try {
+            Map<String, Object> notif = new HashMap<>();
+            notif.put("email", email);
+            notif.put("nome", nome);
+            notif.put("tipo", tipo);
+            if (motivo != null) notif.put("motivo", motivo);
+            rabbitTemplate.convertAndSend(RabbitMQConfig.EXCHANGE, "saga.cmd.notificar.cliente",
+                    objectMapper.writeValueAsString(notif));
+        } catch (Exception e) {
+            System.err.println("Falha ao publicar notificacao (" + tipo + "): " + e.getMessage());
+        }
     }
 
     // --- Métodos Existentes mantidos intactos ---
@@ -153,76 +170,6 @@ public class ClienteService {
         return clienteRepository.findByEmail(email).map(this::toResponseDTO);
     }
 
-    public ClienteResponseDTO cadastro(ClienteRequestDTO request) {
-        if (clienteRepository.findByCpf(request.cpf()).isPresent()) {
-            mailService.sendMail(request.email(), "BANTADS - Falha na criação da conta!",
-                    "Uma falha ocorreu ao criar sua conta: CPF já está sendo utilizado!");
-            throw new IllegalStateException("CPF já cadastrado!");
-        }
-
-        String plainPassword = SecurityUtils.generateStrongPassword();
-
-        ClienteModel model = ClienteModel.builder()
-                .nome(request.nome())
-                .email(request.email())
-                .senha(plainPassword) // Salva em texto puro inicialmente conforme a lógica legada
-                .cpf(request.cpf())
-                .telefone(request.telefone())
-                .salario(request.salario() != null ? request.salario() : BigDecimal.ZERO)
-                .endereco(request.endereco())
-                .cep(request.cep())
-                .cidade(request.cidade())
-                .estado(request.estado())
-                .ativo(false) // Desativado até aprovação
-                .status("PENDENTE") // Aguardando aprovação (R9)
-                .cargo("CLIENTE")
-                .build();
-
-        ClienteModel saved = clienteRepository.save(model);
-
-        mailService.sendMail(saved.getEmail(), "BANTADS - Conta criada!",
-                "Sua conta foi criada com a senha: " + saved.getSenha() + "\nAgora é só esperar a aprovação por um de nossos gerentes!");
-
-        return toResponseDTO(saved);
-    }
-
-    public ClienteResponseDTO update(UUID uuid, ClienteRequestDTO request) {
-        ClienteModel existing = clienteRepository.findById(uuid)
-                .orElseThrow(() -> new IllegalArgumentException("Cliente não encontrado!"));
-
-        boolean wasInactive = !existing.isAtivo();
-
-        existing.setNome(request.nome());
-        existing.setEmail(request.email());
-        if (request.senha() != null && !request.senha().isBlank()) {
-            existing.setSenha(SecurityUtils.hash(request.senha()));
-        }
-        existing.setCpf(request.cpf());
-        existing.setTelefone(request.telefone());
-        if (request.salario() != null) {
-            existing.setSalario(request.salario());
-        }
-        existing.setEndereco(request.endereco());
-        existing.setCep(request.cep());
-        existing.setCidade(request.cidade());
-        existing.setEstado(request.estado());
-        if (request.ativo() != null) {
-            existing.setAtivo(request.ativo());
-        }
-        if (request.cargo() != null) {
-            existing.setCargo(request.cargo());
-        }
-
-        ClienteModel saved = clienteRepository.save(existing);
-
-        if (wasInactive && saved.isAtivo()) {
-            mailService.sendMail(saved.getEmail(), "BANTADS - Conta aprovada!",
-                    "Sua conta foi aprovada!\nVocê já pode entrar no BANTADS usando seu email e senha!");
-        }
-
-        return toResponseDTO(saved);
-    }
-
     /**
      * R11 — Rejeitar cliente. NÃO é SAGA: escrita local (marca inativo) + publica
      * o evento de notificação de rejeição. Idempotente o suficiente para o contexto.
@@ -233,17 +180,8 @@ public class ClienteService {
         c.setAtivo(false);
         c.setStatus("REJEITADO"); // R11 — sai da fila de "aguardando aprovação"
         clienteRepository.save(c);
-        try {
-            Map<String, Object> notif = new HashMap<>();
-            notif.put("email", c.getEmail());
-            notif.put("nome", c.getNome());
-            notif.put("tipo", "REJEICAO");
-            notif.put("motivo", motivo != null ? motivo : "");
-            rabbitTemplate.convertAndSend(RabbitMQConfig.EXCHANGE, "saga.cmd.notificar.cliente",
-                    objectMapper.writeValueAsString(notif));
-        } catch (Exception e) {
-            System.err.println("Falha ao publicar notificação de rejeição: " + e.getMessage());
-        }
+        // R11 — e-mail de rejeição (com o motivo) montado e enviado pelo ms_notificacao.
+        publicarNotificacao("REJEICAO", c.getEmail(), c.getNome(), motivo != null ? motivo : "");
     }
 
     // --- Métodos de processamento para consumidores RabbitMQ ---
@@ -264,8 +202,8 @@ public class ClienteService {
 
             ClienteModel saved = clienteRepository.save(model);
 
-            mailService.sendMail(saved.getEmail(), "BANTADS - Conta criada com sucesso!",
-                    "Sua conta foi criada com sucesso!! Aguarde a aprovação de um gerente.");
+            // R1 — confirma o recebimento da solicitacao de autocadastro (operacao assincrona).
+            publicarNotificacao("CONTA_CRIADA", saved.getEmail(), saved.getNome(), null);
 
             System.out.println("Salvo (" + saved.getNome() + ") via RabbitMQ");
 
@@ -295,8 +233,8 @@ public class ClienteService {
             }
 
             if (dto.getEmail() != null) {
-                mailService.sendMail(dto.getEmail(), "BANTADS - Não foi possível criar sua conta!",
-                        "Não foi possível criar sua conta!!");
+                // R1 — em caso de falha interna, avisa o cliente que a solicitacao nao foi efetuada.
+                publicarNotificacao("FALHA_AUTOCADASTRO", dto.getEmail(), dto.getNome(), null);
             }
         }
     }
@@ -331,71 +269,6 @@ public class ClienteService {
             });
         } catch (Exception e) {
             System.err.println("Erro na compensação de cliente: " + e.getMessage());
-        }
-    }
-
-    public void processaUpdateClienteEvent(ClienteDTO dto) {
-        UUID uuid = dto.getResolvedUuid();
-        if (uuid == null) {
-            System.err.println("UUID não fornecido para atualização do cliente.");
-            return;
-        }
-
-        try {
-            ClienteModel existing = clienteRepository.findById(uuid)
-                    .orElseThrow(() -> new IllegalArgumentException("Cliente não encontrado!"));
-
-            existing.setNome(dto.getNome());
-            if (dto.getSenha() != null && !dto.getSenha().isBlank()) {
-                existing.setSenha(SecurityUtils.hash(dto.getSenha()));
-            }
-            existing.setTelefone(dto.getTelefone());
-            if (dto.getSalario() != null) {
-                existing.setSalario(dto.getSalario());
-            }
-            existing.setEndereco(dto.getResolvedEndereco());
-            existing.setCep(dto.getCep());
-            existing.setCidade(dto.getCidadeAsString());
-            existing.setEstado(dto.getEstadoAsString());
-            existing.setAtivo(dto.isAtivo());
-
-            ClienteModel saved = clienteRepository.save(existing);
-
-            UsuarioDTO uAuth = new UsuarioDTO(
-                    saved.getUuid().toString(),
-                    saved.getEmail(),
-                    dto.getSenha(), // Senha em texto puro enviada no evento
-                    "CLIENTE",
-                    true
-            );
-
-            rabbitTemplate.convertAndSend(RabbitMQConfig.FILA_AUTENTICACAO, uAuth);
-
-            mailService.sendMail(saved.getEmail(), "BANTADS - Conta atualizada com sucesso!",
-                    "Sua conta foi atualizada com sucesso!!");
-
-            System.out.println("Atualizado (" + saved.getNome() + ") via RabbitMQ");
-        } catch (Exception e) {
-            System.err.println("Erro ao atualizar cliente via RabbitMQ: " + e.getMessage());
-            // Envia o estado atual ou uuid para a fila de erro
-            rabbitTemplate.convertAndSend(RabbitMQConfig.EXCHANGE, RabbitMQConfig.FILA_ERRO_UPDATE_CLIENTE, uuid.toString());
-        }
-    }
-
-    public void processaNotificacaoUpdateContaEvent(NotificacaoDTO notificacao) {
-        // Encontra o usuário a partir do idUsuario do tipo Long
-        UUID uuid = new UUID(0L, notificacao.getIdUsuario());
-        ClienteModel cliente = clienteRepository.findById(uuid)
-                .orElseThrow(() -> new IllegalArgumentException("Cliente não encontrado com ID: " + notificacao.getIdUsuario()));
-
-        if (notificacao.isStatus()) {
-            mailService.sendMail(cliente.getEmail(), "BANTADS - Seja bem vindo!",
-                    "Sua conta foi analisada e aceita por nossa equipe. Acesse sua conta com a senha: "
-                            + cliente.getSenha() + "!");
-        } else {
-            mailService.sendMail(cliente.getEmail(), "BANTADS - Conta recusada!",
-                    "Sua conta foi analisada e recusada por nossa equipe. Motivo: "
-                            + notificacao.getMessage() + "!");
         }
     }
 

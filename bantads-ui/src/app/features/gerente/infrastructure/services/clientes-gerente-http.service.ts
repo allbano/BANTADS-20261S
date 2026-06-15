@@ -24,6 +24,8 @@ interface ClienteContaResponse {
 @Injectable({
   providedIn: 'root',
 })
+/** Acesso HTTP à carteira do gerente: todos os seus clientes (R12) e
+ *  detalhe por CPF (R13) via API Gateway. */
 export class ClientesGerenteHttpService extends ClientesGerenteRepository {
   private readonly http = inject(HttpClient);
   private readonly base = environment.apiUrl;

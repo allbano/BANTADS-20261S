@@ -39,6 +39,7 @@ interface PerfilRequest {
 @Injectable({
   providedIn: 'root',
 })
+/** R4 — Acesso HTTP do perfil: GET /clientes/{cpf} e PUT /clientes/{cpf} (SAGA) na API Gateway. */
 export class PerfilClienteHttpService extends PerfilClienteRepository {
   private readonly http = inject(HttpClient);
   private readonly sessao = inject(SessaoService);

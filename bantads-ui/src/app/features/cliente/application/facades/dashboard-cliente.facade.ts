@@ -4,6 +4,8 @@ import type { DashboardClienteResumo } from '../../domain/models/dashboard-clien
 import { DashboardClienteRepository } from '../../domain/repositories/dashboard-cliente.repository';
 
 @Injectable()
+/** R3 — Tela inicial do cliente: expõe o saldo atual (negativo em vermelho) e
+ *  as últimas movimentações para o menu de operações. */
 export class DashboardClienteFacade {
   private readonly repository = inject(DashboardClienteRepository);
 

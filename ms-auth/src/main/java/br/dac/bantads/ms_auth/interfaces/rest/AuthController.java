@@ -4,7 +4,6 @@ import br.dac.bantads.ms_auth.application.dto.AuthRequest;
 import br.dac.bantads.ms_auth.application.dto.AuthResponse;
 import br.dac.bantads.ms_auth.application.dto.CreateAccountResponse;
 import br.dac.bantads.ms_auth.application.dto.CreateAccountWithPasswordRequest;
-import br.dac.bantads.ms_auth.application.dto.CreateAccountWithoutPasswordRequest;
 import br.dac.bantads.ms_auth.application.dto.LogoutRequest;
 import br.dac.bantads.ms_auth.application.dto.LogoutResponse;
 import br.dac.bantads.ms_auth.application.dto.ResetTestBaseResponse;
@@ -29,6 +28,11 @@ import br.dac.bantads.ms_auth.application.dto.AccountResponse;
 import br.dac.bantads.ms_auth.application.dto.UpdateAccountRequest;
 
 
+/**
+ * MS Autenticação (subdomínio de login). Expõe R2 (login/logout com JWT) e o
+ * reboot da base de credenciais (MongoDB). A criação/atualização de credenciais
+ * acontece pelos passos de SAGA (mensageria), não por estes endpoints REST.
+ */
 @RestController
 @RequestMapping("/auth")
 public class AuthController {
@@ -65,13 +69,6 @@ public class AuthController {
             @Valid @RequestBody CreateAccountWithPasswordRequest request
     ) {
         return ResponseEntity.status(HttpStatus.CREATED).body(userAccountService.createWithPassword(request));
-    }
-
-    @PostMapping("/accounts/without-password")
-    public ResponseEntity<CreateAccountResponse> createWithoutPassword(
-            @Valid @RequestBody CreateAccountWithoutPasswordRequest request
-    ) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(userAccountService.createWithoutPassword(request));
     }
 
     // Reboot: reinicia a base de credenciais ao estado do seed

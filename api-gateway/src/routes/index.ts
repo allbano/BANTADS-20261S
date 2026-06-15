@@ -1,3 +1,23 @@
+/**
+ * Roteador único do API Gateway (Richardson nível 2) — o ÚNICO ponto de acesso do
+ * front-end (porta 3000). Traduz a API REST pública (contrato test_dac) para os
+ * microsserviços internos e aplica os padrões:
+ *  - API Gateway: expõe todas as rotas; verifica JWT (verifyJWT) e papel (requireRole).
+ *  - API Composition: agrega dados de vários MS (logout, /clientes/:cpf R13,
+ *    relatório R16, carteira do gerente R12, dashboard R15, extrato enriquecido R8).
+ *  - SAGA Orquestrada: operações distribuídas são encaminhadas ao ms-saga
+ *    (autocadastro R1, aprovar R10, alterar perfil R4, inserir/alterar/remover gerente R17/R20/R18).
+ *
+ * Mapa de requisitos → rota:
+ *  R1  POST /clientes (saga)        R2  POST /login, /logout
+ *  R4  PUT  /clientes/:cpf (saga)   R8  GET  /contas/:numero/extrato
+ *  R3/R5/R6/R7 /contas/:numero/*    R9/R12/R14/R16 GET /clientes (por filtro)
+ *  R10 POST /clientes/:cpf/aprovar  R11 POST /clientes/:cpf/rejeitar
+ *  R13 GET  /clientes/:cpf          R15 GET /gerentes?filtro=dashboard
+ *  R17 POST /gerentes (saga)        R18 DELETE /gerentes/:cpf (saga)
+ *  R19 GET  /gerentes               R20 PUT /gerentes/:cpf (saga)
+ *  Reboot: GET /reboot (fan-out resiliente para todos os MS).
+ */
 import { Router, Request, Response } from 'express';
 import httpClient from '../lib/httpClient.js';
 import services from '../config/services.js';

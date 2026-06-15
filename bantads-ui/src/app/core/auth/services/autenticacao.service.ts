@@ -28,6 +28,8 @@ interface DadosClienteResponse {
 @Injectable({
   providedIn: 'root',
 })
+/** R2 — Login/Logout: autentica (POST /login), enriquece e persiste a sessão
+ *  (token JWT + tipo + usuário) e encerra a sessão (POST /logout). */
 export class AutenticacaoService {
   private readonly http = inject(HttpClient);
   private readonly sessao = inject(SessaoService);

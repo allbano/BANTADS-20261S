@@ -48,7 +48,16 @@ public class EmailService {
             throw new IllegalArgumentException("Notificacao sem 'tipo' definido");
         }
         switch (n.getTipo()) {
-            // RF10 - Aprovacao de cliente: e-mail com a senha de acesso gerada.
+            // R1 - Autocadastro recebido: confirma que a solicitacao foi enviada
+            // (operacao assincrona; a senha so chega apos a aprovacao do gerente).
+            case CONTA_CRIADA -> enviarEmail(n.getEmail(),
+                    "BANTADS - Solicitacao de cadastro recebida",
+                    saudacao(n.getNome())
+                            + "Recebemos sua solicitacao de cadastro com sucesso!\n"
+                            + "Ela sera analisada por um de nossos gerentes. Voce recebera\n"
+                            + "a senha de acesso por e-mail assim que a conta for aprovada.");
+
+            // R10 - Aprovacao de cliente: e-mail com a senha de acesso gerada.
             case APROVACAO -> enviarEmail(n.getEmail(),
                     "BANTADS - Cadastro aprovado",
                     saudacao(n.getNome())

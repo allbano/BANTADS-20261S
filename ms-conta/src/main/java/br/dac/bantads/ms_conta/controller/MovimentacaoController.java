@@ -13,6 +13,11 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+/**
+ * MS Conta — histórico de movimentações (depósito R5, saque R6, transferência R7)
+ * usado internamente; as operações no formato do contrato test_dac (por número)
+ * ficam no {@link ContaOperacaoController}.
+ */
 @CrossOrigin
 @RestController
 @RequestMapping("/contas")

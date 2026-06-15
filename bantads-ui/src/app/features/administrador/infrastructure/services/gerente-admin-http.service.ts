@@ -18,6 +18,8 @@ interface DadoGerente {
 @Injectable({
   providedIn: 'root',
 })
+/** Acesso HTTP ao CRUD de gerentes (admin): inserir (R17), remover (R18),
+ *  listar (R19) e alterar (R20) via API Gateway → SAGA. */
 export class GerenteAdminHttpService extends GerenteAdminRepository {
   private readonly http = inject(HttpClient);
   private readonly base = environment.apiUrl;

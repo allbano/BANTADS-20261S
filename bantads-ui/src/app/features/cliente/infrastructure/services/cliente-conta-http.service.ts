@@ -59,6 +59,10 @@ function formatarMoeda(valor: number): string {
 @Injectable({
   providedIn: 'root',
 })
+/**
+ * Acesso HTTP às operações de conta do cliente via API Gateway:
+ * saldo/resumo (R3), depositar (R5), sacar (R6), transferir (R7) e extrato (R8).
+ */
 export class ClienteContaHttpService extends ClienteContaRepository {
   private readonly http = inject(HttpClient);
   private readonly sessao = inject(SessaoService);

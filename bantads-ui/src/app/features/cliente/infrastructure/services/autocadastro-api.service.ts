@@ -22,6 +22,7 @@ interface AutocadastroRequest {
 @Injectable({
   providedIn: 'root',
 })
+/** R1 — Acesso HTTP do autocadastro: POST /clientes (público) na API Gateway → SAGA. */
 export class AutocadastroApiService extends AutocadastroRepository {
   private readonly http = inject(HttpClient);
   private readonly base = environment.apiUrl;

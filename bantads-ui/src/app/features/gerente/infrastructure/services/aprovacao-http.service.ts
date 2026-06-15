@@ -23,6 +23,8 @@ interface ClientePendenteResponse {
 @Injectable({
   providedIn: 'root',
 })
+/** Acesso HTTP da tela inicial do gerente: lista pendentes (R9),
+ *  aprovar (R10) e rejeitar com motivo (R11) via API Gateway. */
 export class AprovacaoHttpService extends AprovacaoRepository {
   private readonly http = inject(HttpClient);
   private readonly base = environment.apiUrl;

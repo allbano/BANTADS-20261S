@@ -19,6 +19,7 @@ const ROTA_POR_TIPO: Record<TipoUsuario, string> = {
   imports: [FormsModule, RouterLink],
   templateUrl: './login.html',
 })
+/** R2 — Tela de login: coleta e-mail/senha e redireciona por perfil após sucesso. */
 export class Login {
   private readonly autenticacao = inject(AutenticacaoService);
   private readonly router = inject(Router);

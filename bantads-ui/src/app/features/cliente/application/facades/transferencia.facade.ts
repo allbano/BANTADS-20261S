@@ -4,6 +4,7 @@ import type { DashboardClienteResumo } from '../../domain/models/dashboard-clien
 import { ClienteContaRepository } from '../../domain/repositories/cliente-conta.repository';
 
 @Injectable()
+/** R7 — Transferência: informa conta destino e valor; registrada na data/hora atual. */
 export class TransferenciaFacade {
   private readonly conta = inject(ClienteContaRepository);
 

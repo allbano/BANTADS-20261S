@@ -5,6 +5,8 @@ import type { ExtratoDia } from '../../domain/models/extrato-dia.model';
 import { ClienteContaRepository } from '../../domain/repositories/cliente-conta.repository';
 
 @Injectable()
+/** R8 — Extrato: consulta por período; saída em vermelho, entrada em azul e
+ *  saldo consolidado por dia desde a data inicial. */
 export class ExtratoFacade {
   private readonly conta = inject(ClienteContaRepository);
 

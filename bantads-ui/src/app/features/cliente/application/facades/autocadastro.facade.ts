@@ -6,6 +6,8 @@ import { Observable } from 'rxjs';
 @Injectable({
   providedIn: 'root'
 })
+/** R1 — Autocadastro: orquestra o envio dos dados pessoais + endereço e a
+ *  mensagem de "solicitação enviada" (fluxo assíncrono, sem login). */
 export class AutocadastroFacade {
   private repository = inject(AutocadastroRepository);
 

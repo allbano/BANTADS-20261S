@@ -137,38 +137,6 @@ public class ContaService {
     }
 
     @Transactional
-    public ContaModel updateConta(ContaRabbitDTO dto) {
-        UUID clientUuid = dto.parseClientUuid();
-        if (clientUuid == null) {
-            throw new IllegalArgumentException("Cliente UUID inválido ou ausente");
-        }
-
-        ContaModel conta = contaRepository.findByUuidCliente(clientUuid)
-                .orElseThrow(() -> new NoSuchElementException("Conta não encontrada para o cliente: " + clientUuid));
-
-        if (dto.getSaldo() != null) {
-            conta.setSaldo(dto.getSaldo());
-        }
-        if (dto.getSalario() != null) {
-            conta.setLimite(calculateLimit(dto.getSalario()));
-        }
-        
-        conta.setAtivo(dto.isAtivo());
-        conta.setRejeitadoMotivo(dto.getRejeitadoMotivo());
-        
-        if (!dto.isAtivo() && dto.getRejeitadoMotivo() != null) {
-            conta.setRejeitadoData(LocalDate.now());
-        } else {
-            conta.setRejeitadoData(null);
-        }
-
-        log.info("Atualizando conta do cliente {}: ativa={}, limite={}", clientUuid, conta.isAtivo(), conta.getLimite());
-        ContaModel saved = contaRepository.save(conta);
-        cqrsPublisher.publicarConta(saved);
-        return saved;
-    }
-
-    @Transactional
     public void atribuiContaGerente(UUID newGerenteUuid) {
         log.info("Novo gerente registrado: {}. Reatribuindo a conta ativa mais recente para balanceamento.", newGerenteUuid);
         // Move a conta ATIVA mais recente do banco (o cliente recém-aprovado) ao novo

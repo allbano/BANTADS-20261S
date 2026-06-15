@@ -4,6 +4,7 @@ import type { DashboardClienteResumo } from '../../domain/models/dashboard-clien
 import { ClienteContaRepository } from '../../domain/repositories/cliente-conta.repository';
 
 @Injectable()
+/** R5 — Depositar: credita valor na própria conta e atualiza o saldo. */
 export class DepositoFacade {
   private readonly conta = inject(ClienteContaRepository);
 

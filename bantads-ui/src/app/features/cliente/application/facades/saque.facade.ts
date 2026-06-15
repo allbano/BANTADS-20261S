@@ -4,6 +4,7 @@ import type { DashboardClienteResumo } from '../../domain/models/dashboard-clien
 import { ClienteContaRepository } from '../../domain/repositories/cliente-conta.repository';
 
 @Injectable()
+/** R6 — Saque: debita da própria conta respeitando saldo + limite. */
 export class SaqueFacade {
   private readonly conta = inject(ClienteContaRepository);
 

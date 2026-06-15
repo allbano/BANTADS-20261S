@@ -17,6 +17,7 @@ interface MelhorClienteResponse {
 @Injectable({
   providedIn: 'root',
 })
+/** R14 — Acesso HTTP aos 3 maiores saldos (GET /clientes?filtro=melhores_clientes). */
 export class TopClientesHttpService extends TopClientesRepository {
   private readonly http = inject(HttpClient);
   private readonly base = environment.apiUrl;

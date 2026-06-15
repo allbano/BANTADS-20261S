@@ -2,7 +2,6 @@ package br.dac.bantads.ms_conta.consumer;
 
 import br.dac.bantads.ms_conta.config.RabbitMQConfig;
 import br.dac.bantads.ms_conta.dto.ContaRabbitDTO;
-import br.dac.bantads.ms_conta.dto.NotificacaoRabbitDTO;
 import br.dac.bantads.ms_conta.model.cud.ContaModel;
 import br.dac.bantads.ms_conta.service.ContaService;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -85,31 +84,6 @@ public class RabbitMQConsumer {
         }
     }
 
-    @RabbitListener(queues = RabbitMQConfig.FILA_UPDATE_CONTA)
-    public void updateConta(String msg) {
-        log.info("Mensagem recebida na fila {}: {}", RabbitMQConfig.FILA_UPDATE_CONTA, msg);
-        try {
-            ContaRabbitDTO dto = objectMapper.readValue(msg, ContaRabbitDTO.class);
-            ContaModel contaAtualizada = contaService.updateConta(dto);
-            log.info("Conta do cliente {} atualizada com sucesso", contaAtualizada.getUuidCliente());
-
-            // Enviar notificação sobre a atualização/aprovação
-            NotificacaoRabbitDTO notificacao = NotificacaoRabbitDTO.builder()
-                    .status(contaAtualizada.isAtivo())
-                    .message(contaAtualizada.getRejeitadoMotivo())
-                    .uuidCliente(contaAtualizada.getUuidCliente().toString())
-                    .idUsuario(contaAtualizada.getUuidCliente().toString()) // para compatibilidade legada
-                    .build();
-
-            String notificationJson = objectMapper.writeValueAsString(notificacao);
-            rabbitTemplate.convertAndSend(RabbitMQConfig.EXCHANGE, RabbitMQConfig.FILA_NOTIFICA_UPDATE_CONTA, notificationJson);
-            log.info("Notificação enviada para a fila {}: {}", RabbitMQConfig.FILA_NOTIFICA_UPDATE_CONTA, notificationJson);
-
-        } catch (Exception e) {
-            log.error("Erro ao processar atualização de conta a partir da fila: {}", e.getMessage(), e);
-        }
-    }
-
     @RabbitListener(queues = RabbitMQConfig.FILA_ATRIBUI_CONTA_GERENTE)
     public void atribuiContaGerente(String msg) {
         log.info("Mensagem recebida na fila {}: {}", RabbitMQConfig.FILA_ATRIBUI_CONTA_GERENTE, msg);
@@ -132,25 +106,4 @@ public class RabbitMQConsumer {
         }
     }
 
-    @RabbitListener(queues = RabbitMQConfig.FILA_DISTRIBUI_CONTAS_GERENTE)
-    public void distribuiContasGerente(String msg) {
-        log.info("Mensagem recebida na fila {}: {}", RabbitMQConfig.FILA_DISTRIBUI_CONTAS_GERENTE, msg);
-        try {
-            String gerenteUuidStr;
-            try {
-                gerenteUuidStr = objectMapper.readValue(msg, String.class);
-            } catch (Exception e) {
-                gerenteUuidStr = msg.replace("\"", "").trim();
-            }
-
-            if (gerenteUuidStr != null && !gerenteUuidStr.isBlank()) {
-                UUID gerenteUuid = UUID.fromString(gerenteUuidStr);
-                contaService.distribuiContasGerente(gerenteUuid);
-            } else {
-                log.warn("Nenhum UUID de gerente identificado na mensagem");
-            }
-        } catch (Exception e) {
-            log.error("Erro ao processar redistribuição de gerente: {}", e.getMessage(), e);
-        }
-    }
 }

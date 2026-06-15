@@ -28,13 +28,10 @@ public class RabbitMQConfig {
 
     // Filas consumidas por este servico (declaradas + bound aqui)
     public static final String FILA_REGISTRO_CLIENTE = "FILA_REGISTRO_CLIENTE";
-    public static final String FILA_UPDATE_CLIENTE = "FILA_UPDATE_CLIENTE";
-    public static final String FILA_NOTIFICA_UPDATE_CONTA = "FILA_NOTIFICA_UPDATE_CONTA";
     public static final String SAGA_CMD_EXCLUIR_CLIENTE = "SAGA_CMD_EXCLUIR_CLIENTE";
 
     // Routing keys usadas apenas para publicar (declaradas pelos consumidores)
     public static final String FILA_ERRO_NOVO_CLIENTE = "FILA_ERRO_NOVO_CLIENTE";
-    public static final String FILA_ERRO_UPDATE_CLIENTE = "FILA_ERRO_UPDATE_CLIENTE";
     public static final String FILA_ERRO_NOVO_CLIENTE_AUTENTICACAO = "FILA_ERRO_NOVO_CLIENTE_AUTENTICACAO";
     public static final String FILA_AUTENTICACAO = "FILA_AUTENTICACAO";
     public static final String SAGA_EVT_CLIENTE_CRIADO  = "SAGA_EVT_CLIENTE_CRIADO";
@@ -51,23 +48,15 @@ public class RabbitMQConfig {
     }
 
     @Bean Queue filaRegistroCliente()     { return dlqEnabled(FILA_REGISTRO_CLIENTE); }
-    @Bean Queue filaUpdateCliente()       { return dlqEnabled(FILA_UPDATE_CLIENTE); }
-    @Bean Queue filaNotificaUpdateConta() { return dlqEnabled(FILA_NOTIFICA_UPDATE_CONTA); }
     @Bean Queue sagaCmdExcluirCliente()   { return dlqEnabled(SAGA_CMD_EXCLUIR_CLIENTE); }
 
     @Bean Queue filaRegistroClienteDlq()     { return dlq(FILA_REGISTRO_CLIENTE); }
-    @Bean Queue filaUpdateClienteDlq()       { return dlq(FILA_UPDATE_CLIENTE); }
-    @Bean Queue filaNotificaUpdateContaDlq() { return dlq(FILA_NOTIFICA_UPDATE_CONTA); }
     @Bean Queue sagaCmdExcluirClienteDlq()   { return dlq(SAGA_CMD_EXCLUIR_CLIENTE); }
 
     @Bean Binding bRegistroCliente()     { return bind(filaRegistroCliente(), FILA_REGISTRO_CLIENTE); }
-    @Bean Binding bUpdateCliente()       { return bind(filaUpdateCliente(), FILA_UPDATE_CLIENTE); }
-    @Bean Binding bNotificaUpdateConta() { return bind(filaNotificaUpdateConta(), FILA_NOTIFICA_UPDATE_CONTA); }
     @Bean Binding bSagaCmdExcluirCliente() { return bind(sagaCmdExcluirCliente(), SAGA_CMD_EXCLUIR_CLIENTE); }
 
     @Bean Binding bDlqRegistroCliente()     { return bindDlq(filaRegistroClienteDlq(), FILA_REGISTRO_CLIENTE); }
-    @Bean Binding bDlqUpdateCliente()       { return bindDlq(filaUpdateClienteDlq(), FILA_UPDATE_CLIENTE); }
-    @Bean Binding bDlqNotificaUpdateConta() { return bindDlq(filaNotificaUpdateContaDlq(), FILA_NOTIFICA_UPDATE_CONTA); }
     @Bean Binding bDlqSagaCmdExcluirCliente() { return bindDlq(sagaCmdExcluirClienteDlq(), SAGA_CMD_EXCLUIR_CLIENTE); }
 
     private static Queue dlqEnabled(String name) {
