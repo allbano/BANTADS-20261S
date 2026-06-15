@@ -38,11 +38,11 @@ docker compose -f "$COMPOSE_FILE" up -d
 
 echo ""
 echo "==> BANTADS no ar:"
-echo "    API Gateway  : http://localhost:3000   (Swagger: /api-docs)"
+echo "    API Gateway  : http://localhost:8000   (Swagger: /api-docs)"
 echo "    RabbitMQ     : http://localhost:15672"
 echo "    Front Angular: http://localhost:4200"
 echo ""
-echo "    Inicialize a base:  curl http://localhost:3000/reboot"
+echo "    Inicialize a base:  curl http://localhost:8000/reboot"
 echo "    Login (senha tads): cli1@bantads.com.br | ger1@bantads.com.br | adm1@bantads.com.br"
 
 if [ "$FOLLOW_LOGS" -eq 1 ]; then
