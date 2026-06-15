@@ -99,6 +99,17 @@ public class ContaService {
         return saved.getNumero();
     }
 
+    /** R11 — rejeição do cliente: marca a conta como inativa e grava motivo/data da reprovação. */
+    @Transactional
+    public void rejeitarConta(UUID uuidCliente, String motivo) {
+        contaRepository.findByUuidCliente(uuidCliente).ifPresent(conta -> {
+            conta.setAtivo(false);
+            conta.setRejeitadoMotivo(motivo);
+            conta.setRejeitadoData(LocalDate.now());
+            cqrsPublisher.publicarConta(contaRepository.save(conta));
+        });
+    }
+
     /** Compensação de R10 — desativa a conta. */
     @Transactional
     public void desativarConta(UUID uuidCliente) {

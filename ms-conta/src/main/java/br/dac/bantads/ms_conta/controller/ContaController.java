@@ -2,12 +2,14 @@ package br.dac.bantads.ms_conta.controller;
 
 import br.dac.bantads.ms_conta.dto.ContaResponseDTO;
 import br.dac.bantads.ms_conta.service.ContaQueryService;
+import br.dac.bantads.ms_conta.service.ContaService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 /**
@@ -23,6 +25,7 @@ import java.util.UUID;
 public class ContaController {
 
     private final ContaQueryService contaQueryService;
+    private final ContaService contaService;
 
     @GetMapping
     public ResponseEntity<List<ContaResponseDTO>> getAllContas() {
@@ -46,6 +49,15 @@ public class ContaController {
     public ResponseEntity<ContaResponseDTO> getContaByCliente(@PathVariable UUID uuidCliente) {
         log.info("Recebida requisição para buscar conta pelo cliente UUID: {}", uuidCliente);
         return ResponseEntity.ok(contaQueryService.buscarPorCliente(uuidCliente));
+    }
+
+    @PostMapping("/cliente/{uuidCliente}/rejeitar")
+    public ResponseEntity<Void> rejeitarPorCliente(@PathVariable UUID uuidCliente,
+                                                   @RequestBody(required = false) Map<String, Object> body) {
+        String motivo = body != null && body.get("motivo") != null ? String.valueOf(body.get("motivo")) : "";
+        log.info("Recebida requisição para rejeitar a conta do cliente UUID: {}", uuidCliente);
+        contaService.rejeitarConta(uuidCliente, motivo);
+        return ResponseEntity.ok().build();
     }
 
     @GetMapping("/por-usuario/{userId}")
