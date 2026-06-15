@@ -5,6 +5,8 @@ import br.dac.bantads.ms_cliente.domain.model.ClienteModel;
 import br.dac.bantads.ms_cliente.domain.repository.ClienteRepository;
 import br.dac.bantads.ms_cliente.infrastructure.config.RabbitMQConfig;
 import br.dac.bantads.ms_cliente.infrastructure.security.SecurityUtils;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.json.JsonMapper;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.stereotype.Service;
@@ -22,7 +24,7 @@ public class ClienteService {
     private final ClienteRepository clienteRepository;
     private final RestClient restClient;
     private final RabbitTemplate rabbitTemplate;
-    private final MailService mailService;
+    private final ObjectMapper objectMapper = JsonMapper.builder().findAndAddModules().build();
 
     public record ContaResponseDTO(
             UUID uuidConta,
@@ -37,28 +39,44 @@ public class ClienteService {
     public ClienteService(
             ClienteRepository clienteRepository,
             RabbitTemplate rabbitTemplate,
-            MailService mailService,
             @Value("${services.conta:http://localhost:40006}") String contaServiceUrl) {
         this.clienteRepository = clienteRepository;
         this.rabbitTemplate = rabbitTemplate;
-        this.mailService = mailService;
         this.restClient = RestClient.builder().baseUrl(contaServiceUrl).build();
+    }
+
+    /**
+     * Centralizacao do e-mail (R1/R10/R11): publica uma notificacao TIPADA no canal
+     * unico {@code saga.cmd.notificar.cliente}. SOMENTE o ms_notificacao monta o
+     * texto e fala com o SMTP. Sem {@code sagaId} → e-mail "solto" (nao espera reply
+     * de SAGA). Publicacao nao-fatal: falha apenas loga, o fluxo continua.
+     */
+    private void publicarNotificacao(String tipo, String email, String nome, String motivo) {
+        try {
+            Map<String, Object> notif = new HashMap<>();
+            notif.put("email", email);
+            notif.put("nome", nome);
+            notif.put("tipo", tipo);
+            if (motivo != null) notif.put("motivo", motivo);
+            rabbitTemplate.convertAndSend(RabbitMQConfig.EXCHANGE, "saga.cmd.notificar.cliente",
+                    objectMapper.writeValueAsString(notif));
+        } catch (Exception e) {
+            System.err.println("Falha ao publicar notificacao (" + tipo + "): " + e.getMessage());
+        }
     }
 
     // --- Métodos Existentes mantidos intactos ---
 
     public List<ClienteParaAprovarResponse> getClientesParaAprovar() {
-        List<ContaResponseDTO> contas = restClient.get()
-                .uri("/contas")
-                .retrieve()
-                .body(new ParameterizedTypeReference<List<ContaResponseDTO>>() {});
-
-        Set<UUID> approvedClientUuids = contas != null ?
-                contas.stream().map(ContaResponseDTO::uuidCliente).collect(Collectors.toSet()) :
-                Collections.emptySet();
-
+        // "Aguardando aprovação" (R9) = status PENDENTE. O autocadastro cria o
+        // cliente como PENDENTE (e já cria a conta); aprovar (R10) → APROVADO e
+        // rejeitar (R11) → REJEITADO. O critério é o 'status', não a existência de
+        // conta (toda conta nasce junto) nem o flag 'ativo' (pendente e rejeitado
+        // são ambos inativos).
         return clienteRepository.findAll().stream()
-                .filter(c -> !approvedClientUuids.contains(c.getUuid()))
+                .filter(c -> "PENDENTE".equals(c.getStatus()))
+                // UUIDv7 é temporal → ordena por ordem de criação (R9 espera autocad1 antes de autocad2).
+                .sorted(Comparator.comparing(ClienteModel::getUuid))
                 .map(c -> new ClienteParaAprovarResponse(
                         c.getCpf(),
                         c.getNome(),
@@ -148,94 +166,44 @@ public class ClienteService {
     }
 
     public Optional<ClienteResponseDTO> getByEmail(String email) {
-        // Como o repositório de domínio do destino não tem findByEmail, vamos filtrar da lista ou adicionar ao repository.
-        // Vamos buscar da lista de findAll() para manter a interface de repositório de domínio limpa, ou podemos usar findAll().
-        return clienteRepository.findAll().stream()
-                .filter(c -> c.getEmail().equalsIgnoreCase(email))
-                .findFirst()
-                .map(this::toResponseDTO);
+        // Busca direta no repositório (usada na API Composition do /login pelo gateway).
+        return clienteRepository.findByEmail(email).map(this::toResponseDTO);
     }
 
-    public ClienteResponseDTO cadastro(ClienteRequestDTO request) {
-        if (clienteRepository.findByCpf(request.cpf()).isPresent()) {
-            mailService.sendMail(request.email(), "BANTADS - Falha na criação da conta!",
-                    "Uma falha ocorreu ao criar sua conta: CPF já está sendo utilizado!");
-            throw new IllegalStateException("CPF já cadastrado!");
-        }
-
-        String plainPassword = SecurityUtils.generateStrongPassword();
-
-        ClienteModel model = ClienteModel.builder()
-                .nome(request.nome())
-                .email(request.email())
-                .senha(plainPassword) // Salva em texto puro inicialmente conforme a lógica legada
-                .cpf(request.cpf())
-                .telefone(request.telefone())
-                .salario(request.salario() != null ? request.salario() : BigDecimal.ZERO)
-                .endereco(request.endereco())
-                .cep(request.cep())
-                .cidade(request.cidade())
-                .estado(request.estado())
-                .ativo(false) // Desativado até aprovação
-                .cargo("CLIENTE")
-                .build();
-
-        ClienteModel saved = clienteRepository.save(model);
-
-        mailService.sendMail(saved.getEmail(), "BANTADS - Conta criada!",
-                "Sua conta foi criada com a senha: " + saved.getSenha() + "\nAgora é só esperar a aprovação por um de nossos gerentes!");
-
-        return toResponseDTO(saved);
-    }
-
-    public ClienteResponseDTO update(UUID uuid, ClienteRequestDTO request) {
-        ClienteModel existing = clienteRepository.findById(uuid)
+    /**
+     * R11 — Rejeitar cliente. NÃO é SAGA: escrita local (marca inativo) + publica
+     * o evento de notificação de rejeição. Idempotente o suficiente para o contexto.
+     */
+    public void rejeitar(String cpf, String motivo) {
+        ClienteModel c = clienteRepository.findByCpf(cpf)
                 .orElseThrow(() -> new IllegalArgumentException("Cliente não encontrado!"));
-
-        boolean wasInactive = !existing.isAtivo();
-
-        existing.setNome(request.nome());
-        existing.setEmail(request.email());
-        if (request.senha() != null && !request.senha().isBlank()) {
-            existing.setSenha(SecurityUtils.hash(request.senha()));
-        }
-        existing.setCpf(request.cpf());
-        existing.setTelefone(request.telefone());
-        if (request.salario() != null) {
-            existing.setSalario(request.salario());
-        }
-        existing.setEndereco(request.endereco());
-        existing.setCep(request.cep());
-        existing.setCidade(request.cidade());
-        existing.setEstado(request.estado());
-        if (request.ativo() != null) {
-            existing.setAtivo(request.ativo());
-        }
-        if (request.cargo() != null) {
-            existing.setCargo(request.cargo());
-        }
-
-        ClienteModel saved = clienteRepository.save(existing);
-
-        if (wasInactive && saved.isAtivo()) {
-            mailService.sendMail(saved.getEmail(), "BANTADS - Conta aprovada!",
-                    "Sua conta foi aprovada!\nVocê já pode entrar no BANTADS usando seu email e senha!");
-        }
-
-        return toResponseDTO(saved);
+        c.setAtivo(false);
+        c.setStatus("REJEITADO"); // R11 — sai da fila de "aguardando aprovação"
+        clienteRepository.save(c);
+        // R11 — e-mail de rejeição (com o motivo) montado e enviado pelo ms_notificacao.
+        publicarNotificacao("REJEICAO", c.getEmail(), c.getNome(), motivo != null ? motivo : "");
     }
 
     // --- Métodos de processamento para consumidores RabbitMQ ---
 
     public void processaNovoClienteEvent(ClienteDTO dto) {
+        // Falha rápida em CPF duplicado: a violação de unicidade só apareceria no
+        // commit (fora deste try/catch), causando retry/DLQ e timeout da SAGA.
+        if (dto.getCpf() != null && clienteRepository.findByCpf(dto.getCpf()).isPresent()) {
+            System.err.println("CPF já cadastrado no autocadastro: " + dto.getCpf());
+            if (dto.getSagaId() != null && !dto.getSagaId().isBlank()) {
+                publicarEventoSagaClienteErro(dto.getSagaId(), "CPF já cadastrado");
+            }
+            return;
+        }
         try {
             ClienteModel model = toModel(dto);
             model.setSenha(SecurityUtils.hash(dto.getSenha()));
 
             ClienteModel saved = clienteRepository.save(model);
 
-            mailService.sendMail(saved.getEmail(), "BANTADS - Conta criada com sucesso!",
-                    "Sua conta foi criada com sucesso!! Aguarde a aprovação de um gerente.");
+            // R1 — confirma o recebimento da solicitacao de autocadastro (operacao assincrona).
+            publicarNotificacao("CONTA_CRIADA", saved.getEmail(), saved.getNome(), null);
 
             System.out.println("Salvo (" + saved.getNome() + ") via RabbitMQ");
 
@@ -251,7 +219,7 @@ public class ClienteService {
                         "CLIENTE",
                         false
                 );
-                rabbitTemplate.convertAndSend(RabbitMQConfig.FILA_AUTENTICACAO, uAuth);
+                rabbitTemplate.convertAndSend(RabbitMQConfig.EXCHANGE, RabbitMQConfig.FILA_AUTENTICACAO, objectMapper.writeValueAsString(uAuth));
             }
         } catch (Exception e) {
             System.err.println("Erro ao salvar cliente via RabbitMQ: " + e.getMessage());
@@ -260,13 +228,13 @@ public class ClienteService {
             if (dto.getSagaId() != null && !dto.getSagaId().isBlank()) {
                 publicarEventoSagaClienteErro(dto.getSagaId(), e.getMessage());
             } else {
-                rabbitTemplate.convertAndSend(RabbitMQConfig.FILA_ERRO_NOVO_CLIENTE, errorId);
-                rabbitTemplate.convertAndSend(RabbitMQConfig.FILA_ERRO_NOVO_CLIENTE_AUTENTICACAO, errorId);
+                rabbitTemplate.convertAndSend(RabbitMQConfig.EXCHANGE, RabbitMQConfig.FILA_ERRO_NOVO_CLIENTE, errorId);
+                rabbitTemplate.convertAndSend(RabbitMQConfig.EXCHANGE, RabbitMQConfig.FILA_ERRO_NOVO_CLIENTE_AUTENTICACAO, errorId);
             }
 
             if (dto.getEmail() != null) {
-                mailService.sendMail(dto.getEmail(), "BANTADS - Não foi possível criar sua conta!",
-                        "Não foi possível criar sua conta!!");
+                // R1 — em caso de falha interna, avisa o cliente que a solicitacao nao foi efetuada.
+                publicarNotificacao("FALHA_AUTOCADASTRO", dto.getEmail(), dto.getNome(), null);
             }
         }
     }
@@ -275,7 +243,7 @@ public class ClienteService {
         try {
             String json = String.format(
                     "{\"sagaId\":\"%s\",\"sucesso\":true,\"uuidCliente\":\"%s\"}", sagaId, uuidCliente);
-            rabbitTemplate.convertAndSend(RabbitMQConfig.SAGA_EVT_CLIENTE_CRIADO, json);
+            rabbitTemplate.convertAndSend(RabbitMQConfig.EXCHANGE, RabbitMQConfig.SAGA_EVT_CLIENTE_CRIADO, json);
         } catch (Exception e) {
             System.err.println("Falha ao publicar SAGA_EVT_CLIENTE_CRIADO: " + e.getMessage());
         }
@@ -286,7 +254,7 @@ public class ClienteService {
             String msg = motivo != null ? motivo.replace("\"", "'") : "erro no ms-cliente";
             String json = String.format(
                     "{\"sagaId\":\"%s\",\"sucesso\":false,\"mensagem\":\"%s\"}", sagaId, msg);
-            rabbitTemplate.convertAndSend(RabbitMQConfig.SAGA_EVT_CLIENTE_ERRO, json);
+            rabbitTemplate.convertAndSend(RabbitMQConfig.EXCHANGE, RabbitMQConfig.SAGA_EVT_CLIENTE_ERRO, json);
         } catch (Exception e) {
             System.err.println("Falha ao publicar SAGA_EVT_CLIENTE_ERRO: " + e.getMessage());
         }
@@ -301,71 +269,6 @@ public class ClienteService {
             });
         } catch (Exception e) {
             System.err.println("Erro na compensação de cliente: " + e.getMessage());
-        }
-    }
-
-    public void processaUpdateClienteEvent(ClienteDTO dto) {
-        UUID uuid = dto.getResolvedUuid();
-        if (uuid == null) {
-            System.err.println("UUID não fornecido para atualização do cliente.");
-            return;
-        }
-
-        try {
-            ClienteModel existing = clienteRepository.findById(uuid)
-                    .orElseThrow(() -> new IllegalArgumentException("Cliente não encontrado!"));
-
-            existing.setNome(dto.getNome());
-            if (dto.getSenha() != null && !dto.getSenha().isBlank()) {
-                existing.setSenha(SecurityUtils.hash(dto.getSenha()));
-            }
-            existing.setTelefone(dto.getTelefone());
-            if (dto.getSalario() != null) {
-                existing.setSalario(dto.getSalario());
-            }
-            existing.setEndereco(dto.getResolvedEndereco());
-            existing.setCep(dto.getCep());
-            existing.setCidade(dto.getCidadeAsString());
-            existing.setEstado(dto.getEstadoAsString());
-            existing.setAtivo(dto.isAtivo());
-
-            ClienteModel saved = clienteRepository.save(existing);
-
-            UsuarioDTO uAuth = new UsuarioDTO(
-                    saved.getUuid().toString(),
-                    saved.getEmail(),
-                    dto.getSenha(), // Senha em texto puro enviada no evento
-                    "CLIENTE",
-                    true
-            );
-
-            rabbitTemplate.convertAndSend(RabbitMQConfig.FILA_AUTENTICACAO, uAuth);
-
-            mailService.sendMail(saved.getEmail(), "BANTADS - Conta atualizada com sucesso!",
-                    "Sua conta foi atualizada com sucesso!!");
-
-            System.out.println("Atualizado (" + saved.getNome() + ") via RabbitMQ");
-        } catch (Exception e) {
-            System.err.println("Erro ao atualizar cliente via RabbitMQ: " + e.getMessage());
-            // Envia o estado atual ou uuid para a fila de erro
-            rabbitTemplate.convertAndSend(RabbitMQConfig.FILA_ERRO_UPDATE_CLIENTE, uuid.toString());
-        }
-    }
-
-    public void processaNotificacaoUpdateContaEvent(NotificacaoDTO notificacao) {
-        // Encontra o usuário a partir do idUsuario do tipo Long
-        UUID uuid = new UUID(0L, notificacao.getIdUsuario());
-        ClienteModel cliente = clienteRepository.findById(uuid)
-                .orElseThrow(() -> new IllegalArgumentException("Cliente não encontrado com ID: " + notificacao.getIdUsuario()));
-
-        if (notificacao.isStatus()) {
-            mailService.sendMail(cliente.getEmail(), "BANTADS - Seja bem vindo!",
-                    "Sua conta foi analisada e aceita por nossa equipe. Acesse sua conta com a senha: "
-                            + cliente.getSenha() + "!");
-        } else {
-            mailService.sendMail(cliente.getEmail(), "BANTADS - Conta recusada!",
-                    "Sua conta foi analisada e recusada por nossa equipe. Motivo: "
-                            + notificacao.getMessage() + "!");
         }
     }
 
@@ -385,6 +288,7 @@ public class ClienteService {
                 .estado(dto.getEstadoAsString())
                 .senha(dto.getSenha())
                 .ativo(dto.isAtivo())
+                .status(dto.isAtivo() ? "APROVADO" : "PENDENTE")
                 .cargo(dto.getCargo() != null ? dto.getCargo() : "CLIENTE")
                 .build();
     }
@@ -395,6 +299,7 @@ public class ClienteService {
                 model.getNome(),
                 model.getEmail(),
                 model.getCpf(),
+                model.getTelefone(),
                 model.getSalario(),
                 model.getEndereco(),
                 model.getCep(),

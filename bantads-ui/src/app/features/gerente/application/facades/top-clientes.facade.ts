@@ -15,6 +15,9 @@ export class TopClientesFacade {
   readonly topClientes = this._topClientes.asReadonly();
 
   carregar(): void {
-    this._topClientes.set(this.repository.obterTop3());
+    this.repository.obterTop3().subscribe({
+      next: (top) => this._topClientes.set(top),
+      error: () => this._topClientes.set([]),
+    });
   }
 }

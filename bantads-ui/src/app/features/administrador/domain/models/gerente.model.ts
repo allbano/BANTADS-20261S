@@ -1,15 +1,28 @@
 /**
- * Entidade de domínio que representa um Gerente no BANTADS.
- *
- * Em DDD, modelos de domínio são contratos imutáveis — usamos interface
- * ao invés de class para evitar acoplamento com instanciação direta.
+ * Entidade de domínio que representa um Gerente no BANTADS (visão do administrador).
+ * A identidade é o CPF (string).
  */
 export interface Gerente {
-  id: number;
-  nome: string;
   cpf: string;
+  nome: string;
   email: string;
-  telefone: string;
+  telefone?: string;
+  /** "GERENTE" ou "ADMINISTRADOR", conforme a API Gateway. */
+  tipo: string;
+}
+
+/** Payload de inserção de gerente (R17 — POST /gerentes). */
+export interface GerenteInsercao {
+  cpf: string;
+  nome: string;
+  email: string;
+  tipo: string;
   senha: string;
-  tipo: 'gerente';
+}
+
+/** Payload de alteração de gerente (R20 — PUT /gerentes/{cpf}). */
+export interface GerenteAlteracao {
+  nome: string;
+  email: string;
+  senha?: string;
 }

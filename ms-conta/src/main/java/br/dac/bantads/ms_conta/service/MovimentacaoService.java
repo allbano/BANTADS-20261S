@@ -1,11 +1,11 @@
 package br.dac.bantads.ms_conta.service;
 
 import br.dac.bantads.ms_conta.dto.MovimentacaoRequestDTO;
-import br.dac.bantads.ms_conta.model.ContaModel;
-import br.dac.bantads.ms_conta.model.MovimentacaoModel;
+import br.dac.bantads.ms_conta.model.cud.ContaModel;
+import br.dac.bantads.ms_conta.model.cud.MovimentacaoModel;
 import br.dac.bantads.ms_conta.model.enums.TipoMovimentacao;
-import br.dac.bantads.ms_conta.repository.ContaRepository;
-import br.dac.bantads.ms_conta.repository.MovimentacaoRepository;
+import br.dac.bantads.ms_conta.repository.cud.ContaRepository;
+import br.dac.bantads.ms_conta.repository.cud.MovimentacaoRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -25,6 +25,7 @@ public class MovimentacaoService {
 
     private final ContaRepository contaRepository;
     private final MovimentacaoRepository movimentacaoRepository;
+    private final CqrsPublisher cqrsPublisher;
 
     @Transactional
     public MovimentacaoModel realizarMovimentacao(UUID uuidContaOrigem, MovimentacaoRequestDTO request) {
@@ -89,6 +90,7 @@ public class MovimentacaoService {
                 // Creditar destino
                 contaDestino.setSaldo(contaDestino.getSaldo().add(request.valor()));
                 contaRepository.save(contaDestino);
+                cqrsPublisher.publicarConta(contaDestino);
 
                 // Criar registro de movimentação de recebimento na conta destino
                 MovimentacaoModel movimentacaoDestino = MovimentacaoModel.builder()
@@ -106,7 +108,9 @@ public class MovimentacaoService {
         }
 
         MovimentacaoModel movimentacaoOrigem = movimentacaoBuilder.build();
-        return movimentacaoRepository.save(movimentacaoOrigem);
+        MovimentacaoModel savedMovimentacao = movimentacaoRepository.save(movimentacaoOrigem);
+        cqrsPublisher.publicarConta(contaOrigem);
+        return savedMovimentacao;
     }
 
     public List<MovimentacaoModel> obterExtrato(UUID uuidConta, LocalDateTime dataInicio, LocalDateTime dataFim) {

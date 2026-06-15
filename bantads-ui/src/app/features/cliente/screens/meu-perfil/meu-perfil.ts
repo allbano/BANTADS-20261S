@@ -6,8 +6,8 @@ import { PerfilClienteFacade } from '../../application/facades/perfil-cliente.fa
 import { ClienteTopNav } from '../../components/cliente-top-nav/cliente-top-nav';
 import { DashboardClienteRepository } from '../../domain/repositories/dashboard-cliente.repository';
 import { PerfilClienteRepository } from '../../domain/repositories/perfil-cliente.repository';
-import { ClienteContaMockService } from '../../infrastructure/services/cliente-conta-mock.service';
-import { PerfilClienteMockService } from '../../infrastructure/services/perfil-cliente-mock.service';
+import { ClienteContaHttpService } from '../../infrastructure/services/cliente-conta-http.service';
+import { PerfilClienteHttpService } from '../../infrastructure/services/perfil-cliente-http.service';
 
 @Component({
   selector: 'app-meu-perfil',
@@ -15,25 +15,14 @@ import { PerfilClienteMockService } from '../../infrastructure/services/perfil-c
   templateUrl: './meu-perfil.html',
   providers: [
     PerfilClienteFacade,
-    { provide: PerfilClienteRepository, useExisting: PerfilClienteMockService },
-    { provide: DashboardClienteRepository, useExisting: ClienteContaMockService },
+    { provide: PerfilClienteRepository, useExisting: PerfilClienteHttpService },
+    { provide: DashboardClienteRepository, useExisting: ClienteContaHttpService },
   ],
 })
 export class MeuPerfil implements OnInit {
   readonly facade = inject(PerfilClienteFacade);
 
-  /** Controla se o painel de alterar senha está expandido. */
-  protected senhaAberta = false;
-
   ngOnInit(): void {
     this.facade.carregar();
-  }
-
-  protected toggleSenha(): void {
-    this.senhaAberta = !this.senhaAberta;
-    if (!this.senhaAberta) {
-      this.facade.formSenha.reset();
-      this.facade.limparFeedbacks();
-    }
   }
 }

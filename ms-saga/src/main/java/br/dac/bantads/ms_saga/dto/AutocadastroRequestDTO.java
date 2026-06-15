@@ -1,5 +1,7 @@
 package br.dac.bantads.ms_saga.dto;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
+
 import java.math.BigDecimal;
 
 public record AutocadastroRequestDTO(
@@ -10,7 +12,7 @@ public record AutocadastroRequestDTO(
         String telefone,
         BigDecimal salario,
         String endereco,
-        String cep,
+        @JsonAlias("CEP") String cep,
         String cidade,
         String estado
 ) {}

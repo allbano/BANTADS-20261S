@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, OnInit, Output, inject } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 
 import { RouterLink } from '@angular/router';
 import {
@@ -11,11 +11,8 @@ import {
   ValidationErrors,
 } from '@angular/forms';
 import { Observable, timer, of } from 'rxjs';
-import { switchMap, map } from 'rxjs/operators';
+import { switchMap } from 'rxjs/operators';
 import { DadosPessoais } from '../../domain/models/autocadastro.model';
-import { ClienteLocalStorageService } from '../../infrastructure/services/cliente-local-storage.service';
-import { CLIENTES_DEMONSTRACAO } from '../../infrastructure/data/clientes-demonstracao';
-import { AprovacaoMockService } from '../../../gerente/infrastructure/services/aprovacao-mock.service';
 
 // Função de formatação de CPF
 export function formatarCPF(value: string): string {
@@ -41,9 +38,6 @@ export class FormDadosPessoaisComponent implements OnInit {
   @Output() proximo = new EventEmitter<DadosPessoais>();
 
   form!: FormGroup;
-
-  private clienteStorage = inject(ClienteLocalStorageService);
-  private aprovacaoMock = inject(AprovacaoMockService);
 
   constructor(private fb: FormBuilder) {}
 
@@ -85,26 +79,7 @@ export class FormDadosPessoaisComponent implements OnInit {
             return of({ cpfInvalido: true });
           }
 
-          // Verificação real de CPF duplicado contra as bases de dados
-          const cpfNum = Number(cpf);
-
-          // Verifica em clientes de demonstração
-          const existeDemo = CLIENTES_DEMONSTRACAO.some(c => c.cpf === cpfNum);
-
-          // Verifica no storage local (clientes aprovados)
-          const existeStorage = this.clienteStorage.listarTodos().some(c => c.cpf === cpfNum);
-
-          // Verifica em pedidos pendentes
-          const existePendente = this.aprovacaoMock.listarPendentes().some(p =>
-            p.cpf.replace(/\D/g, '') === cpf
-          );
-
-          console.log('Validação CPF:', { cpf, cpfNum, existeDemo, existeStorage, existePendente });
-
-          if (existeDemo || existeStorage || existePendente) {
-            return of({ cpfDuplicado: true });
-          }
-
+          // A unicidade do CPF é validada pelo backend (HTTP 409 no autocadastro).
           return of(null);
         }),
       );

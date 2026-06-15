@@ -24,13 +24,15 @@ export class DashboardAdminFacade {
   });
 
   carregar(): void {
-    try {
-      const dados = this.repository.obterEstatisticas();
-      this._estatisticas.set(dados);
-      this._erro.set(null);
-    } catch {
-      this._erro.set('Não foi possível carregar as estatísticas.');
-      this._estatisticas.set([]);
-    }
+    this.repository.obterEstatisticas().subscribe({
+      next: (dados) => {
+        this._estatisticas.set(dados);
+        this._erro.set(null);
+      },
+      error: () => {
+        this._erro.set('Não foi possível carregar as estatísticas.');
+        this._estatisticas.set([]);
+      },
+    });
   }
 }

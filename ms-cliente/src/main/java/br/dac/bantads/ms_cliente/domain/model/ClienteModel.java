@@ -20,7 +20,6 @@ public class ClienteModel implements Serializable {
     private static final long serialVersionUID = 1L;
 
     @Id
-    @GeneratedValue(generator = "uuidv7")
     @Column(name = "cliente_uuid", nullable = false, unique = true)
     private UUID uuid;
 
@@ -62,6 +61,16 @@ public class ClienteModel implements Serializable {
     @Builder.Default
     @Column(name = "cliente_cargo", nullable = false)
     private String cargo = "CLIENTE";
+
+    /**
+     * Situação do autocadastro: PENDENTE (aguardando aprovação), APROVADO ou
+     * REJEITADO. Distingue "aguardando aprovação" (R9) de rejeitado — o flag
+     * booleano {@code ativo} não basta, pois pendente e rejeitado são ambos
+     * inativos. Default APROVADO (seed e clientes já existentes).
+     */
+    @Builder.Default
+    @Column(name = "cliente_status") // nullable: permite ddl-auto=update adicionar a coluna em tabela já populada
+    private String status = "APROVADO";
 
     @PrePersist
     private void prePersist() {

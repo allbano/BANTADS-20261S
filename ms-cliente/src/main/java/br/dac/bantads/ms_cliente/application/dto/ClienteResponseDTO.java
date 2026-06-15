@@ -8,6 +8,7 @@ public record ClienteResponseDTO(
         String nome,
         String email,
         String cpf,
+        String telefone,
         BigDecimal salario,
         String endereco,
         String cep,

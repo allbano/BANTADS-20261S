@@ -35,12 +35,12 @@
           </tr>
         </thead>
         <tbody class="divide-y divide-neutral-700/50">
-          @for (cliente of facade.clientesFiltrados(); track cliente.id) {
+          @for (cliente of facade.clientesFiltrados(); track cliente.cpf) {
             <tr class="hover:bg-[#252528] transition-colors group">
               <td class="px-6 py-4 text-neutral-400 font-mono text-[0.9rem]">{{ cliente.cpf }}</td>
               <td class="px-6 py-4">
                 <a
-                  [routerLink]="['/gerente/clientes', cliente.id]"
+                  [routerLink]="['/gerente/clientes', cliente.cpf]"
                   class="text-neutral-100 underline underline-offset-2 decoration-neutral-600 hover:decoration-[#6ecf7a] hover:text-[#6ecf7a] transition-colors text-[0.95rem]"
                 >
                   {{ cliente.nome }}

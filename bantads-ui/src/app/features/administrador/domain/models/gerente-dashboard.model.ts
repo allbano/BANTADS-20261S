@@ -5,7 +5,7 @@
  * a totalização de saldos positivos e negativos.
  */
 export interface GerenteDashboard {
-  gerenteId: number;
+  gerenteCpf: string;
   nome: string;
   qtdClientes: number;
   /** Soma de todos os saldos >= 0 dos clientes deste gerente. */

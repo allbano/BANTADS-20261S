@@ -1,23 +1,23 @@
 package br.dac.bantads.ms_conta.controller;
 
-import br.dac.bantads.ms_conta.dto.ExtratoRequestDTO;
 import br.dac.bantads.ms_conta.dto.MovimentacaoRequestDTO;
 import br.dac.bantads.ms_conta.dto.MovimentacaoResponseDTO;
-import br.dac.bantads.ms_conta.model.MovimentacaoModel;
+import br.dac.bantads.ms_conta.model.cud.MovimentacaoModel;
 import br.dac.bantads.ms_conta.service.MovimentacaoService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+/**
+ * MS Conta — histórico de movimentações (depósito R5, saque R6, transferência R7)
+ * usado internamente; as operações no formato do contrato test_dac (por número)
+ * ficam no {@link ContaOperacaoController}.
+ */
 @CrossOrigin
 @RestController
 @RequestMapping("/contas")
@@ -45,38 +45,8 @@ public class MovimentacaoController {
         return ResponseEntity.ok(dtos);
     }
 
-    @PostMapping("/{uuidConta}/extrato")
-    public ResponseEntity<List<MovimentacaoResponseDTO>> obterExtratoPost(
-            @PathVariable UUID uuidConta,
-            @RequestBody ExtratoRequestDTO request) {
-        log.info("Recebida requisição POST para extrato da conta: {}", uuidConta);
-        LocalDateTime dataInicio = request.dataInicio() != null ? 
-                request.dataInicio().atStartOfDay() : LocalDate.now().minusDays(30).atStartOfDay();
-        LocalDateTime dataFim = request.dataFim() != null ? 
-                request.dataFim().atTime(LocalTime.MAX) : LocalDate.now().atTime(LocalTime.MAX);
-        
-        List<MovimentacaoResponseDTO> dtos = movimentacaoService.obterExtrato(uuidConta, dataInicio, dataFim).stream()
-                .map(this::toDTO)
-                .collect(Collectors.toList());
-        return ResponseEntity.ok(dtos);
-    }
-
-    @GetMapping("/{uuidConta}/extrato")
-    public ResponseEntity<List<MovimentacaoResponseDTO>> obterExtratoGet(
-            @PathVariable UUID uuidConta,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dataInicio,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dataFim) {
-        log.info("Recebida requisição GET para extrato da conta: {}", uuidConta);
-        LocalDateTime inicio = dataInicio != null ? 
-                dataInicio.atStartOfDay() : LocalDate.now().minusDays(30).atStartOfDay();
-        LocalDateTime fim = dataFim != null ? 
-                dataFim.atTime(LocalTime.MAX) : LocalDate.now().atTime(LocalTime.MAX);
-        
-        List<MovimentacaoResponseDTO> dtos = movimentacaoService.obterExtrato(uuidConta, inicio, fim).stream()
-                .map(this::toDTO)
-                .collect(Collectors.toList());
-        return ResponseEntity.ok(dtos);
-    }
+    // Extrato passou a ser servido por NÚMERO no contrato test_dac
+    // (ver ContaOperacaoController GET /contas/{numero}/extrato).
 
     private MovimentacaoResponseDTO toDTO(MovimentacaoModel model) {
         return new MovimentacaoResponseDTO(

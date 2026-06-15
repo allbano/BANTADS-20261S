@@ -14,7 +14,9 @@ import org.springframework.stereotype.Service;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 
 @Service
 @RequiredArgsConstructor
@@ -26,6 +28,9 @@ public class AutocadastroSagaOrchestrator {
 
     // Estado em memória — suficiente para o contexto acadêmico
     private final Map<UUID, SagaInstance> sagaStore = new ConcurrentHashMap<>();
+    // Futuros para o modo bloqueante (resposta síncrona ao gateway).
+    private final Map<UUID, CompletableFuture<SagaInstance>> aguardando = new ConcurrentHashMap<>();
+    private static final long TIMEOUT_PADRAO_SEGUNDOS = 20;
 
     // ---------------------------------------------------------------
     // Entrada: API chama este método para iniciar o fluxo de autocadastro
@@ -38,9 +43,29 @@ public class AutocadastroSagaOrchestrator {
                 req.cidade(), req.estado()
         );
         sagaStore.put(sagaId, saga);
+        aguardando.put(sagaId, new CompletableFuture<>());
         log.info("SAGA {} iniciada para o cliente '{}'", sagaId, req.email());
         enviarPassoRegistrarCliente(saga);
         return sagaId;
+    }
+
+    /** Modo SÍNCRONO: inicia e bloqueia até CONCLUÍDA/FALHOU (ou timeout). */
+    public SagaInstance iniciarEAguardar(AutocadastroRequestDTO req) {
+        UUID sagaId = iniciarSaga(req);
+        CompletableFuture<SagaInstance> f = aguardando.get(sagaId);
+        try {
+            return f.get(TIMEOUT_PADRAO_SEGUNDOS, TimeUnit.SECONDS);
+        } catch (Exception e) {
+            log.error("SAGA {}: timeout/erro ao aguardar autocadastro", sagaId, e);
+            return sagaStore.get(sagaId);
+        } finally {
+            aguardando.remove(sagaId);
+        }
+    }
+
+    private void completar(SagaInstance saga) {
+        CompletableFuture<SagaInstance> f = aguardando.get(saga.getSagaId());
+        if (f != null) f.complete(saga);
     }
 
     // ---------------------------------------------------------------
@@ -84,6 +109,7 @@ public class AutocadastroSagaOrchestrator {
         saga.setStatus(SagaStatus.AGUARDANDO_CONTA);
         Map<String, Object> dto = new HashMap<>();
         dto.put("uuidCliente", saga.getUuidCliente().toString());
+        dto.put("cpf",         saga.getCpf()); // denormaliza o CPF na conta (saldo/relatórios)
         dto.put("salario",     saga.getSalario());
         dto.put("ativo",       false);
         dto.put("sagaId",      saga.getSagaId().toString());
@@ -124,6 +150,7 @@ public class AutocadastroSagaOrchestrator {
         if (saga == null) { log.warn("SAGA {} não encontrada (onAuthCriado)", sagaId); return; }
         saga.setStatus(SagaStatus.CONCLUIDA);
         log.info("SAGA {}: CONCLUÍDA com sucesso para '{}'", sagaId, saga.getEmail());
+        completar(saga);
         sagaStore.remove(sagaId);
     }
 
@@ -151,12 +178,13 @@ public class AutocadastroSagaOrchestrator {
 
         saga.setStatus(SagaStatus.FALHOU);
         log.error("SAGA {}: FALHOU. Cliente: '{}'", sagaId, saga.getEmail());
+        completar(saga);
     }
 
     private void enviarCompensacaoConta(SagaInstance saga) {
         try {
             String uuidJson = objectMapper.writeValueAsString(saga.getUuidCliente().toString());
-            rabbitTemplate.convertAndSend(RabbitMQConfig.FILA_ERRO_NOVO_CLIENTE, uuidJson);
+            rabbitTemplate.convertAndSend(RabbitMQConfig.EXCHANGE, RabbitMQConfig.FILA_ERRO_NOVO_CLIENTE, uuidJson);
             log.info("SAGA {}: compensação de conta enviada", saga.getSagaId());
         } catch (JsonProcessingException e) {
             log.error("SAGA {}: falha ao serializar compensação de conta", saga.getSagaId(), e);
@@ -166,7 +194,7 @@ public class AutocadastroSagaOrchestrator {
     private void enviarCompensacaoCliente(SagaInstance saga) {
         try {
             String uuidJson = objectMapper.writeValueAsString(saga.getUuidCliente().toString());
-            rabbitTemplate.convertAndSend(RabbitMQConfig.SAGA_CMD_EXCLUIR_CLIENTE, uuidJson);
+            rabbitTemplate.convertAndSend(RabbitMQConfig.EXCHANGE, RabbitMQConfig.SAGA_CMD_EXCLUIR_CLIENTE, uuidJson);
             log.info("SAGA {}: compensação de cliente enviada", saga.getSagaId());
         } catch (JsonProcessingException e) {
             log.error("SAGA {}: falha ao serializar compensação de cliente", saga.getSagaId(), e);
@@ -187,7 +215,7 @@ public class AutocadastroSagaOrchestrator {
     private void publicar(String fila, Map<String, Object> payload, UUID sagaId) {
         try {
             String json = objectMapper.writeValueAsString(payload);
-            rabbitTemplate.convertAndSend(fila, json);
+            rabbitTemplate.convertAndSend(RabbitMQConfig.EXCHANGE, fila, json);
             log.debug("SAGA {}: mensagem publicada em '{}'", sagaId, fila);
         } catch (JsonProcessingException e) {
             log.error("SAGA {}: erro ao serializar para a fila '{}'", sagaId, fila, e);

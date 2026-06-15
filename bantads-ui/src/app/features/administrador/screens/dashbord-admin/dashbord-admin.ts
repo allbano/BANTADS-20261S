@@ -3,7 +3,7 @@ import { DecimalPipe } from '@angular/common';
 
 import { DashboardAdminFacade } from '../../application/facades/dashboard-admin.facade';
 import { DashboardAdminRepository } from '../../domain/repositories/dashboard-admin.repository';
-import { DashboardAdminMockService } from '../../infrastructure/services/dashboard-admin-mock.service';
+import { DashboardAdminHttpService } from '../../infrastructure/services/dashboard-admin-http.service';
 import { AdminTopNav } from '../../components/admin-top-nav/admin-top-nav';
 
 /**
@@ -19,7 +19,7 @@ import { AdminTopNav } from '../../components/admin-top-nav/admin-top-nav';
   templateUrl: './dashbord-admin.html',
   providers: [
     DashboardAdminFacade,
-    { provide: DashboardAdminRepository, useExisting: DashboardAdminMockService },
+    { provide: DashboardAdminRepository, useExisting: DashboardAdminHttpService },
   ],
 })
 export class DashboardAdminComponent implements OnInit {

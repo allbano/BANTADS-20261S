@@ -1,7 +1,7 @@
 import { Component, inject } from '@angular/core';
 import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 
-import { SessaoClienteService } from '../../../../core/auth/services/sessao-cliente.service';
+import { AutenticacaoService } from '../../../../core/auth/services/autenticacao.service';
 
 @Component({
   selector: 'app-cliente-top-nav',
@@ -10,10 +10,11 @@ import { SessaoClienteService } from '../../../../core/auth/services/sessao-clie
 })
 export class ClienteTopNav {
   private readonly router = inject(Router);
-  private readonly sessao = inject(SessaoClienteService);
+  private readonly autenticacao = inject(AutenticacaoService);
 
   sair(): void {
-    this.sessao.encerrar();
-    void this.router.navigateByUrl('/auth/login');
+    this.autenticacao.logout().subscribe(() => {
+      void this.router.navigateByUrl('/auth/login');
+    });
   }
 }

@@ -2,39 +2,29 @@ import { Injectable, inject, signal } from '@angular/core';
 
 import type { DashboardClienteResumo } from '../../domain/models/dashboard-cliente-resumo.model';
 import type { ExtratoDia } from '../../domain/models/extrato-dia.model';
-import { ClienteContaMockService } from '../../infrastructure/services/cliente-conta-mock.service';
-import { SessaoClienteService } from '../../../../core/auth/services/sessao-cliente.service';
+import { ClienteContaRepository } from '../../domain/repositories/cliente-conta.repository';
 
 @Injectable()
+/** R8 — Extrato: consulta por período; saída em vermelho, entrada em azul e
+ *  saldo consolidado por dia desde a data inicial. */
 export class ExtratoFacade {
-  private readonly conta = inject(ClienteContaMockService);
-  private readonly sessao = inject(SessaoClienteService);
+  private readonly conta = inject(ClienteContaRepository);
 
   readonly resumo = signal<DashboardClienteResumo | null>(null);
   readonly dias = signal<ExtratoDia[]>([]);
 
   /** Atualiza apenas o resumo (saldo atual no cabeçalho). */
   atualizarResumo(): void {
-    const id = this.sessao.clienteId();
-    if (id === null) {
-      this.resumo.set(null);
-      return;
-    }
-    this.resumo.set(this.conta.obterResumo(id));
-  }
-
-  /** Resumo + período padrão Catharyna (jan/2020). */
-  recarregar(): void {
-    this.atualizarResumo();
-    this.aplicarFiltro('2020-01-01', '2020-01-31');
+    this.conta.obterResumo().subscribe({
+      next: (r) => this.resumo.set(r),
+      error: () => this.resumo.set(null),
+    });
   }
 
   aplicarFiltro(dataInicio: string, dataFim: string): void {
-    const id = this.sessao.clienteId();
-    if (id === null) {
-      this.dias.set([]);
-      return;
-    }
-    this.dias.set(this.conta.consultarExtrato(id, dataInicio, dataFim));
+    this.conta.consultarExtrato(dataInicio, dataFim).subscribe({
+      next: (dias) => this.dias.set(dias),
+      error: () => this.dias.set([]),
+    });
   }
 }

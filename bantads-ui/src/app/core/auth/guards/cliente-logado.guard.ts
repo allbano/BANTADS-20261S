@@ -1,12 +1,12 @@
 import { inject } from '@angular/core';
 import { CanActivateFn, Router } from '@angular/router';
 
-import { SessaoClienteService } from '../services/sessao-cliente.service';
+import { SessaoService } from '../services/sessao.service';
 
 export const clienteLogadoGuard: CanActivateFn = () => {
-  const sessao = inject(SessaoClienteService);
+  const sessao = inject(SessaoService);
   const router = inject(Router);
-  if (sessao.clienteId() !== null) {
+  if (sessao.tipo() === 'CLIENTE') {
     return true;
   }
   return router.createUrlTree(['/auth/login']);

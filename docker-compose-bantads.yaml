@@ -27,7 +27,29 @@ services:
     ports:
       - "55000:5432"
     volumes:
-      - bantads-pg-account:/var/lib/postgresql/data
+      - bantads-pg-account:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+    networks:
+      - bantads-network
+    logging: *common-logging
+
+  bantads-pg-account-r:
+    image: postgres:18.3-alpine3.23
+    container_name: bantads-pg-account-r
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-bantads}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-bantads123}
+      POSTGRES_DB: ${POSTGRES_DB_ACCOUNT_R:-bantads_account_r}
+    ports:
+      - "55004:5432"
+    volumes:
+      - bantads-pg-account-r:/var/lib/postgresql
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
       interval: 10s
@@ -49,7 +71,7 @@ services:
     ports:
       - "55001:5432"
     volumes:
-      - bantads-pg-cliente:/var/lib/postgresql/data
+      - bantads-pg-cliente:/var/lib/postgresql
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
       interval: 10s
@@ -71,7 +93,7 @@ services:
     ports:
       - "55002:5432"
     volumes:
-      - bantads-pg-funcionario:/var/lib/postgresql/data
+      - bantads-pg-funcionario:/var/lib/postgresql
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
       interval: 10s
@@ -83,7 +105,7 @@ services:
     logging: *common-logging
 
   bantads-mongodb:
-    image: mongo:8.0-jammy
+    image: mongo:8.2
     container_name: bantads-mongodb
     restart: unless-stopped
     environment:
@@ -139,7 +161,10 @@ services:
       - "40009:40009"
     environment:
       SERVER_PORT: 40009
-      SPRING_DATA_MONGODB_URI: mongodb://${MONGO_INITDB_ROOT_USERNAME:-bantads}:${MONGO_INITDB_ROOT_PASSWORD:-bantads123}@bantads-mongodb:27017/ms_auth?authSource=admin
+      # Spring Boot 4.0 movimentou as props de conexao do Mongo para o prefixo `spring.mongodb.*`
+      # (modulo spring-boot-mongodb). O antigo `spring.data.mongodb.uri` e ignorado, por isso
+      # a variavel correta e SPRING_MONGODB_URI -> spring.mongodb.uri.
+      SPRING_MONGODB_URI: mongodb://${MONGO_INITDB_ROOT_USERNAME:-bantads}:${MONGO_INITDB_ROOT_PASSWORD:-bantads123}@bantads-mongodb:27017/ms_auth?authSource=admin
       JWT_ISSUER: ${JWT_ISSUER:-ms-auth}
       JWT_SECRET: ${JWT_SECRET:-change-me-in-production}
       JWT_EXPIRATION_MINUTES: ${JWT_EXPIRATION_MINUTES:-60}
@@ -175,6 +200,8 @@ services:
       SPRING_RABBITMQ_PORT: 5672
       SPRING_RABBITMQ_USERNAME: ${RABBITMQ_DEFAULT_USER:-guest}
       SPRING_RABBITMQ_PASSWORD: ${RABBITMQ_DEFAULT_PASS:-guest}
+      MAIL_ADDRESS: ${MAIL_ADDRESS:-albanoaws2024@gmail.com}
+      MAIL_PASSWORD: ${MAIL_PASSWORD:-change-me}
     depends_on:
       bantads-pg-cliente:
         condition: service_healthy
@@ -191,9 +218,13 @@ services:
       - "40006:40006"
     environment:
       SERVER_PORT: 40006
+      # CQRS: datasource de Comando (conta_cud) e de Consulta (conta_r)
       SPRING_DATASOURCE_URL: jdbc:postgresql://bantads-pg-account:5432/${POSTGRES_DB_ACCOUNT:-bantads_account}
       SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER:-bantads}
       SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:-bantads123}
+      READ_DATASOURCE_URL: jdbc:postgresql://bantads-pg-account-r:5432/${POSTGRES_DB_ACCOUNT_R:-bantads_account_r}
+      READ_DATASOURCE_USERNAME: ${POSTGRES_USER:-bantads}
+      READ_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:-bantads123}
       SPRING_JPA_HIBERNATE_DDL_AUTO: update
       SPRING_FLYWAY_ENABLED: "false"
       SPRING_RABBITMQ_HOST: bantads-rabbitmq
@@ -202,6 +233,8 @@ services:
       SPRING_RABBITMQ_PASSWORD: ${RABBITMQ_DEFAULT_PASS:-guest}
     depends_on:
       bantads-pg-account:
+        condition: service_healthy
+      bantads-pg-account-r:
         condition: service_healthy
       bantads-rabbitmq:
         condition: service_healthy
@@ -250,6 +283,26 @@ services:
       bantads-rabbitmq:
         condition: service_healthy
 
+  bantads-ms-notificacao:
+    <<: *java-service
+    container_name: bantads-ms-notificacao
+    build:
+      context: ms_notificacao/
+      dockerfile: Dockerfile
+    ports:
+      - "40011:40011"
+    environment:
+      SERVER_PORT: 40011
+      SPRING_RABBITMQ_HOST: bantads-rabbitmq
+      SPRING_RABBITMQ_PORT: 5672
+      SPRING_RABBITMQ_USERNAME: ${RABBITMQ_DEFAULT_USER:-guest}
+      SPRING_RABBITMQ_PASSWORD: ${RABBITMQ_DEFAULT_PASS:-guest}
+      MAIL_ADDRESS: ${MAIL_ADDRESS:-albanoaws2024@gmail.com}
+      MAIL_PASSWORD: ${MAIL_PASSWORD:-change-me}
+    depends_on:
+      bantads-rabbitmq:
+        condition: service_healthy
+
 # ══════════════════════════════════════════════════════════════════════
 # API GATEWAY (Node.js / TypeScript)
 # ══════════════════════════════════════════════════════════════════════
@@ -260,9 +313,10 @@ services:
       dockerfile: Dockerfile
     restart: unless-stopped
     ports:
-      - "40004:40004"
+      - "3000:3000"
+      - "8000:3000"
     environment:
-      PORT: 40004
+      PORT: 3000
       JWT_SECRET: ${JWT_SECRET:-change-me-in-production}
       MS_AUTH_URL: http://bantads-ms-auth:40009
       MS_CLIENTE_URL: http://bantads-ms-cliente:40007
@@ -303,6 +357,7 @@ services:
 
 volumes:
   bantads-pg-account:
+  bantads-pg-account-r:
   bantads-pg-cliente:
   bantads-pg-funcionario:
   bantads-mongodb:

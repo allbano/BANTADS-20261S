@@ -17,4 +17,12 @@ public enum AccountRole {
     public String authority() {
         return name().toLowerCase();
     }
+
+    /**
+     * Tipo exposto na API (LoginResponse.tipo), conforme o enum oficial
+     * [CLIENTE, GERENTE, ADMIN]. ADMINISTRADOR e mapeado para "ADMIN".
+     */
+    public String tipoApi() {
+        return this == ADMINISTRADOR ? "ADMIN" : name();
+    }
 }

@@ -5,12 +5,17 @@ import { FormsModule } from '@angular/forms';
 import { DepositoFacade } from '../../application/facades/deposito.facade';
 import { ClienteTopNav } from '../../components/cliente-top-nav/cliente-top-nav';
 import { ResumoContaLateral } from '../../components/resumo-conta-lateral/resumo-conta-lateral';
+import { ClienteContaRepository } from '../../domain/repositories/cliente-conta.repository';
+import { ClienteContaHttpService } from '../../infrastructure/services/cliente-conta-http.service';
 
 @Component({
   selector: 'app-deposito',
   imports: [FormsModule, CurrencyPipe, ClienteTopNav, ResumoContaLateral],
   templateUrl: './deposito.html',
-  providers: [DepositoFacade],
+  providers: [
+    DepositoFacade,
+    { provide: ClienteContaRepository, useExisting: ClienteContaHttpService },
+  ],
 })
 export class Deposito implements OnInit {
   readonly facade = inject(DepositoFacade);

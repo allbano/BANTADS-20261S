@@ -12,6 +12,7 @@ import java.util.UUID;
 public record ContaResponseDTO(
         UUID uuidConta,
         UUID uuidCliente,
+        String clienteCpf,
         String numero,
         LocalDate dataCriacao,
         BigDecimal saldo,

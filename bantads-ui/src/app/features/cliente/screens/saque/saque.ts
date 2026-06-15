@@ -5,12 +5,17 @@ import { FormsModule } from '@angular/forms';
 import { SaqueFacade } from '../../application/facades/saque.facade';
 import { ClienteTopNav } from '../../components/cliente-top-nav/cliente-top-nav';
 import { ResumoContaLateral } from '../../components/resumo-conta-lateral/resumo-conta-lateral';
+import { ClienteContaRepository } from '../../domain/repositories/cliente-conta.repository';
+import { ClienteContaHttpService } from '../../infrastructure/services/cliente-conta-http.service';
 
 @Component({
   selector: 'app-saque',
   imports: [FormsModule, CurrencyPipe, ClienteTopNav, ResumoContaLateral],
   templateUrl: './saque.html',
-  providers: [SaqueFacade],
+  providers: [
+    SaqueFacade,
+    { provide: ClienteContaRepository, useExisting: ClienteContaHttpService },
+  ],
 })
 export class Saque implements OnInit {
   readonly facade = inject(SaqueFacade);

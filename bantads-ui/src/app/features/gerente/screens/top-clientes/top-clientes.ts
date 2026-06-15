@@ -3,7 +3,7 @@ import { CurrencyPipe } from '@angular/common';
 
 import { TopClientesFacade } from '../../application/facades/top-clientes.facade';
 import { TopClientesRepository } from '../../domain/repositories/top-clientes.repository';
-import { TopClientesMockService } from '../../infrastructure/services/top-clientes-mock.service';
+import { TopClientesHttpService } from '../../infrastructure/services/top-clientes-http.service';
 import { GerenteTopNav } from '../../components/gerente-top-nav/gerente-top-nav';
 
 /**
@@ -15,7 +15,7 @@ import { GerenteTopNav } from '../../components/gerente-top-nav/gerente-top-nav'
   templateUrl: './top-clientes.html',
   providers: [
     TopClientesFacade,
-    { provide: TopClientesRepository, useExisting: TopClientesMockService },
+    { provide: TopClientesRepository, useExisting: TopClientesHttpService },
   ],
 })
 export class TopClientes implements OnInit {

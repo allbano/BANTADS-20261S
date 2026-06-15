@@ -19,6 +19,12 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+/**
+ * MS Gerente (subdomínio de gerentes/funcionários). Expõe as consultas de
+ * gerentes (R19 listar, detalhe por cpf/uuid) usadas pela API Composition do
+ * gateway e o reboot. As mutações do CRUD — inserir (R17), alterar (R20) e
+ * remover (R18) — são executadas pelos passos de SAGA (mensageria).
+ */
 @CrossOrigin
 @RestController
 public class FuncionarioController {

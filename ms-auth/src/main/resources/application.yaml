@@ -8,6 +8,20 @@ spring:
     name: ms-auth
   mongodb:
     uri: mongodb://localhost:27017/ms_auth
+  rabbitmq:
+    host: ${SPRING_RABBITMQ_HOST:localhost}
+    port: ${SPRING_RABBITMQ_PORT:5672}
+    username: ${SPRING_RABBITMQ_USERNAME:guest}
+    password: ${SPRING_RABBITMQ_PASSWORD:guest}
+    listener:
+      simple:
+        default-requeue-rejected: false   # apos esgotar retries, dead-letter para bantads.dlx
+        retry:
+          enabled: true
+          initial-interval: 2000ms
+          max-retries: 3
+          multiplier: 2.0
+          max-interval: 16000ms
   mail:
     host: smtp.gmail.com
     port: 587
@@ -25,9 +39,3 @@ auth:
     issuer: ${JWT_ISSUER:ms-auth}
     secret: ${JWT_SECRET:change-me-in-production}
     expiration-minutes: ${JWT_EXPIRATION_MINUTES:60}
-
-springdoc:
-  api-docs:
-    path: /v3/api-docs
-  swagger-ui:
-    path: /swagger-ui

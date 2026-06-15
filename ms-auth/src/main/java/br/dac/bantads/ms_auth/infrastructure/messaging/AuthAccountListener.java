@@ -77,7 +77,7 @@ public class AuthAccountListener {
             String json = authObjectMapper.writeValueAsString(
                     java.util.Map.of("sagaId", sagaId, "sucesso", true, "mensagem", "auth criado para " + email)
             );
-            rabbitTemplate.convertAndSend(RabbitMQConfig.SAGA_EVT_AUTH_CRIADO, json);
+            rabbitTemplate.convertAndSend(RabbitMQConfig.EXCHANGE, RabbitMQConfig.SAGA_EVT_AUTH_CRIADO, json);
         } catch (Exception e) {
             log.error("Falha ao publicar SAGA_EVT_AUTH_CRIADO", e);
         }
@@ -89,7 +89,7 @@ public class AuthAccountListener {
             String json = authObjectMapper.writeValueAsString(
                     java.util.Map.of("sagaId", sagaId, "sucesso", false, "mensagem", motivo != null ? motivo : "erro no ms-auth")
             );
-            rabbitTemplate.convertAndSend(RabbitMQConfig.SAGA_EVT_AUTH_ERRO, json);
+            rabbitTemplate.convertAndSend(RabbitMQConfig.EXCHANGE, RabbitMQConfig.SAGA_EVT_AUTH_ERRO, json);
         } catch (Exception e) {
             log.error("Falha ao publicar SAGA_EVT_AUTH_ERRO", e);
         }

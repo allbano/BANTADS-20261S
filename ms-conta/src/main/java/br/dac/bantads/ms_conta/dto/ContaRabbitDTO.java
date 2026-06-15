@@ -16,6 +16,7 @@ public class ContaRabbitDTO {
     private String id;
     private String idUsuario;
     private String uuidCliente;
+    private String cpf;
     private String idGerente;
     private String uuidGerente;
 

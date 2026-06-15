@@ -5,7 +5,7 @@ import type { Movimentacao } from './movimentacao.model';
  * Agregado de leitura para a tela inicial do cliente (R3) e trechos do extrato (R8).
  */
 export interface DashboardClienteResumo {
-  clienteId: number;
+  cpf: string;
   nomeCliente: string;
   emailCliente: string;
   numeroConta: string;

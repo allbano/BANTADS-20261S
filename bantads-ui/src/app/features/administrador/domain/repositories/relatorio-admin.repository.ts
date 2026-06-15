@@ -1,3 +1,5 @@
+import type { Observable } from 'rxjs';
+
 import type { ClienteRelatorio } from '../models/cliente-relatorio.model';
 
 /**
@@ -5,5 +7,5 @@ import type { ClienteRelatorio } from '../models/cliente-relatorio.model';
  */
 export abstract class RelatorioAdminRepository {
   /** Retorna todos os clientes com dados completos (conta + gerente). */
-  abstract listarClientes(): ClienteRelatorio[];
+  abstract listarClientes(): Observable<ClienteRelatorio[]>;
 }

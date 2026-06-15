@@ -3,8 +3,7 @@ package br.dac.bantads.ms_funcionario.domain;
 import java.io.Serial;
 import java.util.UUID;
 
-import org.hibernate.annotations.UuidGenerator;
-
+import com.fasterxml.uuid.Generators;
 
 import jakarta.persistence.*;
 import lombok.*;
@@ -22,10 +21,8 @@ public class FuncionarioModel {
     private static final long serialVersionUID = 1L;
 
     @Id
-    @GeneratedValue
-    @UuidGenerator(style = UuidGenerator.Style.VERSION_7)
     @Column(name = "funcionario_uuid",
-            nullable = false, 
+            nullable = false,
             unique = true,
             updatable = false,
             columnDefinition = "uuid")
@@ -50,4 +47,10 @@ public class FuncionarioModel {
     @Column(name = "funcionario_senha")
     private String senha;
 
+    @PrePersist
+    private void prePersist() {
+        if (this.uuid == null) {
+            this.uuid = Generators.timeBasedEpochGenerator().generate();
+        }
+    }
 }

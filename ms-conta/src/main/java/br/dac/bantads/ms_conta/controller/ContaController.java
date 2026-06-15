@@ -10,6 +10,11 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.UUID;
 
+/**
+ * MS Conta — consultas (lado de leitura do CQRS, {@link ContaQueryService}).
+ * Serve a API Composition do gateway: contas por cliente/gerente, top 3 saldos
+ * (R14), pendentes (R9) e a carteira para o dashboard do admin (R15).
+ */
 @CrossOrigin
 @RestController
 @RequestMapping("/contas")

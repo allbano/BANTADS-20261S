@@ -5,7 +5,6 @@ import { AprovacaoRepository } from '../../domain/repositories/aprovacao.reposit
 
 /**
  * Facade da tela inicial do gerente (R9/R10/R11).
- *
  * Gerencia o estado de pedidos pendentes e feedback de ações.
  */
 @Injectable()
@@ -19,27 +18,36 @@ export class DashboardGerenteFacade {
   readonly feedback = this._feedback.asReadonly();
 
   carregar(): void {
-    this._pedidos.set(this.repository.listarPendentes());
     this._feedback.set(null);
+    this.recarregarPendentes();
   }
 
-  aprovar(pedidoId: number): void {
-    const resultado = this.repository.aprovar(pedidoId);
-    this._feedback.set({ texto: resultado.mensagem, erro: !resultado.sucesso });
-    if (resultado.sucesso) {
-      this._pedidos.set(this.repository.listarPendentes());
-    }
+  aprovar(cpf: string): void {
+    this.repository.aprovar(cpf).subscribe((resultado) => {
+      this._feedback.set({ texto: resultado.mensagem, erro: !resultado.sucesso });
+      if (resultado.sucesso) {
+        this.recarregarPendentes();
+      }
+    });
   }
 
-  rejeitar(pedidoId: number, motivo: string): void {
-    const resultado = this.repository.rejeitar(pedidoId, motivo);
-    this._feedback.set({ texto: resultado.mensagem, erro: !resultado.sucesso });
-    if (resultado.sucesso) {
-      this._pedidos.set(this.repository.listarPendentes());
-    }
+  rejeitar(cpf: string, motivo: string): void {
+    this.repository.rejeitar(cpf, motivo).subscribe((resultado) => {
+      this._feedback.set({ texto: resultado.mensagem, erro: !resultado.sucesso });
+      if (resultado.sucesso) {
+        this.recarregarPendentes();
+      }
+    });
   }
 
   limparFeedback(): void {
     this._feedback.set(null);
+  }
+
+  private recarregarPendentes(): void {
+    this.repository.listarPendentes().subscribe({
+      next: (pedidos) => this._pedidos.set(pedidos),
+      error: () => this._pedidos.set([]),
+    });
   }
 }

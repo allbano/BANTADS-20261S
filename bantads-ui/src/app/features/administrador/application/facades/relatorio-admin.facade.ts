@@ -35,7 +35,10 @@ export class RelatorioAdminFacade {
   });
 
   carregar(): void {
-    this._clientes.set(this.repository.listarClientes());
+    this.repository.listarClientes().subscribe({
+      next: (clientes) => this._clientes.set(clientes),
+      error: () => this._clientes.set([]),
+    });
   }
 
   setFiltro(valor: string): void {

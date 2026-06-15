@@ -1,27 +1,19 @@
+import type { Observable } from 'rxjs';
+
 import type { PedidoAutocadastro } from '../models/pedido-autocadastro.model';
 import type { ResultadoAprovacao } from '../models/resultado-aprovacao.model';
 
 /**
  * Contrato do repositório de aprovação/rejeição de autocadastros (R9/R10/R11).
- *
- * A camada de domínio define o "o quê"; a infraestrutura define o "como".
+ * A identidade do pedido é o CPF do cliente.
  */
 export abstract class AprovacaoRepository {
-  /** Lista todos os pedidos pendentes de decisão (opcionalmente filtrados por gerente). */
-  abstract listarPendentes(gerenteId?: number): PedidoAutocadastro[];
+  /** Lista os clientes aguardando aprovação (R9). */
+  abstract listarPendentes(): Observable<PedidoAutocadastro[]>;
 
-  /** Registra um novo pedido com gerente já designado no momento do autocadastro (R1). */
-  abstract registrarPedido(pedido: PedidoAutocadastro): void;
+  /** Aprova o cadastro: cria conta e dispara e-mail com a senha (R10 — SAGA). */
+  abstract aprovar(cpf: string): Observable<ResultadoAprovacao>;
 
-  /**
-   * Aprova um pedido: cria conta (número 4 dígitos), calcula limite,
-   * gera senha e "envia" e-mail (R10).
-   */
-  abstract aprovar(pedidoId: number): ResultadoAprovacao;
-
-  /**
-   * Rejeita um pedido: registra motivo e data/hora,
-   * "envia" e-mail com motivo da reprovação (R11).
-   */
-  abstract rejeitar(pedidoId: number, motivo: string): ResultadoAprovacao;
+  /** Rejeita o cadastro com motivo e dispara e-mail (R11). */
+  abstract rejeitar(cpf: string, motivo: string): Observable<ResultadoAprovacao>;
 }

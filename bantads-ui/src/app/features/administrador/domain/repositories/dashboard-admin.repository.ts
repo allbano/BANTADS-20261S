@@ -1,3 +1,5 @@
+import type { Observable } from 'rxjs';
+
 import type { GerenteDashboard } from '../models/gerente-dashboard.model';
 
 /**
@@ -5,5 +7,5 @@ import type { GerenteDashboard } from '../models/gerente-dashboard.model';
  */
 export abstract class DashboardAdminRepository {
   /** Retorna as estatísticas de cada gerente (qtd clientes, saldos). */
-  abstract obterEstatisticas(): GerenteDashboard[];
+  abstract obterEstatisticas(): Observable<GerenteDashboard[]>;
 }

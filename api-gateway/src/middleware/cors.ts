@@ -7,7 +7,8 @@ import cors from 'cors';
 const corsOptions: cors.CorsOptions = {
   origin: [
     'http://localhost:4200', // Angular frontend (desenvolvimento)
-    'http://localhost:3000', // Gateway (desenvolvimento)
+    'http://localhost:3000', // Gateway (porta interna)
+    'http://localhost:8000', // Gateway (porta exposta — Swagger UI / testador)
   ],
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
   allowedHeaders: ['Content-Type', 'Authorization'],

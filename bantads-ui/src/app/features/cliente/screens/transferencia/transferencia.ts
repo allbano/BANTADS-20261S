@@ -5,12 +5,17 @@ import { FormsModule } from '@angular/forms';
 import { TransferenciaFacade } from '../../application/facades/transferencia.facade';
 import { ClienteTopNav } from '../../components/cliente-top-nav/cliente-top-nav';
 import { ResumoContaLateral } from '../../components/resumo-conta-lateral/resumo-conta-lateral';
+import { ClienteContaRepository } from '../../domain/repositories/cliente-conta.repository';
+import { ClienteContaHttpService } from '../../infrastructure/services/cliente-conta-http.service';
 
 @Component({
   selector: 'app-transferencia',
   imports: [FormsModule, CurrencyPipe, ClienteTopNav, ResumoContaLateral],
   templateUrl: './transferencia.html',
-  providers: [TransferenciaFacade],
+  providers: [
+    TransferenciaFacade,
+    { provide: ClienteContaRepository, useExisting: ClienteContaHttpService },
+  ],
 })
 export class Transferencia implements OnInit {
   readonly facade = inject(TransferenciaFacade);

@@ -1,5 +1,7 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { Router, RouterLink, RouterLinkActive } from '@angular/router';
+
+import { AutenticacaoService } from '../../../../core/auth/services/autenticacao.service';
 
 @Component({
   selector: 'app-admin-top-nav',
@@ -7,9 +9,12 @@ import { Router, RouterLink, RouterLinkActive } from '@angular/router';
   templateUrl: './admin-top-nav.html',
 })
 export class AdminTopNav {
-  constructor(private readonly router: Router) {}
+  private readonly router = inject(Router);
+  private readonly autenticacao = inject(AutenticacaoService);
 
   sair(): void {
-    void this.router.navigateByUrl('/auth/login');
+    this.autenticacao.logout().subscribe(() => {
+      void this.router.navigateByUrl('/auth/login');
+    });
   }
 }

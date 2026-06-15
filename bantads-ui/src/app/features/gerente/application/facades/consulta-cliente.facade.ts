@@ -28,14 +28,21 @@ export class ConsultaClienteFacade {
       return;
     }
 
-    const encontrado = this.repository.buscarPorCpf(normalizado);
-    if (encontrado) {
-      this._cliente.set(encontrado);
-      this._erro.set(null);
-    } else {
-      this._cliente.set(null);
-      this._erro.set('Nenhum cliente encontrado com o CPF informado.');
-    }
+    this.repository.buscarPorCpf(normalizado).subscribe({
+      next: (encontrado) => {
+        if (encontrado) {
+          this._cliente.set(encontrado);
+          this._erro.set(null);
+        } else {
+          this._cliente.set(null);
+          this._erro.set('Nenhum cliente encontrado com o CPF informado.');
+        }
+      },
+      error: () => {
+        this._cliente.set(null);
+        this._erro.set('Nenhum cliente encontrado com o CPF informado.');
+      },
+    });
   }
 
   limpar(): void {

@@ -1,38 +1,34 @@
 import { Injectable, inject, signal } from '@angular/core';
 
 import type { DashboardClienteResumo } from '../../domain/models/dashboard-cliente-resumo.model';
-import { ClienteContaMockService } from '../../infrastructure/services/cliente-conta-mock.service';
-import { SessaoClienteService } from '../../../../core/auth/services/sessao-cliente.service';
+import { ClienteContaRepository } from '../../domain/repositories/cliente-conta.repository';
 
 @Injectable()
+/** R7 — Transferência: informa conta destino e valor; registrada na data/hora atual. */
 export class TransferenciaFacade {
-  private readonly conta = inject(ClienteContaMockService);
-  private readonly sessao = inject(SessaoClienteService);
+  private readonly conta = inject(ClienteContaRepository);
 
   readonly resumo = signal<DashboardClienteResumo | null>(null);
   readonly feedback = signal<{ texto: string; erro: boolean } | null>(null);
 
   recarregar(): void {
-    const id = this.sessao.clienteId();
     this.feedback.set(null);
-    if (id === null) {
-      this.resumo.set(null);
-      return;
-    }
-    this.resumo.set(this.conta.obterResumo(id));
+    this.atualizarResumo();
   }
 
   transferir(numeroContaDestino: string, valor: number): void {
-    const id = this.sessao.clienteId();
-    if (id === null) {
-      return;
-    }
-    const r = this.conta.transferir(id, numeroContaDestino, valor);
-    if (r.sucesso) {
-      this.feedback.set({ texto: r.mensagem, erro: false });
-      this.recarregar();
-    } else {
-      this.feedback.set({ texto: r.mensagem, erro: true });
-    }
+    this.conta.transferir(numeroContaDestino, valor).subscribe((r) => {
+      this.feedback.set({ texto: r.mensagem, erro: !r.sucesso });
+      if (r.sucesso) {
+        this.atualizarResumo();
+      }
+    });
+  }
+
+  private atualizarResumo(): void {
+    this.conta.obterResumo().subscribe({
+      next: (r) => this.resumo.set(r),
+      error: () => this.resumo.set(null),
+    });
   }
 }

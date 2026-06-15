@@ -1,3 +1,5 @@
+import type { Observable } from 'rxjs';
+
 import type { TopCliente } from '../models/top-cliente.model';
 
 /**
@@ -5,5 +7,5 @@ import type { TopCliente } from '../models/top-cliente.model';
  * Considera clientes de qualquer gerente.
  */
 export abstract class TopClientesRepository {
-  abstract obterTop3(): TopCliente[];
+  abstract obterTop3(): Observable<TopCliente[]>;
 }

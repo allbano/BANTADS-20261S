@@ -9,6 +9,7 @@ public interface ClienteRepository {
     ClienteModel save(ClienteModel cliente);
     Optional<ClienteModel> findById(UUID uuid);
     Optional<ClienteModel> findByCpf(String cpf);
+    Optional<ClienteModel> findByEmail(String email);
     List<ClienteModel> findAll();
     void deleteById(UUID uuid);
 }

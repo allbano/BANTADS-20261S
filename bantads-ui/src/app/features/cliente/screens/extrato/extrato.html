@@ -13,27 +13,27 @@
         <div>
           <label for="dt-ini" class="mb-1 block text-xs text-neutral-500">Início</label>
           <input
+            #ini
             id="dt-ini"
             type="date"
-            name="dataInicio"
-            [(ngModel)]="dataInicio"
+            [value]="dataInicio"
             class="cursor-pointer rounded-xl border border-neutral-600 bg-[#141414] px-3 py-2 text-neutral-100 outline-none focus:border-[#6ecf7a]"
           />
         </div>
         <div>
           <label for="dt-fim" class="mb-1 block text-xs text-neutral-500">Fim</label>
           <input
+            #fim
             id="dt-fim"
             type="date"
-            name="dataFim"
-            [(ngModel)]="dataFim"
+            [value]="dataFim"
             class="cursor-pointer rounded-xl border border-neutral-600 bg-[#141414] px-3 py-2 text-neutral-100 outline-none focus:border-[#6ecf7a]"
           />
         </div>
         <button
           type="button"
           class="cursor-pointer rounded-xl bg-[#6ecf7a] px-6 py-2 font-bold text-neutral-950 transition-opacity hover:opacity-90"
-          (click)="filtrar()"
+          (click)="filtrar(ini.value, fim.value)"
         >
           Filtrar
         </button>
@@ -89,6 +89,14 @@
             </table>
           </div>
         </section>
+      } @empty {
+        <div class="flex flex-col items-center justify-center gap-2 py-12 text-center">
+          <p class="text-lg text-neutral-300">Nenhuma movimentação no período selecionado.</p>
+          <p class="text-sm text-neutral-500">
+            Período: {{ formatarDia(dataInicio) }} até {{ formatarDia(dataFim) }}. Ajuste as datas e clique em
+            <span class="text-[#6ecf7a]">Filtrar</span>.
+          </p>
+        </div>
       }
     </div>
   }
