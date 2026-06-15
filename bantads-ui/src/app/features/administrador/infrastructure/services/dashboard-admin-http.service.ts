@@ -33,7 +33,7 @@ export class DashboardAdminHttpService extends DashboardAdminRepository {
 
   override obterEstatisticas(): Observable<GerenteDashboard[]> {
     return this.http
-      .get<ItemDashboardResponse[]>(`${this.base}/gerentes`, { params: { numero: 'dashboard' } })
+      .get<ItemDashboardResponse[]>(`${this.base}/gerentes`, { params: { filtro: 'dashboard' } })
       .pipe(
         map((itens) =>
           (itens ?? []).map((item) => ({

@@ -16,6 +16,7 @@ export interface GerenteInsercao {
   cpf: string;
   nome: string;
   email: string;
+  telefone: string;
   tipo: string;
   senha: string;
 }

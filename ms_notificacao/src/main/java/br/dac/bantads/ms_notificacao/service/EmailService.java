@@ -18,7 +18,7 @@ public class EmailService {
 
     private final JavaMailSender mailSender;
 
-    /** Endereco remetente (FROM), lido de {@code spring.mail.username}. */
+    // Endereco remetente (FROM), lido de {@code spring.mail.username}.
     private final String remetente;
 
     public EmailService(JavaMailSender mailSender,
@@ -27,22 +27,19 @@ public class EmailService {
         this.remetente = remetente;
     }
 
-    /**
-     * Envio genérico {destino, assunto, mensagem}: é o ponto único pelo qual os
-     * demais microsserviços solicitam e-mails (publicando na fila), de modo que
-     * SOMENTE o ms_notificacao fale com o SMTP. O corpo já vem pronto do produtor.
-     */
+    
+    // Envio genérico {destino, assunto, mensagem}: é o ponto único pelo qual os
+    // demais microsserviços solicitam e-mails (publicando na fila), de modo que
+    // SOMENTE o ms_notificacao fale com o SMTP. O corpo já vem pronto do produtor.
     public void enviarSimples(String destino, String assunto, String mensagem) {
         enviarEmail(destino, assunto, mensagem);
     }
 
-    /**
-     * Ponto de entrada: recebe a notificacao ja desserializada, monta o
-     * assunto/corpo conforme o {@code tipo} e envia o e-mail.
-     *
-     * Lanca excecao se o tipo for nulo/desconhecido; o consumidor decide o que
-     * fazer com a falha (logar, descartar ou reenfileirar).
-     */
+    
+    // Ponto de entrada: recebe a notificacao ja desserializada, monta o
+    // assunto/corpo conforme o {@code tipo} e envia o e-mail.
+    // Lanca excecao se o tipo for nulo/desconhecido; o consumidor decide o que
+    // fazer com a falha (logar, descartar ou reenfileirar).
     public void enviar(NotificacaoDTO n) {
         if (n.getTipo() == null) {
             throw new IllegalArgumentException("Notificacao sem 'tipo' definido");
@@ -81,20 +78,16 @@ public class EmailService {
         }
     }
 
-    /**
-     * Monta uma saudacao personalizada quando o nome esta disponivel;
-     * caso contrario usa uma saudacao generica.
-     */
+    // Monta uma saudacao personalizada quando o nome esta disponivel;
+    // caso contrario usa uma saudacao generica.
     private String saudacao(String nome) {
         return (nome != null && !nome.isBlank())
                 ? "Ola, " + nome + "!\n\n"
                 : "Ola!\n\n";
     }
 
-    /**
-     * Efetivamente envia o e-mail de texto simples via SMTP.
-     * Centraliza a criacao do {@link SimpleMailMessage} para nao repetir codigo.
-     */
+    // Efetivamente envia o e-mail de texto simples via SMTP.
+    // Centraliza a criacao do {@link SimpleMailMessage} para nao repetir codigo.
     private void enviarEmail(String destino, String assunto, String corpo) {
         if (destino == null || destino.isBlank()) {
             throw new IllegalArgumentException("Notificacao sem 'email' de destino");

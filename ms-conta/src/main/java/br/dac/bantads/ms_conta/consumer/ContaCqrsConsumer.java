@@ -2,8 +2,11 @@ package br.dac.bantads.ms_conta.consumer;
 
 import br.dac.bantads.ms_conta.config.RabbitMQConfig;
 import br.dac.bantads.ms_conta.dto.ContaSyncDTO;
+import br.dac.bantads.ms_conta.dto.MovimentacaoSyncDTO;
 import br.dac.bantads.ms_conta.model.read.ContaView;
+import br.dac.bantads.ms_conta.model.read.MovimentacaoView;
 import br.dac.bantads.ms_conta.repository.read.ContaViewRepository;
+import br.dac.bantads.ms_conta.repository.read.MovimentacaoViewRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -26,6 +29,7 @@ import java.util.UUID;
 public class ContaCqrsConsumer {
 
     private final ContaViewRepository contaViewRepository;
+    private final MovimentacaoViewRepository movimentacaoViewRepository;
     private final ObjectMapper objectMapper;
 
     @RabbitListener(queues = RabbitMQConfig.QUEUE_CONTA_CQRS_ATUALIZADA)
@@ -46,6 +50,23 @@ public class ContaCqrsConsumer {
                 .build();
         contaViewRepository.save(view);
         log.debug("ContaView (conta_r) sincronizada para conta {}", dto.uuidConta());
+    }
+
+    @RabbitListener(queues = RabbitMQConfig.QUEUE_MOVIMENTACAO_CQRS_CRIADA)
+    public void onMovimentacaoCriada(String msg) throws Exception {
+        MovimentacaoSyncDTO dto = objectMapper.readValue(msg, MovimentacaoSyncDTO.class);
+        MovimentacaoView view = MovimentacaoView.builder()
+                .uuidMovimentacao(dto.uuidMovimentacao())
+                .uuidConta(dto.uuidConta())
+                .numeroConta(dto.numeroConta())
+                .dataHora(dto.dataHora())
+                .tipo(dto.tipo())
+                .valor(dto.valor())
+                .uuidContaDestino(dto.uuidContaDestino())
+                .numeroContaDestino(dto.numeroContaDestino())
+                .build();
+        movimentacaoViewRepository.save(view);
+        log.debug("MovimentacaoView (conta_r) sincronizada para movimentacao {}", dto.uuidMovimentacao());
     }
 
     @RabbitListener(queues = RabbitMQConfig.QUEUE_CONTA_CQRS_EXCLUIDA)

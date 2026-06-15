@@ -2,7 +2,9 @@ package br.dac.bantads.ms_conta.service;
 
 import br.dac.bantads.ms_conta.config.RabbitMQConfig;
 import br.dac.bantads.ms_conta.dto.ContaSyncDTO;
+import br.dac.bantads.ms_conta.dto.MovimentacaoSyncDTO;
 import br.dac.bantads.ms_conta.model.cud.ContaModel;
+import br.dac.bantads.ms_conta.model.cud.MovimentacaoModel;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -48,6 +50,27 @@ public class CqrsPublisher {
             log.debug("CQRS sync publicado (atualizada) para conta {}", conta.getUuidConta());
         } catch (Exception e) {
             log.error("Falha ao serializar/publicar CQRS sync da conta {}", conta.getUuidConta(), e);
+        }
+    }
+
+    /** Publica o snapshot denormalizado de uma movimentacao para projecao na MovimentacaoView. */
+    public void publicarMovimentacao(MovimentacaoModel m, String numeroContaDestino) {
+        MovimentacaoSyncDTO dto = new MovimentacaoSyncDTO(
+                m.getUuidMovimentacao(),
+                m.getConta().getUuidConta(),
+                m.getConta().getNumero(),
+                m.getDataHora(),
+                m.getTipo(),
+                m.getValor(),
+                m.getUuidContaDestino(),
+                numeroContaDestino
+        );
+        try {
+            rabbitTemplate.convertAndSend(RabbitMQConfig.EXCHANGE, RabbitMQConfig.RK_MOVIMENTACAO_CRIADA,
+                    objectMapper.writeValueAsString(dto));
+            log.debug("CQRS sync publicado (movimentacao) {}", m.getUuidMovimentacao());
+        } catch (Exception e) {
+            log.error("Falha ao serializar/publicar CQRS sync da movimentacao {}", m.getUuidMovimentacao(), e);
         }
     }
 

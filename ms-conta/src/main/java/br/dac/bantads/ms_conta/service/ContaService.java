@@ -138,25 +138,52 @@ public class ContaService {
 
     @Transactional
     public void atribuiContaGerente(UUID newGerenteUuid) {
-        log.info("Novo gerente registrado: {}. Reatribuindo a conta ativa mais recente para balanceamento.", newGerenteUuid);
-        // Move a conta ATIVA mais recente do banco (o cliente recém-aprovado) ao novo
-        // gerente. Determinístico (UUIDv7 temporal) e garante que o novo gerente receba
-        // um cliente ativo — não a conta inativa de um cliente rejeitado (R17).
-        Optional<ContaModel> recente = contaRepository.findFirstByAtivoTrueOrderByUuidContaDesc();
-        if (recente.isEmpty()) {
-            log.info("Nenhuma conta ativa encontrada para balanceamento.");
+        log.info("Novo gerente registrado: {}. Aplicando regra R17 de atribuição de conta.", newGerenteUuid);
+        // R17: o novo gerente recebe UMA conta ATIVA do gerente que possui MAIS contas
+        // ATIVAS atreladas (a carteira real; contas pendentes/rejeitadas não contam, igual
+        // ao dashboard R15). Em caso de empate, escolhe-se o de MENOR saldo positivo.
+        // Exceções (o novo gerente fica sem nenhuma conta):
+        //   - é o primeiro gerente do banco (nenhum outro gerente possui contas ativas);
+        //   - só há um outro gerente e ele possui somente uma conta ativa atrelada.
+        List<UUID> gerentesComContas = contaRepository
+                .findGerentesOrdenadosPorMaisContasAtivas(PageRequest.of(0, 1000))
+                .stream()
+                .filter(g -> !g.equals(newGerenteUuid))
+                .toList();
+
+        if (gerentesComContas.isEmpty()) {
+            log.info("Primeiro gerente do banco — fica sem nenhuma conta (R17).");
             return;
         }
-        ContaModel conta = recente.get();
-        if (newGerenteUuid.equals(conta.getUuidGerente())) {
-            log.info("Conta mais recente já é do gerente novo. Nenhuma reatribuição necessária.");
+
+        long maxContas = gerentesComContas.stream()
+                .mapToLong(g -> contaRepository.countByUuidGerenteAndAtivo(g, true))
+                .max()
+                .orElse(0);
+
+        if (gerentesComContas.size() == 1 && maxContas <= 1) {
+            log.info("Único outro gerente possui apenas uma conta — novo gerente fica sem conta (R17).");
             return;
         }
-        UUID anterior = conta.getUuidGerente();
+
+        // Entre os gerentes com a maior quantidade de contas ativas, o de menor saldo positivo.
+        UUID origem = gerentesComContas.stream()
+                .filter(g -> contaRepository.countByUuidGerenteAndAtivo(g, true) == maxContas)
+                .min(Comparator.comparing(contaRepository::somarSaldosPositivosAtivosPorGerente))
+                .orElseThrow();
+
+        List<ContaModel> contasOrigem = new ArrayList<>(contaRepository.findByUuidGerenteAndAtivo(origem, true));
+        contasOrigem.sort(Comparator.comparing(ContaModel::getNumero));
+        if (contasOrigem.isEmpty()) {
+            log.warn("Gerente origem {} sem contas ativas para transferir.", origem);
+            return;
+        }
+        ContaModel conta = contasOrigem.get(0);
         conta.setUuidGerente(newGerenteUuid);
         ContaModel saved = contaRepository.save(conta);
         cqrsPublisher.publicarConta(saved);
-        log.info("Conta {} reatribuída do gerente {} para o gerente {}", conta.getUuidConta(), anterior, newGerenteUuid);
+        log.info("R17: conta {} reatribuída do gerente {} (maior carteira) para o novo gerente {}",
+                conta.getNumero(), origem, newGerenteUuid);
     }
 
     @Transactional
