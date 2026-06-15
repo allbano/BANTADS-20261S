@@ -180,6 +180,17 @@ public class ClienteService {
         c.setAtivo(false);
         c.setStatus("REJEITADO"); // R11 — sai da fila de "aguardando aprovação"
         clienteRepository.save(c);
+        // R11 — grava motivo/data da reprovação na conta (ms-conta + CQRS). Resiliente:
+        // se o ms-conta estiver indisponível, a rejeição do cliente e o e-mail continuam.
+        try {
+            restClient.post()
+                    .uri("/contas/cliente/{uuid}/rejeitar", c.getUuid())
+                    .body(Map.of("motivo", motivo != null ? motivo : ""))
+                    .retrieve()
+                    .toBodilessEntity();
+        } catch (Exception e) {
+            System.err.println("Falha ao gravar reprovação no ms-conta: " + e.getMessage());
+        }
         // R11 — e-mail de rejeição (com o motivo) montado e enviado pelo ms_notificacao.
         publicarNotificacao("REJEICAO", c.getEmail(), c.getNome(), motivo != null ? motivo : "");
     }
