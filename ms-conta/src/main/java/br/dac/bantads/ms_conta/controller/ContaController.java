@@ -15,7 +15,7 @@ import java.util.UUID;
 /**
  * MS Conta — consultas (lado de leitura do CQRS, {@link ContaQueryService}).
  * Serve a API Composition do gateway: contas por cliente/gerente, top 3 saldos
- * (R14), pendentes (R9) e a carteira para o dashboard do admin (R15).
+ * (R14) e a carteira para o dashboard do admin (R15).
  */
 @CrossOrigin
 @RestController
@@ -60,33 +60,9 @@ public class ContaController {
         return ResponseEntity.ok().build();
     }
 
-    @GetMapping("/por-usuario/{userId}")
-    public ResponseEntity<ContaResponseDTO> getContaPorUserId(@PathVariable String userId) {
-        log.info("Recebida requisição legado para buscar conta por ID de usuário: {}", userId);
-        try {
-            UUID clientUuid = UUID.fromString(userId);
-            return getContaByCliente(clientUuid);
-        } catch (IllegalArgumentException e) {
-            log.warn("O ID de usuário fornecido não é um UUID válido: {}", userId);
-            return ResponseEntity.notFound().build();
-        }
-    }
-
     @GetMapping("/por-gerente/{uuidGerente}")
     public ResponseEntity<List<ContaResponseDTO>> getContaPorGerenteId(@PathVariable UUID uuidGerente) {
         log.info("Recebida requisição para buscar contas pelo gerente UUID: {}", uuidGerente);
         return ResponseEntity.ok(contaQueryService.buscarPorGerente(uuidGerente));
-    }
-
-    @GetMapping("/melhores/{uuidGerente}")
-    public ResponseEntity<List<ContaResponseDTO>> getMelhoresPorGerenteId(@PathVariable UUID uuidGerente) {
-        log.info("Recebida requisição para buscar as melhores contas do gerente UUID: {}", uuidGerente);
-        return ResponseEntity.ok(contaQueryService.melhoresPorGerente(uuidGerente));
-    }
-
-    @GetMapping("/pendentes/{uuidGerente}")
-    public ResponseEntity<List<ContaResponseDTO>> getPendentesPorGerenteId(@PathVariable UUID uuidGerente) {
-        log.info("Recebida requisição para buscar contas pendentes do gerente UUID: {}", uuidGerente);
-        return ResponseEntity.ok(contaQueryService.pendentesPorGerente(uuidGerente));
     }
 }

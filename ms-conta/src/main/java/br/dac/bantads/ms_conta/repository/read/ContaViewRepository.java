@@ -21,10 +21,6 @@ public interface ContaViewRepository extends JpaRepository<ContaView, UUID> {
 
     List<ContaView> findByUuidGerenteOrderByNumeroAsc(UUID uuidGerente);
 
-    List<ContaView> findByUuidGerenteAndAtivo(UUID uuidGerente, boolean ativo);
-
-    List<ContaView> findByUuidGerenteOrderBySaldoDesc(UUID uuidGerente);
-
     @Query("SELECT v FROM ContaView v ORDER BY v.saldo DESC LIMIT 3")
     List<ContaView> findTop3ByOrderBySaldoDesc();
 

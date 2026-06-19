@@ -3,6 +3,7 @@ package br.dac.bantads.ms_cliente.application.dto;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.UUID;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -10,6 +11,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class ClienteDTO implements Serializable {
     private static final long serialVersionUID = 1L;
 
@@ -36,7 +38,6 @@ public class ClienteDTO implements Serializable {
     private Object cidade;
     private Object estado;
 
-    private String cargo;
     private boolean ativo;
 
     // Preenchido pelo ms-saga quando o fluxo é orquestrado; null para fluxo legado

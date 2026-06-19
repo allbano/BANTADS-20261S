@@ -84,7 +84,6 @@ public class AutocadastroSagaOrchestrator {
         dto.put("cep",      saga.getCep());
         dto.put("cidade",   saga.getCidade());
         dto.put("estado",   saga.getEstado());
-        dto.put("cargo",    "CLIENTE");
         dto.put("ativo",    false);
         dto.put("sagaId",   saga.getSagaId().toString());
         publicar(RabbitMQConfig.FILA_REGISTRO_CLIENTE, dto, saga.getSagaId());

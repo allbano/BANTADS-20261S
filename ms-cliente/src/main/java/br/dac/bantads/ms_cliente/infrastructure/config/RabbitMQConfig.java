@@ -31,9 +31,6 @@ public class RabbitMQConfig {
     public static final String SAGA_CMD_EXCLUIR_CLIENTE = "SAGA_CMD_EXCLUIR_CLIENTE";
 
     // Routing keys usadas apenas para publicar (declaradas pelos consumidores)
-    public static final String FILA_ERRO_NOVO_CLIENTE = "FILA_ERRO_NOVO_CLIENTE";
-    public static final String FILA_ERRO_NOVO_CLIENTE_AUTENTICACAO = "FILA_ERRO_NOVO_CLIENTE_AUTENTICACAO";
-    public static final String FILA_AUTENTICACAO = "FILA_AUTENTICACAO";
     public static final String SAGA_EVT_CLIENTE_CRIADO  = "SAGA_EVT_CLIENTE_CRIADO";
     public static final String SAGA_EVT_CLIENTE_ERRO    = "SAGA_EVT_CLIENTE_ERRO";
 

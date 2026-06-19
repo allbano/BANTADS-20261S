@@ -20,5 +20,5 @@ public class GerenteDTO implements Serializable {
     private String senha;
     private String cpf;
     private String telefone;
-    private String cargo;
+    private String tipo;
 }

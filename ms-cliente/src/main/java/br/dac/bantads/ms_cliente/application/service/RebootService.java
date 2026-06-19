@@ -44,27 +44,27 @@ public class RebootService {
                 .uuid(UUID_CLI1).nome("Catharyna").email("cli1@bantads.com.br")
                 .cpf("12912861012").salario(new BigDecimal("10000.00"))
                 .endereco("Rua das Flores, 100").cidade("Curitiba").estado("PR").cep("80000-000")
-                .telefone("(41) 98888-1111").senha(senha).ativo(true).cargo("CLIENTE").build(),
+                .telefone("(41) 98888-1111").senha(senha).ativo(true).build(),
             ClienteModel.builder()
                 .uuid(UUID_CLI2).nome("Cleuddônio").email("cli2@bantads.com.br")
                 .cpf("09506382000").salario(new BigDecimal("20000.00"))
                 .endereco("Av. Brasil, 200").cidade("Curitiba").estado("PR").cep("80010-000")
-                .telefone("(41) 98888-2222").senha(senha).ativo(true).cargo("CLIENTE").build(),
+                .telefone("(41) 98888-2222").senha(senha).ativo(true).build(),
             ClienteModel.builder()
                 .uuid(UUID_CLI3).nome("Catianna").email("cli3@bantads.com.br")
                 .cpf("85733854057").salario(new BigDecimal("3000.00"))
                 .endereco("Rua XV de Novembro, 300").cidade("Curitiba").estado("PR").cep("80020-000")
-                .telefone("(41) 98888-3333").senha(senha).ativo(true).cargo("CLIENTE").build(),
+                .telefone("(41) 98888-3333").senha(senha).ativo(true).build(),
             ClienteModel.builder()
                 .uuid(UUID_CLI4).nome("Cutardo").email("cli4@bantads.com.br")
                 .cpf("58872160006").salario(new BigDecimal("500.00"))
                 .endereco("Rua Marechal Deodoro, 400").cidade("Curitiba").estado("PR").cep("80030-000")
-                .telefone("(41) 98888-4444").senha(senha).ativo(true).cargo("CLIENTE").build(),
+                .telefone("(41) 98888-4444").senha(senha).ativo(true).build(),
             ClienteModel.builder()
                 .uuid(UUID_CLI5).nome("Coândrya").email("cli5@bantads.com.br")
                 .cpf("76179646090").salario(new BigDecimal("1500.00"))
                 .endereco("Av. Sete de Setembro, 500").cidade("Curitiba").estado("PR").cep("80040-000")
-                .telefone("(41) 98888-5555").senha(senha).ativo(true).cargo("CLIENTE").build()
+                .telefone("(41) 98888-5555").senha(senha).ativo(true).build()
         );
 
         repository.saveAll(clientes);
