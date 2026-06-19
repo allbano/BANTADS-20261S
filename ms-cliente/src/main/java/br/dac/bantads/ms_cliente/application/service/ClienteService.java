@@ -218,29 +218,15 @@ public class ClienteService {
 
             System.out.println("Salvo (" + saved.getNome() + ") via RabbitMQ");
 
+            // Fluxo orquestrado pelo ms-saga: notifica o orquestrador para avançar
             if (dto.getSagaId() != null && !dto.getSagaId().isBlank()) {
-                // Fluxo orquestrado pelo ms-saga: notifica o orquestrador para avançar
                 publicarEventoSagaClienteCriado(dto.getSagaId(), saved.getUuid().toString());
-            } else {
-                // Fluxo legado (coreografia): envia diretamente para autenticação
-                UsuarioDTO uAuth = new UsuarioDTO(
-                        saved.getUuid().toString(),
-                        saved.getEmail(),
-                        dto.getSenha(),
-                        "CLIENTE",
-                        false
-                );
-                rabbitTemplate.convertAndSend(RabbitMQConfig.EXCHANGE, RabbitMQConfig.FILA_AUTENTICACAO, objectMapper.writeValueAsString(uAuth));
             }
         } catch (Exception e) {
             System.err.println("Erro ao salvar cliente via RabbitMQ: " + e.getMessage());
-            String errorId = dto.getResolvedUuid() != null ? dto.getResolvedUuid().toString() : "null";
 
             if (dto.getSagaId() != null && !dto.getSagaId().isBlank()) {
                 publicarEventoSagaClienteErro(dto.getSagaId(), e.getMessage());
-            } else {
-                rabbitTemplate.convertAndSend(RabbitMQConfig.EXCHANGE, RabbitMQConfig.FILA_ERRO_NOVO_CLIENTE, errorId);
-                rabbitTemplate.convertAndSend(RabbitMQConfig.EXCHANGE, RabbitMQConfig.FILA_ERRO_NOVO_CLIENTE_AUTENTICACAO, errorId);
             }
 
             if (dto.getEmail() != null) {
@@ -300,7 +286,6 @@ public class ClienteService {
                 .senha(dto.getSenha())
                 .ativo(dto.isAtivo())
                 .status(dto.isAtivo() ? "APROVADO" : "PENDENTE")
-                .cargo(dto.getCargo() != null ? dto.getCargo() : "CLIENTE")
                 .build();
     }
 

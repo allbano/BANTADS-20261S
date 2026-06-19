@@ -109,10 +109,10 @@ public class FuncionarioController {
     }
 
     // ─────────────────────────────────────────────────────────────────────────
-    // ROTAS DE GERENTE (Compatibilidade com Legado e API Gateway /gerentes/)
+    // ROTAS DE GERENTE (consumidas pelo API Gateway em /gerentes/)
     // ─────────────────────────────────────────────────────────────────────────
 
-    @GetMapping({"/gerentes", "/gerentes/", "/gerente/list"})
+    @GetMapping("/gerentes")
     public ResponseEntity<List<GerenteDTO>> listGerentes() {
         List<FuncionarioModel> gerentes = service.listByTipo(TipoFuncionario.GERENTE);
         List<GerenteDTO> response = gerentes.stream()
@@ -121,7 +121,7 @@ public class FuncionarioController {
         return ResponseEntity.ok(response);
     }
 
-    @GetMapping({"/gerentes/{uuid}", "/gerente/{uuid}"})
+    @GetMapping("/gerentes/{uuid}")
     public ResponseEntity<GerenteDTO> getGerente(@PathVariable String uuid) {
         try {
             UUID parsedUuid = UUID.fromString(uuid);
@@ -133,7 +133,7 @@ public class FuncionarioController {
         }
     }
 
-    @GetMapping({"/gerentes/por-cpf/{cpf}", "/gerente/por-cpf/{cpf}"})
+    @GetMapping("/gerentes/por-cpf/{cpf}")
     public ResponseEntity<GerenteDTO> getGerentePorCpf(@PathVariable String cpf) {
         return service.getByCpf(cpf)
                 .filter(f -> f.getTipo() == TipoFuncionario.GERENTE)
@@ -141,7 +141,7 @@ public class FuncionarioController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    @GetMapping({"/gerentes/por-email/{email}", "/gerente/por-email/{email}"})
+    @GetMapping("/gerentes/por-email/{email}")
     public ResponseEntity<GerenteDTO> getGerentePorEmail(@PathVariable String email) {
         return service.getByEmail(email)
                 .filter(f -> f.getTipo() == TipoFuncionario.GERENTE)
@@ -149,7 +149,7 @@ public class FuncionarioController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    @PostMapping({"/gerentes/novo", "/gerente/novo", "/gerentes"})
+    @PostMapping({"/gerentes/novo", "/gerentes"})
     public ResponseEntity<GerenteDTO> cadastroGerente(@RequestBody GerenteDTO dto) {
         try {
             if (service.getByCpf(dto.getCpf()).isPresent()) {
@@ -172,7 +172,7 @@ public class FuncionarioController {
         }
     }
 
-    @PutMapping({"/gerentes/{uuid}", "/gerente/{uuid}"})
+    @PutMapping("/gerentes/{uuid}")
     public ResponseEntity<GerenteDTO> updateGerente(@PathVariable String uuid, @RequestBody GerenteDTO dto) {
         try {
             UUID parsedUuid = UUID.fromString(uuid);
@@ -197,7 +197,7 @@ public class FuncionarioController {
         }
     }
 
-    @DeleteMapping({"/gerentes/{uuid}", "/gerente/{uuid}"})
+    @DeleteMapping("/gerentes/{uuid}")
     public ResponseEntity<GerenteDTO> deleteGerente(@PathVariable String uuid) {
         try {
             UUID parsedUuid = UUID.fromString(uuid);
@@ -226,7 +226,7 @@ public class FuncionarioController {
                 .senha(m.getSenha())
                 .cpf(m.getCpf())
                 .telefone(m.getTelefone())
-                .cargo(m.getTipo() != null ? m.getTipo().name() : null)
+                .tipo(m.getTipo() != null ? m.getTipo().name() : null)
                 .build();
     }
 }

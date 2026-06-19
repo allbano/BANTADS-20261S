@@ -52,16 +52,6 @@ public class ContaQueryService {
                 .map(this::toDTO).collect(Collectors.toList());
     }
 
-    public List<ContaResponseDTO> melhoresPorGerente(UUID uuidGerente) {
-        return contaViewRepository.findByUuidGerenteOrderBySaldoDesc(uuidGerente).stream()
-                .limit(5).map(this::toDTO).collect(Collectors.toList());
-    }
-
-    public List<ContaResponseDTO> pendentesPorGerente(UUID uuidGerente) {
-        return contaViewRepository.findByUuidGerenteAndAtivo(uuidGerente, false).stream()
-                .map(this::toDTO).collect(Collectors.toList());
-    }
-
     private ContaResponseDTO toDTO(ContaView v) {
         return new ContaResponseDTO(
                 v.getUuidConta(), v.getUuidCliente(), v.getClienteCpf(), v.getNumero(), v.getDataCriacao(),

@@ -58,10 +58,6 @@ public class ClienteModel implements Serializable {
     @Column(name = "cliente_ativo", nullable = false)
     private boolean ativo = true;
 
-    @Builder.Default
-    @Column(name = "cliente_cargo", nullable = false)
-    private String cargo = "CLIENTE";
-
     /**
      * Situação do autocadastro: PENDENTE (aguardando aprovação), APROVADO ou
      * REJEITADO. Distingue "aguardando aprovação" (R9) de rejeitado — o flag

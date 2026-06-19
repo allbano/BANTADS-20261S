@@ -6,7 +6,6 @@
  *   import { Gerente, GerenteAdminRepository } from '@features/administrador/domain';
  */
 export type { Gerente } from './models/gerente.model';
-export type { Administrador } from './models/administrador.model';
 export type { GerenteDashboard } from './models/gerente-dashboard.model';
 export type { ClienteRelatorio } from './models/cliente-relatorio.model';
 export { GerenteAdminRepository } from './repositories/gerente-admin.repository';

@@ -18,7 +18,6 @@ import br.dac.bantads.ms_conta.model.cud.ContaModel;
  * - buscarPorCliente: garantir unicidade de conta por cliente (R1)
  * - buscarPorGerente: listar clientes de um gerente (R12)
  * - contarPorGerente: atribuir gerente com menos clientes (R1, R17, R18)
- * - buscarTop3PorSaldo: exibir os 3 melhores clientes (R14)
  */
 public interface ContaRepository extends JpaRepository<ContaModel, UUID> {
 
@@ -54,11 +53,6 @@ public interface ContaRepository extends JpaRepository<ContaModel, UUID> {
      * inserir um gerente (R17), de forma determinística.
      */
     Optional<ContaModel> findFirstByAtivoTrueOrderByUuidContaDesc();
-
-    List<ContaModel> findByUuidGerenteOrderBySaldoDesc(UUID uuidGerente);
-
-    @Query("SELECT c FROM ContaModel c ORDER BY c.saldo DESC LIMIT 3")
-    List<ContaModel> findTop3ByOrderBySaldoDesc();
 
     @Query("SELECT COALESCE(SUM(c.saldo), 0) FROM ContaModel c "
          + "WHERE c.uuidGerente = :uuidGerente AND c.saldo >= 0")

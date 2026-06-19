@@ -6,7 +6,7 @@ export interface FuncionarioDTO {
   cpf: string;
   email: string;
   telefone: string;
-  cargo: string;
+  tipo: string;
 }
 
 /** DTO composto usado na rota de API Composition GET /gerentes */
